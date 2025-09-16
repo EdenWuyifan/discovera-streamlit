@@ -26,6 +26,9 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
+BASELINE_MCP_ADDRESS = (
+    os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
+)
 MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "3500"))
 S3_BUCKET = os.getenv("UPLOADS_S3_BUCKET")
 S3_PREFIX = os.getenv("UPLOADS_S3_PREFIX", "uploads")
@@ -58,19 +61,61 @@ st.markdown(
 )
 
 st.title("Discovera Chat 🧬")
+
+# --- Mode selection & reinit ---
+
+
+def _default_addr_for_mode(mode: str) -> str:
+    return MCP_ADDRESS if mode == "Discovera" else BASELINE_MCP_ADDRESS
+
+
+def _reinit_session_for_mode(new_mode: str):
+    # Reset all conversational/agent state and mode-dependent settings
+    st.session_state["messages"] = []
+    st.session_state["mcp_connected"] = False
+    st.session_state["checkpointer"] = InMemorySaver()
+    st.session_state["code_view_msgs"] = set()
+    st.session_state["mcp_server"] = _default_addr_for_mode(new_mode)
+    # Also reset context to avoid cross-mode leakage
+    st.session_state["context"] = ""
+    st.session_state["context_uploads"] = []
+    st.session_state["context_upload_hashes"] = set()
+
+
+if "mode" not in st.session_state:
+    st.session_state["mode"] = "Discovera"
+if "prev_mode" not in st.session_state:
+    st.session_state["prev_mode"] = st.session_state["mode"]
+if "mcp_server" not in st.session_state:
+    st.session_state["mcp_server"] = _default_addr_for_mode(st.session_state["mode"])
+
+with st.sidebar.expander("Mode", expanded=True):
+    st.radio(
+        "Run Mode",
+        ["Discovera", "Baseline"],
+        key="mode",
+        help="Choose full Discovera agent or Baseline (CSV-only) agent",
+        horizontal=True,
+    )
+
+# If mode changed, fully reinitialize
+if st.session_state["mode"] != st.session_state["prev_mode"]:
+    _reinit_session_for_mode(st.session_state["mode"])
+    st.session_state["prev_mode"] = st.session_state["mode"]
 with st.sidebar.expander("Connection", expanded=True):
+    default_addr = _default_addr_for_mode(st.session_state.get("mode", "Discovera"))
     col1, col2 = st.columns([3, 1])
     with col1:
         st.text_input(
             "MCP Server",
-            MCP_ADDRESS,
+            st.session_state.get("mcp_server", default_addr),
             key="mcp_server",
             help="Remote FastMCP base URL",
             disabled=False,
         )
     with col2:
         if st.button("Check MCP", use_container_width=True):
-            addr = st.session_state.get("mcp_server") or MCP_ADDRESS
+            addr = st.session_state.get("mcp_server") or default_addr
             url = httpx.URL(addr)
             ok = False
             notes: List[str] = []
@@ -105,7 +150,7 @@ with st.sidebar.expander("Connection", expanded=True):
 
     connected = bool(st.session_state.get("mcp_connected"))
     status_text = "🟢 connected" if connected else "🔴 disconnected"
-    addr_text = st.session_state.get("mcp_server") or MCP_ADDRESS
+    addr_text = st.session_state.get("mcp_server") or default_addr
     st.caption(f"Status: {status_text} · {addr_text}")
 
 
@@ -219,7 +264,20 @@ Provide a compact table:
 - Explicitly report the **overlap/intersection rule** used (for multi-omics or multi-contrast tasks).
 - If prominent signals do **not** survive overlap (e.g., RNA-only keratinization),
   include them in Comparisons as **discordant**.
+"""
 
+
+baseline_server_instructions = """
+You are an assistant MCP specializing in biomedical research, focusing on mutation effects, treatment responses,
+pathway enrichments, and mechanistic biology. Your final report must be written in the style of a **scientific
+Results section** — condensed, definitive, and directly grounded in the dataset and paper being analyzed.
+
+# STYLE & GOALS
+- Voice: results-style, concise, causal, definitive (e.g., “led to”, “resulted in”, “confirmed”).
+
+# CRITICAL GUARDRAILS
+- Use exactly one tool per assistant turn.
+- If input URLs are provided, call csv_record and copy the URL exactly as given.
 """
 
 
@@ -488,7 +546,11 @@ def _load_mcp_tools(server_url: str):
 
 
 def _system_message() -> SystemMessage:
-    return SystemMessage(content=server_instructions)
+    mode = st.session_state.get("mode", "Discovera")
+    content = (
+        server_instructions if mode == "Discovera" else baseline_server_instructions
+    )
+    return SystemMessage(content=content)
 
 
 def _context() -> str:
@@ -524,7 +586,9 @@ def _human_message(prompt: str) -> HumanMessage:
 
 
 def stream_langgraph(prompt: str):
-    server_url = st.session_state.get("mcp_server") or MCP_ADDRESS
+    mode = st.session_state.get("mode", "Discovera")
+    default_addr = _default_addr_for_mode(mode)
+    server_url = st.session_state.get("mcp_server") or default_addr
 
     # Build tools and agent
     try:
