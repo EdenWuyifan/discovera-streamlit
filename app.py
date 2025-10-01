@@ -285,8 +285,8 @@ with st.sidebar.expander("Context", expanded=True):
 
     # File uploads for CSV/TXT to include as context
     uploaded_files = st.file_uploader(
-        "Upload CSV/TXT files to include in context",
-        type=["csv", "txt"],
+        "Upload CSV files to include in context",
+        type=["csv"],
         accept_multiple_files=True,
         key="context_upload_files",
         help="Files are uploaded to S3 and summarized into the context.",
