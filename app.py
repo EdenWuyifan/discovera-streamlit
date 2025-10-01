@@ -596,17 +596,20 @@ def stream_langgraph(prompt: str):
 
     try:
         # model = f"openai:{OPENAI_MODEL}"
-        portkey_headers = createHeaders(
-            api_key=os.getenv("PORTKEY_API_KEY"),
-            virtual_key=os.getenv("PROVIDER_API_KEY"),
-            metadata={"_user": "yfw215"},
-        )
-        model = ChatOpenAI(
-            model="gemini-2.5-pro",
-            temperature=0,
-            base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
-            default_headers=portkey_headers,
-        )
+        if os.getenv("LLM_PROVIDER") == "portkey":
+            portkey_headers = createHeaders(
+                api_key=os.getenv("PORTKEY_API_KEY"),
+                virtual_key=os.getenv("PROVIDER_API_KEY"),
+                metadata={"_user": "yfw215"},
+            )
+            model = ChatOpenAI(
+                model="gemini-2.5-pro",
+                temperature=0,
+                base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
+                default_headers=portkey_headers,
+            )
+        else:
+            model = f"openai:{OPENAI_MODEL}"
         agent = create_react_agent(
             model,
             tools=tools,
