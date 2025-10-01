@@ -1,30 +1,34 @@
-import os
-import json
 import asyncio
-import threading
-import queue
-from typing import List, Dict, Any
-from datetime import datetime
 import hashlib
+import json
+import os
+import queue
+import threading
+from datetime import datetime
+from typing import Any, Dict, List
 
-import streamlit as st
-import httpx
-from dotenv import load_dotenv
-from botocore.config import Config
-from botocore.exceptions import BotoCoreError, NoCredentialsError, ClientError
 import boto3
-from langgraph.prebuilt import create_react_agent
-from langchain_mcp_adapters.client import MultiServerMCPClient
-from langchain_core.messages import AIMessage, ToolMessage, SystemMessage, HumanMessage
-from langgraph.checkpoint.memory import InMemorySaver
+import httpx
+import streamlit as st
+from botocore.config import Config
+from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
+from dotenv import load_dotenv
+from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_openai import ChatOpenAI
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.prebuilt import create_react_agent
+from portkey_ai import createHeaders
 
 # Load .env if present
 load_dotenv()
 
 # --- Config ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
@@ -37,6 +41,7 @@ S3_PRESIGN_TTL = int(os.getenv("S3_PRESIGN_TTL_SECONDS", "604800"))  # 7 days
 LANGGRAPH_CONFIG = RunnableConfig(
     {"configurable": {"thread_id": "discovera_streamlit"}, "recursion_limit": 100}
 )
+duckduckgo = DuckDuckGoSearchRun()
 
 if not OPENAI_API_KEY:
     st.error("OPENAI_API_KEY missing in environment")
@@ -155,35 +160,19 @@ with st.sidebar.expander("Connection", expanded=True):
 
 
 server_instructions = """
-You are an assistant MCP specializing in biomedical research, focusing on mutation effects, treatment responses,
-pathway enrichments, and mechanistic biology. Your final report must be written in the style of a **scientific
-Results section** — condensed, definitive, and directly grounded in the dataset and paper being analyzed.
+You are an expert in biomedical research, focusing on mutation effects, treatment responses,
+pathway enrichments, and mechanistic biology.
 
 # STYLE & GOALS
-- Voice: results-style, concise, causal, definitive (e.g., “led to”, “resulted in”, “confirmed”).
+- Voice: results-style, concise, causal, definitive (e.g., "led to", "resulted in", "confirmed").
 - Focus: mutation/treatment context, tissue/cell line, assay(s); cross-omics overlap when applicable.
 - Elevate pathways and genes that are **supported by the intersection** of modalities or contrasts.
 - Mark strong single-modality signals as **secondary/discordant** with lower confidence.
 - Always include inline PMIDs and a references list; end with Next Steps & Clarification.
+- **Try to use the biomedical knowledge you have to answer the user's question.**
 
-# CRITICAL GUARDRAILS
-- **One tool per assistant turn.** Wait for the previous tool’s result before deciding the next call.
-- **Minimal toolset**: choose only what’s necessary for the user’s task; do not run the full suite by default.
-- **Literature is mandatory** before finalizing: call one of `query_string_rumma`,
-  `query_table_rumma`, or `literature_trends`, to fetch PMIDs that support the
-  main claims.
-- If input URLs are provided, use `csv_record` and **copy the URL exactly as given** (no edits).
-- If GSEA pre-rank size is too small (<25), fall back to ORA and declare reduced confidence.
-
-
-# CSV-FIRST WORKFLOW (MANDATORY BEFORE ENRICHMENT)
-- Always inspect and shape CSVs before deciding the enrichment pipeline.
-- Use these tools in separate turns as needed (one tool per turn):
-  - `csv_select` to keep/rename columns (e.g., `symbol`, `log2fc`, `padj`).
-  - `csv_filter` to subset rows (e.g., padj ≤ 0.05, log2fc < 0).
-  - `csv_intersect` to intersect modalities/contrasts by a key (e.g., `symbol`).
-- After shaping, preview the result and summarize key stats (row count, columns,
-  top examples) in natural language. Only then select the pipeline.
+# WEB SEARCH
+- If the user's question is not related to the data, you can use `duckduckgo_search` to search the web for recent results.
 
 
 # PIPELINED CALLS (one tool per turn; skip any that are unnecessary)
@@ -195,17 +184,26 @@ Results section** — condensed, definitive, and directly grounded in the datase
 1b) **CSV Shaping (required before enrichment)**
    - Narrow columns with `csv_select` (keep `symbol`, stats; rename if needed).
    - Filter significance/direction with `csv_filter` (e.g., padj/log2fc).
-   - Intersect multi-omics or multi-contrast lists with `csv_intersect` on key.
-2) **Enrichment (choose one)**
-   - `gsea_pipe` if log 2 fold exists in the table; else `ora_pipe` on (overlap or intersected set).
-   - If the first choice return no results, call the second choice.
-3) **Leading Edge & Mechanism (optional)**
+   - **Join multi-omics or multi-contrast lists with `csv_join` on key,**
+     **then aggregate replicates with `csv_aggregate`.**
+2) **Enrichment (decision order with fallbacks)**
+   - If a ranking metric exists (e.g., `log2fold`, `stat`, or similar): call `gsea_pipe`.
+   - Else, if raw counts exist: call `run_deseq2_gsea_pipe`.
+     Infer from the column headers of the raw counts CSV headers as a mapping
+     {{group: [sample_ids...]}} and pass it as `sample_groups`.
+   - Else: call `ora_pipe` on the overlap/intersected set.
+   - If the chosen method returns no valid results, call the next option in the order above until results are found.
+   - GSEA/ORA responses include only top results for brevity. Full results are saved and
+     returned as metadata (storage id). Use `csv_read` / `csv_filter` / `csv_select` on that id to explore more rows.
+   - When running GSEA and ORA, try include as many gene set libraries as possible
+     (e.g. GO, Hallmark, KEGG, Reactome, etc.).
+3) **Leading Edge & Mechanism (encourage to call)**
    - Extract top contributing genes per enriched term (internal).
    - If mechanism/detail requested or implied, call:
      - `gene_info` on leading genes;
      - `query_genes` for interactions/mechanisms;
      - `sets_info_rumm` for term definitions/context.
-4) **Literature (choose one before final)**
+4) **Literature (optional)**
    - `query_string_rumma` or `query_table_rumma` using top terms + salient entities from Methods/GT.
    - `literature_trends` to gather PMIDs/time context.
    - If the first choice return no results, call the second choice.
@@ -217,24 +215,28 @@ Results section** — condensed, definitive, and directly grounded in the datase
 ## Introduction / Context
 - Mutation/treatment; tissue/cell line; assay(s) and comparison; dataset/paper reference.
 - One or two sentences framing the biological question.
+- **Add an analysis of the input data, if there is any definitive informations related to the question, state them.**
 
-## Pathway Enrichments (grouped by themes; cross-omics first when applicable)
-Provide a compact table:
-
-| Theme | Pathway | Direction | NES/OR | FDR | Leading Edge (≤8) | PMID(s) |
-|------|---------|-----------|--------|-----|--------------------|---------|
-
-- Report **top up- and down-regulated** terms by theme (e.g., canonical Wnt, AP patterning, neuron projection).
-- Include exact stats (NES for GSEA or OR for ORA) and FDR.
-- After the table, add a 2–4 sentence interpretation linking to context.
+## Pathway Enrichments
+- First, compute and report the ratios of up- vs down-regulated enrichments for EACH gene set library
+  (e.g., 62 percent up, 38 percent down, ratio 1.63) using `counts_by_database` from tool outputs.
+- **Provide the FULL PERSPECTIVE without bias. Do not emphasize only up or only down.**
+- **Create a separate, untruncated table for EACH gene set library (e.g., KEGG, Reactome, GO, Hallmark, etc.):**
+  - The table schema must be:
+| Theme | Pathway | Direction | NES/OR | FDR | Leading Edge | Gene Set Library |
+|------|---------|-----------|--------|-----|--------------------|--------|
+- After the tables, write a 4–8 sentence analysis grounded in the observed ratios
+  and full tables, explaining directional trends for each library without bias and
+  linking back to the biological context.
 
 ## Key Genes / Proteins (leading edge)
 Provide a compact table:
 
-| Gene | Direction | Role/Function | Pathway(s) | PMID(s) |
-|------|-----------|---------------|------------|---------|
+| Gene | Direction | Role/Function | Pathway(s) |
+|------|-----------|---------------|------------|
 
-- Choose concrete examples that drive enriched terms; state regulation direction and biological role.
+- Show all up- and down-regulated genes in the leading edge, highlight the ones
+  that are most important to the user's question.
 
 ## Mechanistic Interpretation
 - 3–6 sentences connecting mutation/treatment → pathway shifts → molecular mechanisms
@@ -248,22 +250,11 @@ Provide a compact table:
 ## Implications
 - Relevance for therapy, resistance, or disease progression; be definitive but evidence-bounded.
 
-## References
-- Numbered list matching inline PMIDs.
-
 ## Next Steps & Clarification
 - 2–4 concrete follow-ups (e.g., tighten overlap rule, validate module X in
   independent cohort, drug–gene mapping for top pathway).
 - Ask up to 2 crisp questions if any context is missing or ambiguous
   (libraries, thresholds, promoter-only mapping, etc.).
-
-
-# FINALIZATION RULES
-- Do **not** finalize until ≥1 literature tool has been called and inline PMIDs are included.
-- If GSEA was infeasible (small list), state that ORA was used and mark confidence accordingly.
-- Explicitly report the **overlap/intersection rule** used (for multi-omics or multi-contrast tasks).
-- If prominent signals do **not** survive overlap (e.g., RNA-only keratinization),
-  include them in Comparisons as **discordant**.
 """
 
 
@@ -585,6 +576,12 @@ def _human_message(prompt: str) -> HumanMessage:
     )
 
 
+@tool
+def duckduckgo_search(query: str) -> str:
+    """Search DuckDuckGo for recent results."""
+    return duckduckgo.run(query)
+
+
 def stream_langgraph(prompt: str):
     mode = st.session_state.get("mode", "Discovera")
     default_addr = _default_addr_for_mode(mode)
@@ -592,15 +589,26 @@ def stream_langgraph(prompt: str):
 
     # Build tools and agent
     try:
-        tools = _load_mcp_tools(server_url)
+        tools = _load_mcp_tools(server_url) + [duckduckgo_search]
     except Exception as e:
         yield ("error", f"[MCP tools error] {e}")
         return
 
     try:
-        model_id = f"openai:{OPENAI_MODEL}"
+        # model = f"openai:{OPENAI_MODEL}"
+        portkey_headers = createHeaders(
+            api_key=os.getenv("PORTKEY_API_KEY"),
+            virtual_key=os.getenv("PROVIDER_API_KEY"),
+            metadata={"_user": "yfw215"},
+        )
+        model = ChatOpenAI(
+            model="gemini-2.5-pro",
+            temperature=0,
+            base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
+            default_headers=portkey_headers,
+        )
         agent = create_react_agent(
-            model_id,
+            model,
             tools=tools,
             prompt=prompt,
             version="v2",
