@@ -13,10 +13,10 @@ import streamlit as st
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
-from langchain_community.tools import DuckDuckGoSearchRun
+# from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
-from langchain_core.tools import tool
+# from langchain_core.tools import tool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
@@ -41,7 +41,7 @@ S3_PRESIGN_TTL = int(os.getenv("S3_PRESIGN_TTL_SECONDS", "604800"))  # 7 days
 LANGGRAPH_CONFIG = RunnableConfig(
     {"configurable": {"thread_id": "discovera_streamlit"}, "recursion_limit": 100}
 )
-duckduckgo = DuckDuckGoSearchRun()
+# duckduckgo = DuckDuckGoSearchRun()
 
 if not OPENAI_API_KEY:
     st.error("OPENAI_API_KEY missing in environment")
@@ -571,10 +571,10 @@ def _human_message(prompt: str) -> HumanMessage:
     )
 
 
-@tool
-def duckduckgo_search(query: str) -> str:
-    """Search DuckDuckGo for recent results."""
-    return duckduckgo.run(query)
+# @tool
+# def duckduckgo_search(query: str) -> str:
+#     """Search DuckDuckGo for recent results."""
+#     return duckduckgo.run(query)
 
 
 def stream_langgraph(prompt: str):
@@ -584,7 +584,8 @@ def stream_langgraph(prompt: str):
 
     # Build tools and agent
     try:
-        tools = _load_mcp_tools(server_url) + [duckduckgo_search]
+        # tools = _load_mcp_tools(server_url) + [duckduckgo_search]
+        tools = _load_mcp_tools(server_url)
     except Exception as e:
         yield ("error", f"[MCP tools error] {e}")
         return
