@@ -4,7 +4,7 @@ import json
 import os
 import queue
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 import boto3
@@ -33,7 +33,7 @@ MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
 )
-MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "30000"))
+MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "300000"))
 S3_BUCKET = os.getenv("UPLOADS_S3_BUCKET")
 S3_PREFIX = os.getenv("UPLOADS_S3_PREFIX", "uploads")
 S3_REGION = os.getenv("AWS_REGION", "us-east-2")
@@ -250,6 +250,9 @@ for recent context.
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
+- Output Files: Download links for all the output files that returned by the tools.
+ - [name](s3_presigned_url) for each metadata.
+ - s3_presigned_url shoule include everything after "?" such as "https://discovera.s3.us-east-2.amazonaws.com/outputs/2025-10-13/gsea_results_20251013_133933.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251013%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251013T174019Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f624171c86b8866059c76b1543aa3fbe473767da4849e5358f4e349afeacbce5"
 """
 
 
@@ -525,6 +528,9 @@ def _load_mcp_tools(server_url: str):
             "discovera": {
                 "transport": "sse",
                 "url": _ensure_trailing_slash(server_url),
+                "session_kwargs": {
+                    "read_timeout_seconds": timedelta(seconds=MCP_TIMEOUT_MS // 1000)
+                },
             }
         }
     )
@@ -717,18 +723,51 @@ def stream_langgraph(prompt: str):
                             ):
                                 is_error = True
 
-                        content_to_show = (
-                            tool_text
-                            if is_error or len(tool_text) <= 1000
-                            else (tool_text[:1000] + "…")
-                        )
+                        # Pretty-print JSON-like tool outputs fully (no truncation)
+                        parsed_json = None
+                        if not is_error:
+                            try:
+                                if isinstance(msg.content, (dict, list)):
+                                    parsed_json = msg.content
+                                else:
+                                    text_stripped = tool_text.strip()
+                                    if text_stripped.startswith(
+                                        "{"
+                                    ) or text_stripped.startswith("["):
+                                        parsed_json = json.loads(text_stripped)
+                            except Exception:
+                                parsed_json = None
+
+                        content_to_show = None
+                        if parsed_json is not None:
+                            try:
+                                pretty_json = json.dumps(
+                                    parsed_json, indent=2, ensure_ascii=False
+                                )
+                                content_to_show = pretty_json
+                            except Exception:
+                                content_to_show = None
+
+                        if content_to_show is None:
+                            # Fallback to original behavior with clipping for non-JSON or errors
+                            content_to_show = (
+                                tool_text
+                                if is_error or len(tool_text) <= 1000
+                                else (tool_text[:1000] + "…")
+                            )
                         title_prefix = (
                             f"{tool_name} error" if is_error else f"{tool_name} result"
                         )
-                        yield (
-                            "tool",
-                            f"{title_prefix}:\n```\n{content_to_show}\n```",
-                        )
+                        if parsed_json is not None and not is_error:
+                            yield (
+                                "tool",
+                                f"{title_prefix}:\n```json\n{content_to_show}\n```",
+                            )
+                        else:
+                            yield (
+                                "tool",
+                                f"{title_prefix}:\n```\n{content_to_show}\n```",
+                            )
         # Signal completion
         yield ("done", None)
     except Exception as e:
