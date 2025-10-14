@@ -163,9 +163,6 @@ Be concise, results-style (e.g., “led to”, “resulted in”), and evidence-
 Include inline PMIDs and a references list. Elevate cross-modality/contrast overlaps;
 mark single‑modality signals as secondary.
 
-Web search: If the question is unrelated to provided data, you may use `duckduckgo_search`
-for recent context.
-
 # PIPELINED CALLS (one tool per turn; skip unnecessary steps)
 
 0) Intake
