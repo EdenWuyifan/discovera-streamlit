@@ -4,7 +4,7 @@ import json
 import os
 import queue
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
 import boto3
@@ -28,12 +28,12 @@ load_dotenv()
 
 # --- Config ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "o4-mini")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
 )
-MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "30000"))
+MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "300000"))
 S3_BUCKET = os.getenv("UPLOADS_S3_BUCKET")
 S3_PREFIX = os.getenv("UPLOADS_S3_PREFIX", "uploads")
 S3_REGION = os.getenv("AWS_REGION", "us-east-2")
@@ -201,13 +201,13 @@ for recent context.
    - If critical biology is suspected but absent at FDR ≤ 0.05, consider exploratory runs at 0.10 and
      confirm/report at 0.05. Also try ORA on up‑regulated leading‑edge or top‑N genes.
 
-4) Leading edge and mechanism
+4) Leading edge and mechanism (encouraged)
 - From enriched terms (up and down), extract leading genes.
 - Call `gene_info`, `query_genes`, or `sets_info_rumm` to add mechanistic context.
 - Optional cross-check with external enrichment: call `enrich_rumma` on leading-edge gene lists to validate themes.
  - Seed `query_genes` with salient leading-edge genes and use `count_edges` to summarize by nodes/type.
 
-5) Literature and prioritization
+5) Literature and prioritization (encouraged)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
 - Use `literature_trends` for time context.
 - **Use `prioritize_genes` to rank candidate genes within a disease/phenotype context (grounded in PubMed).**
@@ -462,6 +462,35 @@ with st.sidebar.expander("Context", expanded=True):
             for rec in new_records:
                 st.markdown(f"- `{rec['name']}` → [download link]({rec['url']})")
 
+# Initialize output files tracker (for tool-returned metadata with s3_presigned_url)
+if "output_files" not in st.session_state:
+    st.session_state["output_files"] = (
+        []
+    )  # list of {name, url, size_bytes, created_at, category, origin_tool}
+if "output_file_urls" not in st.session_state:
+    st.session_state["output_file_urls"] = set()
+
+# Create a placeholder so we can live-update Outputs during streaming
+outputs_placeholder = st.sidebar.empty()
+
+
+def render_outputs():
+    with outputs_placeholder.container():
+        with st.expander("Outputs", expanded=True):
+            _outputs = st.session_state.get("output_files") or []
+            if _outputs:
+                for _rec in _outputs:
+                    _name = _rec.get("name") or _rec.get("s3_key") or "download"
+                    _url = _rec.get("url") or _rec.get("s3_presigned_url") or ""
+                    if _url:
+                        st.markdown(f"- [{_name}]({_url})")
+            else:
+                st.caption("No outputs yet.")
+
+
+# Initial render
+render_outputs()
+
 st.divider()
 
 # --- Chat state ---
@@ -525,6 +554,9 @@ def _load_mcp_tools(server_url: str):
             "discovera": {
                 "transport": "sse",
                 "url": _ensure_trailing_slash(server_url),
+                "session_kwargs": {
+                    "read_timeout_seconds": timedelta(seconds=MCP_TIMEOUT_MS // 1000)
+                },
             }
         }
     )
@@ -575,6 +607,31 @@ def _human_message(prompt: str) -> HumanMessage:
 # def duckduckgo_search(query: str) -> str:
 #     """Search DuckDuckGo for recent results."""
 #     return duckduckgo.run(query)
+
+
+def _collect_outputs(obj):
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k.endswith("_metadata") and isinstance(v, dict):
+                url = v.get("s3_presigned_url")
+                if url:
+                    seen = st.session_state.get("output_file_urls") or set()
+                    if url not in seen:
+                        rec = {
+                            "name": v.get("name") or v.get("s3_key") or "download",
+                            "url": url,
+                            "size_bytes": v.get("size_bytes"),
+                            "created_at": v.get("created_at"),
+                            "category": v.get("category"),
+                            "origin_tool": v.get("origin_tool"),
+                            "s3_key": v.get("s3_key"),
+                        }
+                        out_list = st.session_state.get("output_files") or []
+                        out_list.append(rec)
+                        st.session_state["output_files"] = out_list
+                        seen.add(url)
+                        st.session_state["output_file_urls"] = seen
+                        render_outputs()
 
 
 def stream_langgraph(prompt: str):
@@ -718,18 +775,52 @@ def stream_langgraph(prompt: str):
                             ):
                                 is_error = True
 
-                        content_to_show = (
-                            tool_text
-                            if is_error or len(tool_text) <= 1000
-                            else (tool_text[:1000] + "…")
-                        )
+                        # Pretty-print JSON-like tool outputs fully (no truncation)
+                        parsed_json = None
+                        if not is_error:
+                            try:
+                                if isinstance(msg.content, (dict, list)):
+                                    parsed_json = msg.content
+                                else:
+                                    text_stripped = tool_text.strip()
+                                    if text_stripped.startswith(
+                                        "{"
+                                    ) or text_stripped.startswith("["):
+                                        parsed_json = json.loads(text_stripped)
+                            except Exception:
+                                parsed_json = None
+
+                        content_to_show = None
+                        if parsed_json is not None:
+                            _collect_outputs(parsed_json)
+                            try:
+                                pretty_json = json.dumps(
+                                    parsed_json, indent=2, ensure_ascii=False
+                                )
+                                content_to_show = pretty_json
+                            except Exception:
+                                content_to_show = None
+
+                        if content_to_show is None:
+                            # Fallback to original behavior with clipping for non-JSON or errors
+                            content_to_show = (
+                                tool_text
+                                if is_error or len(tool_text) <= 1000
+                                else (tool_text[:1000] + "…")
+                            )
                         title_prefix = (
                             f"{tool_name} error" if is_error else f"{tool_name} result"
                         )
-                        yield (
-                            "tool",
-                            f"{title_prefix}:\n```\n{content_to_show}\n```",
-                        )
+                        if parsed_json is not None and not is_error:
+                            yield (
+                                "tool",
+                                f"{title_prefix}:\n```json\n{content_to_show}\n```",
+                            )
+                        else:
+                            yield (
+                                "tool",
+                                f"{title_prefix}:\n```\n{content_to_show}\n```",
+                            )
         # Signal completion
         yield ("done", None)
     except Exception as e:
