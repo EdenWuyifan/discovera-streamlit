@@ -465,6 +465,35 @@ with st.sidebar.expander("Context", expanded=True):
             for rec in new_records:
                 st.markdown(f"- `{rec['name']}` → [download link]({rec['url']})")
 
+# Initialize output files tracker (for tool-returned metadata with s3_presigned_url)
+if "output_files" not in st.session_state:
+    st.session_state["output_files"] = (
+        []
+    )  # list of {name, url, size_bytes, created_at, category, origin_tool}
+if "output_file_urls" not in st.session_state:
+    st.session_state["output_file_urls"] = set()
+
+# Create a placeholder so we can live-update Outputs during streaming
+outputs_placeholder = st.sidebar.empty()
+
+
+def render_outputs():
+    with outputs_placeholder.container():
+        with st.expander("Outputs", expanded=True):
+            _outputs = st.session_state.get("output_files") or []
+            if _outputs:
+                for _rec in _outputs:
+                    _name = _rec.get("name") or _rec.get("s3_key") or "download"
+                    _url = _rec.get("url") or _rec.get("s3_presigned_url") or ""
+                    if _url:
+                        st.markdown(f"- [{_name}]({_url})")
+            else:
+                st.caption("No outputs yet.")
+
+
+# Initial render
+render_outputs()
+
 st.divider()
 
 # --- Chat state ---
@@ -581,6 +610,31 @@ def _human_message(prompt: str) -> HumanMessage:
 def duckduckgo_search(query: str) -> str:
     """Search DuckDuckGo for recent results."""
     return duckduckgo.run(query)
+
+
+def _collect_outputs(obj):
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k.endswith("_metadata") and isinstance(v, dict):
+                url = v.get("s3_presigned_url")
+                if url:
+                    seen = st.session_state.get("output_file_urls") or set()
+                    if url not in seen:
+                        rec = {
+                            "name": v.get("name") or v.get("s3_key") or "download",
+                            "url": url,
+                            "size_bytes": v.get("size_bytes"),
+                            "created_at": v.get("created_at"),
+                            "category": v.get("category"),
+                            "origin_tool": v.get("origin_tool"),
+                            "s3_key": v.get("s3_key"),
+                        }
+                        out_list = st.session_state.get("output_files") or []
+                        out_list.append(rec)
+                        st.session_state["output_files"] = out_list
+                        seen.add(url)
+                        st.session_state["output_file_urls"] = seen
+                        render_outputs()
 
 
 def stream_langgraph(prompt: str):
@@ -740,6 +794,7 @@ def stream_langgraph(prompt: str):
 
                         content_to_show = None
                         if parsed_json is not None:
+                            _collect_outputs(parsed_json)
                             try:
                                 pretty_json = json.dumps(
                                     parsed_json, indent=2, ensure_ascii=False
