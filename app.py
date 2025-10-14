@@ -201,13 +201,13 @@ for recent context.
    - If critical biology is suspected but absent at FDR ≤ 0.05, consider exploratory runs at 0.10 and
      confirm/report at 0.05. Also try ORA on up‑regulated leading‑edge or top‑N genes.
 
-4) Leading edge and mechanism
+4) Leading edge and mechanism (encouraged)
 - From enriched terms (up and down), extract leading genes.
 - Call `gene_info`, `query_genes`, or `sets_info_rumm` to add mechanistic context.
 - Optional cross-check with external enrichment: call `enrich_rumma` on leading-edge gene lists to validate themes.
  - Seed `query_genes` with salient leading-edge genes and use `count_edges` to summarize by nodes/type.
 
-5) Literature and prioritization
+5) Literature and prioritization (encouraged)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
 - Use `literature_trends` for time context.
 - **Use `prioritize_genes` to rank candidate genes within a disease/phenotype context (grounded in PubMed).**
@@ -250,9 +250,6 @@ for recent context.
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- Output Files: Download links for all the output files that returned by the tools.
- - [name](s3_presigned_url) for each metadata.
- - s3_presigned_url shoule include everything after "?" such as "https://discovera.s3.us-east-2.amazonaws.com/outputs/2025-10-13/gsea_results_20251013_133933.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251013%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251013T174019Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f624171c86b8866059c76b1543aa3fbe473767da4849e5358f4e349afeacbce5"
 """
 
 
