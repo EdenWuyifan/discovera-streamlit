@@ -13,9 +13,11 @@ import streamlit as st
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
+
 # from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
+
 # from langchain_core.tools import tool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
@@ -33,7 +35,7 @@ MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
 )
-MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "300000"))
+MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "3000000"))
 S3_BUCKET = os.getenv("UPLOADS_S3_BUCKET")
 S3_PREFIX = os.getenv("UPLOADS_S3_PREFIX", "uploads")
 S3_REGION = os.getenv("AWS_REGION", "us-east-2")
@@ -163,17 +165,45 @@ Be concise, results-style (e.g., “led to”, “resulted in”), and evidence-
 Include inline PMIDs and a references list. Elevate cross-modality/contrast overlaps;
 mark single‑modality signals as secondary.
 
+TRUST AND EVIDENCE RULES (STRICT)
+- Do not infer or invent sample sizes, replicates, fold-changes, p-values, effect sizes, or metadata.
+  Only state numbers explicitly present in the user context or tool outputs. If unknown, say “not specified”.
+- In the Introduction/Context, restate only facts present in the provided context or file metadata.
+  Do not add assumptions (e.g., number of replicates) if they are not given.
+
+GRANULARITY ROUTING
+- If the user asks a gene/pathway‑specific question: closely inspect enrichment result CSVs and tables; search
+  for the query’s keywords; and perform deep follow‑up using Steps 4–5 to add mechanism and literature.
+- If the user asks a broad/open question: emphasize global patterns (pathway ratios, dominant modules, cross‑contrast
+  overlaps) and avoid over‑specific claims not supported by the inputs.
+
+VERIFICATION GATE (BEFORE FINAL OUTPUT)
+- Self‑check all numeric/specific claims. For each, identify its source (context text, CSV column, or tool step).
+  Remove or rephrase any claim lacking a clear source to “not specified”.
+
+IMPORTANT GUARDRAIL
+- Only output references that are directly obtained via Step 4 (Leading edge and mechanism)
+  or Step 5 (Literature and prioritization) tool calls.
+- If no such references exist, output no references. Never fabricate or carry over citations
+  from other steps.
+
 # PIPELINED CALLS (one tool per turn; skip unnecessary steps)
 
-0) Intake
+0) Keyword extraction (guides downstream filtering)
+- Derive a compact list of salient, domain-relevant keywords from the Context and User Prompt.
+  Focus on: gene/protein symbols, post‑translational modifications, disease/phenotype terms, tissues/compartments, pathway/module names,
+  and treatment/mutation terms.
+- Keep this list short (≈3–5 items) and use it to guide enrichment interpretation and filtering.
+
+1) Intake
 - If a CSV/URL is provided: call `csv_record` (copy URLs exactly) → file_id.
 - Prefer raw counts over normalized matrices or precomputed DE. Treat filenames like
   `raw_counts`/`counts` or matrices with many sample-like columns as raw counts.
 
-1) Inspect
+2) Inspect
 - `csv_read(file_id, n_rows)` to preview structure.
 
-2) Shape (required before enrichment)
+3) Shape (required before enrichment)
 - `csv_select` to keep the gene column plus statistics; rename if needed (avoid renaming
   the gene column to "symbol").
 - `csv_filter` to apply cutoffs (e.g., padj/log2FC).
@@ -183,7 +213,7 @@ mark single‑modality signals as secondary.
    - Ensure identifiers resolve to gene symbols (map non-symbol IDs; strip common suffixes).
    - Collapse multiple protein rows per gene into one gene-level value before enrichment.
 
-3) Enrichment (choose first applicable; fall back if empty/missing)
+4) Enrichment (choose first applicable; fall back if empty/missing)
 - If raw counts exist: `run_deseq2_gsea_pipe(raw_counts_csv_id, sample_groups, gene_column,
   gene_sets, threshold)`. Build `sample_groups` from metadata when present; otherwise infer from
   column prefixes.
@@ -198,13 +228,24 @@ mark single‑modality signals as secondary.
    - If critical biology is suspected but absent at FDR ≤ 0.05, consider exploratory runs at 0.10 and
      confirm/report at 0.05. Also try ORA on up‑regulated leading‑edge or top‑N genes.
 
-4) Leading edge and mechanism (encouraged)
+3b) Keyword‑guided filtering of enrichment outputs (REQUIRED)
+- From the main GSEA/ORA results CSV produced in Step 3, create a focused subset using the keywords
+  from Step 0. Apply case‑insensitive `contains` filters on common term/name columns
+  (e.g., term, name, pathway, description). Support optional negative filters when the prompt implies
+  exclusions (not_contains).
+- When multiple columns exist, OR-match across columns for inclusion and AND-apply any negatives.
+- If the focused subset is empty, relax to stem/synonym variants; if still empty, clearly state
+  “no keyword‑matching terms observed at the chosen threshold”.
+- Use `csv_filter`, `csv_select`, and related CSV tools to implement filtering reproducibly on the
+  returned artifact (prefer tool‑based filtering over ad‑hoc parsing).
+
+4) Leading edge and mechanism (REQUIRED)
 - From enriched terms (up and down), extract leading genes.
 - Call `gene_info`, `query_genes`, or `sets_info_rumm` to add mechanistic context.
 - Optional cross-check with external enrichment: call `enrich_rumma` on leading-edge gene lists to validate themes.
  - Seed `query_genes` with salient leading-edge genes and use `count_edges` to summarize by nodes/type.
 
-5) Literature and prioritization (encouraged)
+5) Literature and prioritization (REQUIRED)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
 - Use `literature_trends` for time context.
 - **Use `prioritize_genes` to rank candidate genes within a disease/phenotype context (grounded in PubMed).**
@@ -213,7 +254,8 @@ mark single‑modality signals as secondary.
 
 # REQUIRED OUTPUT
 - Introduction/Context: mutation/treatment; tissue/cell line; assay(s)/contrast; dataset/paper
-  reference. Briefly summarize definitive signals in the input.
+  reference. Briefly summarize definitive signals in the input. For any detail not present, state “not specified”.
+- Keywords: list of keywords extracted from the Context and User Prompt.
 - Pathway Enrichments:
   - Report up/down ratios per library using `counts_by_database` (e.g., 62% up, 38% down, ratio 1.63).
   - Show a **COMPLETE** table for every top UP/DOWN enriched term for each library, using the following format:
@@ -239,14 +281,22 @@ mark single‑modality signals as secondary.
 
     ...
   - Provide a balanced 4–8 sentence analysis grounded in the ratios and tables.
+- Targeted (keyword‑guided) subset: clearly show and discuss the filtered enrichment terms that
+  match the extracted keywords. Note absence explicitly when none pass FDR.
 - Key Genes/Proteins (leading edge): two compact tables (Up and Down):
   | Gene | Direction | Role/Function | Pathway(s) |
   |-------|-----------|---------------|------------|
+  Construction rules (STRICT):
+  - COMBINE with user context/query: highlight genes/pathways explicitly mentioned by the user;
+    if a user-mentioned item is absent in Step 4 outputs, state “not observed” with rationale.
+  - Do not list genes lacking support from Step 4/5 outputs.
 - Comparisons: overlaps vs tissue‑specific; flag discordant single‑modality findings as lower confidence.
 - Implications: relevance for therapy, resistance, or progression.
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
+- References (only if validated in Steps 4–5): include only PMIDs returned by those steps; omit
+  the References section entirely if none are validated.
 """
 
 
@@ -261,6 +311,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 # CRITICAL GUARDRAILS
 - Use exactly one tool per assistant turn.
 - If input URLs are provided, call csv_record and copy the URL exactly as given.
+
 """
 
 
