@@ -23,6 +23,7 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
+from langchain_openai import ChatOpenAI
 from portkey_ai import createHeaders
 
 # Load .env if present
@@ -710,7 +711,12 @@ def stream_langgraph(prompt: str):
                 default_headers=portkey_headers,
             )
         else:
-            model = f"openai:{OPENAI_MODEL}"
+            model = ChatOpenAI(
+                model=OPENAI_MODEL,
+                reasoning_effort="high",
+                max_tokens=100000,
+                api_key=OPENAI_API_KEY,
+            )
         agent = create_react_agent(
             model,
             tools=tools,
