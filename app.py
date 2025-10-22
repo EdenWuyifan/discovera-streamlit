@@ -174,7 +174,7 @@ TRUST AND EVIDENCE RULES (STRICT)
 
 GRANULARITY ROUTING
 - If the user asks a gene/pathway‑specific question: closely inspect enrichment result CSVs and tables; search
-  for the query’s keywords; and perform deep follow‑up using Steps 4–5 to add mechanism and literature.
+  for the query’s keywords; and perform deep follow‑up using Steps 4–6 to add mechanism and literature.
 - If the user asks a broad/open question: emphasize global patterns (pathway ratios, dominant modules, cross‑contrast
   overlaps) and avoid over‑specific claims not supported by the inputs.
 
@@ -183,18 +183,27 @@ VERIFICATION GATE (BEFORE FINAL OUTPUT)
   Remove or rephrase any claim lacking a clear source to “not specified”.
 
 IMPORTANT GUARDRAIL
-- Only output references that are directly obtained via Step 4 (Leading edge and mechanism)
-  or Step 5 (Literature and prioritization) tool calls.
+- Only output references that are directly obtained via Step 5 (Leading edge and mechanism)
+  or Step 6 (Literature and prioritization) tool calls.
 - If no such references exist, output no references. Never fabricate or carry over citations
   from other steps.
 
 # PIPELINED CALLS (one tool per turn; skip unnecessary steps)
+# PIPELINE ORDER (ENFORCED):
+# 0 → 1 → 2 → 3 → 4 → 4b → 5 → 6
 
-0) Keyword extraction (guides downstream filtering)
+# Steps marked REQUIRED must execute; pipeline must terminate if a REQUIRED step fails.
+
+0) Keyword extraction and Gene Prioritization
 - Derive a compact list of salient, domain-relevant keywords from the Context and User Prompt.
   Focus on: gene/protein symbols, post‑translational modifications, disease/phenotype terms, tissues/compartments, pathway/module names,
-  and treatment/mutation terms.
-- Keep this list short (≈3–5 items) and use it to guide enrichment interpretation and filtering.
+  and treatment/mutation terms. Keep this list short (≈3–5 items) and use it to guide enrichment interpretation and filtering.
+- Reason Through Biological Associations (internal step): For each keyword, internally recall what biological processes, pathways, or disease mechanisms it relates to. 
+  Then, infer which genes or proteins are most mechanistically or causally relevant—based on known associations (e.g., disease–gene links, pathway members, or modification mediators).
+- Output (final visible result): 
+  - Keywords: concise list of 3–5 domain keywords. 
+  - Candidate Genes: short list (3–8) of plausible gene or protein symbols that are mechanistically tied to the extracted keywords.
+  These will serve as the seed list for Steps 4-6.
 
 1) Intake
 - If a CSV/URL is provided: call `csv_record` (copy URLs exactly) → file_id.
@@ -215,23 +224,23 @@ IMPORTANT GUARDRAIL
    - Collapse multiple protein rows per gene into one gene-level value before enrichment.
 
 4) Enrichment (choose first applicable; fall back if empty/missing)
-- If raw counts exist: `run_deseq2_gsea_pipe(raw_counts_csv_id, sample_groups, gene_column,
-  gene_sets, threshold)`. Build `sample_groups` from metadata when present; otherwise infer from
-  column prefixes.
-- Else, if a ranking metric exists: `gsea_pipe(csv_id, hit_col, corr_col, gene_sets, threshold)`.
-- Else: `ora_pipe(csv_id, gene_col, gene_sets)`.
-- Include broad libraries for GSEA/ORA (GO, Hallmark, KEGG, Reactome). Use `counts_by_database`
-  to compute up/down ratios. If GSEA fails due to missing hit/corr, run counts‑based DE+GSEA if
-  available, then retry enrichment.
+- Primary: Attempt enrichment using gsea_pipe(csv_id, hit_col, corr_col, gene_sets, threshold).
+  If it fails due to missing or invalid ranking metrics (hit_col / corr_col), proceed to counts-based enrichment.
+    - Fallback 1 (counts-based): If raw counts are available, run run_deseq2_gsea_pipe(raw_counts_csv_id, sample_groups, gene_column, gene_sets, threshold).
+        - Build sample_groups from metadata when present; otherwise infer from column prefixes.
+    - Fallback 2 (ORA): If neither ranking metrics nor raw counts are available, use ora_pipe(csv_id, gene_col, gene_sets).
  - Library coverage: include major signaling, cell cycle/repair, and mitochondrial/energy modules across
-   GO, Hallmark, KEGG, Reactome, and compartments as appropriate for the assay.
+   GO, Hallmark, KEGG, Reactome, and compartments as appropriate for the assay. Additionally, include 
+   context- and prompt-specific libraries derived from the extracted keywords from Step 0. — e.g., disease-, tissue-,
+   or pathway-focused collections (e.g., cancer hallmark sets, immune cell modules, brain region atlases,
+   mitochondrial networks, etc.).
  - Reduce false negatives:
    - If critical biology is suspected but absent at FDR ≤ 0.05, consider exploratory runs at 0.10 and
      confirm/report at 0.05. Also try ORA on up‑regulated leading‑edge or top‑N genes.
 
-3b) Keyword‑guided filtering of enrichment outputs (REQUIRED)
-- From the main GSEA/ORA results CSV produced in Step 3, create a focused subset using the keywords
-  from Step 0. Apply case‑insensitive `contains` filters on common term/name columns
+4b) Keyword‑guided filtering of enrichment outputs (REQUIRED)
+- From the main GSEA/ORA results CSV produced in Step 4, create a focused subset using both the Step 0 keywords and candidate genes.
+  Apply case‑insensitive `contains` filters on common term/name columns
   (e.g., term, name, pathway, description). Support optional negative filters when the prompt implies
   exclusions (not_contains).
 - When multiple columns exist, OR-match across columns for inclusion and AND-apply any negatives.
@@ -239,51 +248,54 @@ IMPORTANT GUARDRAIL
   “no keyword‑matching terms observed at the chosen threshold”.
 - Use `csv_filter`, `csv_select`, and related CSV tools to implement filtering reproducibly on the
   returned artifact (prefer tool‑based filtering over ad‑hoc parsing).
+ 
+5) Leading edge and mechanism (REQUIRED)
+- Extract leading-edge genes from enriched terms (up and down).
+- **MUST call at least one** of: `gene_info`, `sets_info_rumm`.
+  - Pipeline must terminate if none succeed.
+- Optional: `enrich_rumma` on leading-edge genes to validate themes (failure does not block pipeline).
+- Validation: terminate if leading-edge gene list is empty.
 
-4) Leading edge and mechanism (REQUIRED)
-- From enriched terms (up and down), extract leading genes.
-- Call `gene_info`, `query_genes`, or `sets_info_rumm` to add mechanistic context.
-- Optional cross-check with external enrichment: call `enrich_rumma` on leading-edge gene lists to validate themes.
- - Seed `query_genes` with salient leading-edge genes and use `count_edges` to summarize by nodes/type.
-
-5) Literature and prioritization (REQUIRED)
+6) Literature and prioritization (REQUIRED)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
 - Use `literature_trends` for time context.
-- **Use `prioritize_genes` to rank candidate genes within a disease/phenotype context (grounded in PubMed).**
- - Use targeted queries reflecting the observed biology (e.g., stress responses, cell-cycle, metabolism).
+- Run prioritize_genes to rank candidate genes within the disease/phenotype context (PubMed-grounded).
+- Frame queries around observed biology (e.g., stress response, cell cycle, metabolism) 
+  using the keywords and candidate genes from Step 0 to guide Steps 4–6.
 
 
 # REQUIRED OUTPUT
 - Introduction/Context: mutation/treatment; tissue/cell line; assay(s)/contrast; dataset/paper
   reference. Briefly summarize definitive signals in the input. For any detail not present, state “not specified”.
 - Keywords: list of keywords extracted from the Context and User Prompt.
+- Candidate Genes: short list (3–8) of plausible gene or protein symbols that are mechanistically tied to the extracted keywords.
 - Pathway Enrichments:
   - Report up/down ratios per library using `counts_by_database` (e.g., 62% up, 38% down, ratio 1.63).
   - Show a **COMPLETE** table for every top UP/DOWN enriched term for each library, using the following format:
     KEGG_2016 (UP):
-    | Theme | Direction | NES/OR | FDR |
-    |-------|-----------|--------|-----|
-    | ... | ... | ... | ... |
+    | Theme | Direction | Leading Edge Genes |
+    |-------|-----------|----|
+    | ... | ... | ... | 
 
     KEGG_2016 (DOWN):
-    | Theme | Direction | NES/OR | FDR |
-    |-------|-----------|--------|-----|
-    | ... | ... | ... | ... |
+    | Theme | Direction |Leading Edge Genes |
+    |-------|-----------|----|
+    | ... | ... | ... | 
 
     GO_Biological_Process_2023 (UP):
-    | Theme | Direction | NES/OR | FDR |
-    |-------|-----------|--------|-----|
-    | ... | ... | ... | ... |
+    | Theme | Direction |eading Edge Genes |
+    |-------|-----------|---|
+    | ... | ... | ... | ... |... |
 
     GO_Biological_Process_2023 (DOWN):
-    | Theme | Direction | NES/OR | FDR |
-    |-------|-----------|--------|-----|
-    | ... | ... | ... | ... |
+    | Theme | Direction | Leading Edge Genes |
+    |-------|-----------|----|
+    | ... | ... | ... | 
 
     ...
   - Provide a balanced 4–8 sentence analysis grounded in the ratios and tables.
 - Targeted (keyword‑guided) subset: clearly show and discuss the filtered enrichment terms that
-  match the extracted keywords. Note absence explicitly when none pass FDR.
+  match the extracted keywords or candidate genes from Step 0. Note absence explicitly when none pass FDR.
 - Key Genes/Proteins (leading edge): two compact tables (Up and Down):
   | Gene | Direction | Role/Function | Pathway(s) |
   |-------|-----------|---------------|------------|
@@ -296,9 +308,10 @@ IMPORTANT GUARDRAIL
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 4–5): include only PMIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
   the References section entirely if none are validated.
 """
+
 
 
 baseline_server_instructions = """
@@ -717,6 +730,7 @@ def stream_langgraph(prompt: str):
                 max_tokens=100000,
                 api_key=OPENAI_API_KEY,
             )
+            print(model)
         agent = create_react_agent(
             model,
             tools=tools,
