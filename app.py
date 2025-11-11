@@ -23,7 +23,6 @@ from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
-from langchain_openai import ChatOpenAI
 from portkey_ai import createHeaders
 
 # Load .env if present
@@ -71,6 +70,54 @@ st.markdown(
 st.title("Discovera Chat 🧬")
 
 # --- Mode selection & reinit ---
+
+
+def _ensure_trailing_slash_local(url: str) -> str:
+    return url if url.endswith("/") else url + "/"
+
+
+def _load_mcp_tools_for_ui(server_url: str):
+    client = MultiServerMCPClient(
+        {
+            "discovera": {
+                "transport": "sse",
+                "url": _ensure_trailing_slash_local(server_url),
+                "session_kwargs": {
+                    "read_timeout_seconds": timedelta(seconds=MCP_TIMEOUT_MS // 1000)
+                },
+            }
+        }
+    )
+    return asyncio.run(client.get_tools())
+
+
+def _serialize_tools(tools: List[Any]) -> List[Dict[str, Any]]:
+    infos: List[Dict[str, Any]] = []
+    for t in tools or []:
+        name = getattr(t, "name", None) or "tool"
+        description = getattr(t, "description", None) or ""
+        schema_json: str | None = None
+        try:
+            args_schema = getattr(t, "args_schema", None)
+            if args_schema is not None:
+                schema_json = args_schema.schema_json(indent=2)
+        except Exception:
+            schema_json = None
+        if schema_json is None:
+            try:
+                args_obj = getattr(t, "args", None)
+                if args_obj is not None:
+                    schema_json = json.dumps(args_obj, indent=2, default=str)
+            except Exception:
+                schema_json = None
+        infos.append(
+            {
+                "name": name,
+                "description": description,
+                "schema_json": schema_json,
+            }
+        )
+    return infos
 
 
 def _default_addr_for_mode(mode: str) -> str:
@@ -150,6 +197,18 @@ with st.sidebar.expander("Connection", expanded=True):
                 # Show first few notes to avoid long toasts
                 detail = " | ".join(notes)
                 st.toast(f"MCP check {status_msg}. {detail}")
+                # On successful connection, try to load and cache tools for display
+                if ok:
+                    try:
+                        tools_loaded = _load_mcp_tools_for_ui(addr)
+                        st.session_state["mcp_tool_infos"] = _serialize_tools(
+                            tools_loaded
+                        )
+                        st.toast(
+                            f"Loaded {len(st.session_state['mcp_tool_infos'])} tools"
+                        )
+                    except Exception as tool_exc:
+                        st.toast(f"Tool load failed: {tool_exc}")
             except Exception as e:
                 st.session_state["mcp_connected"] = False
                 st.toast(f"MCP check failed: {e}")
@@ -198,6 +257,11 @@ IMPORTANT GUARDRAIL
   - Keywords: concise list of 3–5 domain keywords. 
   - Candidate Genes: short list (3–8) of plausible gene or protein symbols that are mechanistically tied to the extracted keywords.
   These will serve as the seed list for Steps 4-6.
+0b) Keyword/key‑gene–driven dataset interrogation (REQUIRED)
+- Before enrichment, actively analyze the input dataset(s) using the Step 0 keywords and candidate genes:
+  case‑insensitive searches in gene/feature columns, quick per‑gene presence/absence
+  and direction summaries where available,
+  and focused subsetting of shaped tables. Use these findings to inform shaping thresholds and subsequent enrichment.
 
 1) Intake
 - If a CSV/URL is provided: call `csv_record` (copy URLs exactly) → file_id.
@@ -220,17 +284,20 @@ IMPORTANT GUARDRAIL
 4) Enrichment (choose first applicable; fall back if empty/missing)
 - Primary: Attempt enrichment using gsea_pipe(csv_id, hit_col, corr_col, gene_sets, threshold).
   If it fails due to missing or invalid ranking metrics (hit_col / corr_col), proceed to counts-based enrichment.
-    - Fallback 1 (counts-based): If raw counts are available, run run_deseq2_gsea_pipe(raw_counts_csv_id, sample_groups, gene_column, gene_sets, threshold).
+    - Fallback 1 (counts-based): If raw counts are available:
         - Build sample_groups from metadata when present; otherwise infer from column prefixes.
+        - Run `run_deseq2_gsea_pipe(raw_counts_csv_id, sample_groups, gene_column, gene_sets, p_value_threshold, fdr_threshold)`.
+        - Run `run_deseq2_ora_pipe(raw_counts_csv_id, sample_groups, gene_column, gene_sets, fdr_threshold)`.
     - Fallback 2 (ORA): If neither ranking metrics nor raw counts are available, use ora_pipe(csv_id, gene_col, gene_sets).
- - Library coverage: include major signaling, cell cycle/repair, and mitochondrial/energy modules across
-   GO, Hallmark, KEGG, Reactome, and compartments as appropriate for the assay. Additionally, include 
-   context- and prompt-specific libraries derived from the extracted keywords from Step 0. — e.g., disease-, tissue-,
-   or pathway-focused collections (e.g., cancer hallmark sets, immune cell modules, brain region atlases,
-   mitochondrial networks, etc.).
- - Reduce false negatives:
-   - If critical biology is suspected but absent at FDR ≤ 0.05, consider exploratory runs at 1.0 and
-     confirm/report at 0.05.
+- **RUN BOTH WHEN AVAILABLE (RECOMMENDED)**
+  - If a ranking metric exists AND a significant gene list can be defined (by FDR/p-value or top-N),
+    run both methods: GSEA (directional, ranking-based) and ORA (counts-based) in separate turns.
+  - For ORA, build an all-significant, direction-agnostic list to mirror author-style pathway mentions;
+    optionally also test Up-only and Down-only lists when informative.
+  - Synthesize findings across methods and label results by method.
+  - The tool response shows only a preview by default: for GSEA, top 5 UP and top 5 DOWN per
+    library; for ORA, the top ~20 pathways. These previews are not exhaustive.
+  - **ALWAYS operate on the saved full results CSV returned by Step 4b**.
 
 4b) Keyword‑guided filtering of enrichment outputs (REQUIRED)
 - From the main GSEA/ORA results CSV produced in Step 4, create a focused subset using both the Step 0 keywords and candidate genes.
@@ -240,6 +307,10 @@ IMPORTANT GUARDRAIL
 - When multiple columns exist, OR-match across columns for inclusion and AND-apply any negatives.
 - If the focused subset is empty, relax to stem/synonym variants; if still empty, clearly state
   “no keyword‑matching terms observed at the chosen threshold”.
+- If the focused subset is empty OR the full results do not cover key genes/patterns implied by
+  the user query and Step 0 keywords, RERUN enrichment with higher thresholds
+  (increase p_value_threshold and/or fdr_threshold) and repeat
+  the filtering on the new full results until the information is sufficient for the user query.
 - Use `csv_filter`, `csv_select`, and related CSV tools to implement filtering reproducibly on the
   returned artifact (prefer tool‑based filtering over ad‑hoc parsing).
  
@@ -289,7 +360,7 @@ IMPORTANT GUARDRAIL
     ...
   - Provide a balanced 4–8 sentence analysis grounded in the ratios and tables.
 - Targeted (keyword‑guided) subset: clearly show and discuss the filtered enrichment terms that
-  match the extracted keywords or candidate genes from Step 0. Note absence explicitly when none pass FDR.
+  match the extracted keywords or candidate genes from Step 0.
 - Key Genes/Proteins (leading edge): two compact tables (Up and Down):
   | Gene | Direction | Role/Function | Pathway(s) |
   |-------|-----------|---------------|------------|
@@ -310,16 +381,58 @@ IMPORTANT GUARDRAIL
 baseline_server_instructions = """
 You are an assistant MCP specializing in biomedical research, focusing on mutation effects, treatment responses,
 pathway enrichments, and mechanistic biology. Your final report must be written in the style of a **scientific
-Results section** — condensed, definitive, and directly grounded in the dataset and paper being analyzed.
+Results section** — condensed, definitive, and directly grounded in the dataset and prompt being analyzed.
 
 # RULES
 - Do NOT state or imply any analysis results (e.g., DE, GSEA/ORA, KEGG/GO/Reactome/Hallmark, NES/FDR/p-values, “up/downregulated”) unless those exact terms and numbers appear verbatim in the user input.
-- If an insight does not have factual basis in the user input, say so.
-- Raw counts or unlabeled tables are NOT evidence. If evidence is missing, say so.
 - If you quote any result, prefix it with “Provided by user:” and copy it exactly.
 
-# STYLE & GOALS
-- Voice: results-style, concise, causal, definitive (e.g., “led to”, “resulted in”, “confirmed”).
+# REQUIRED OUTPUT (ONLY INCLUDE THE SECTIONS THAT YOU HAVE ENOUGH INFORMATION TO FILL IN)
+- Introduction/Context: mutation/treatment; tissue/cell line; assay(s)/contrast; dataset/paper
+  reference. Briefly summarize definitive signals in the input. For any detail not present, state “not specified”.
+- Keywords: list of keywords extracted from the Context and User Prompt.
+- Candidate Genes: short list (3–8) of plausible gene or protein symbols that are mechanistically tied to the extracted keywords.
+- Pathway Enrichments:
+  - Report up/down ratios per library using `counts_by_database` (e.g., 62% up, 38% down, ratio 1.63).
+  - Show a **COMPLETE** table for every top UP/DOWN enriched term for each library, using the following format:
+    KEGG_2016 (UP):
+    | Theme | Direction | Leading Genes |
+    |-------|-----------|----|
+    | ... | ... | ... | 
+
+    KEGG_2016 (DOWN):
+    | Theme | Direction |Leading Genes |
+    |-------|-----------|----|
+    | ... | ... | ... | 
+
+    GO_Biological_Process_2023 (UP):
+    | Theme | Direction | Leading Genes |
+    |-------|-----------|---|
+    | ... | ... | ... | ... |... |
+
+    GO_Biological_Process_2023 (DOWN):
+    | Theme | Direction | Leading Genes |
+    |-------|-----------|----|
+    | ... | ... | ... | 
+
+    ...
+  - Provide a balanced 4–8 sentence analysis grounded in the ratios and tables.
+- Targeted (keyword‑guided) subset: clearly show and discuss the filtered enrichment terms that
+  match the extracted keywords or candidate genes from Step 0.
+- Key Genes/Proteins (leading edge): two compact tables (Up and Down):
+  | Gene | Direction | Role/Function | Pathway(s) |
+  |-------|-----------|---------------|------------|
+  Construction rules (STRICT):
+  - COMBINE with user context/query: highlight genes/pathways explicitly mentioned by the user;
+    if a user-mentioned item is absent in Step 4 outputs, state “not observed” with rationale.
+  - **Try to include all shared genes between the up and down enriched pathways.**
+- Comparisons: overlaps vs tissue‑specific; flag discordant single‑modality findings as lower confidence.
+- Implications: relevance for therapy, resistance, or progression.
+- Next Steps & Clarification: 2–4 concrete follow‑ups.
+ - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
+   the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
+- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
+  the References section entirely if none are validated.
 
 # CRITICAL GUARDRAILS
 - Use exactly one tool per assistant turn.
@@ -530,6 +643,10 @@ if "output_files" not in st.session_state:
     )  # list of {name, url, size_bytes, created_at, category, origin_tool}
 if "output_file_urls" not in st.session_state:
     st.session_state["output_file_urls"] = set()
+if "mcp_tool_infos" not in st.session_state:
+    st.session_state["mcp_tool_infos"] = []  # list of {name, description, schema_json}
+if "mcp_tool_filter" not in st.session_state:
+    st.session_state["mcp_tool_filter"] = ""
 
 # Create a placeholder so we can live-update Outputs during streaming
 outputs_placeholder = st.sidebar.empty()
@@ -551,6 +668,56 @@ def render_outputs():
 
 # Initial render
 render_outputs()
+
+with st.sidebar.expander("MCP Tools", expanded=True):
+    connected = bool(st.session_state.get("mcp_connected"))
+    addr_text = st.session_state.get("mcp_server") or _default_addr_for_mode(
+        st.session_state.get("mode", "Discovera")
+    )
+    cols = st.columns([3, 1])
+    with cols[0]:
+        st.caption(f"Server: {addr_text}")
+    with cols[1]:
+        if st.button("Refresh", use_container_width=True, key="btn_refresh_tools"):
+            try:
+                tools_loaded = _load_mcp_tools_for_ui(addr_text)
+                st.session_state["mcp_tool_infos"] = _serialize_tools(tools_loaded)
+                st.toast(f"Loaded {len(st.session_state['mcp_tool_infos'])} tools")
+            except Exception as tool_exc:
+                st.toast(f"Tool load failed: {tool_exc}")
+
+    if not connected:
+        st.caption("Not connected.")
+    else:
+        tool_infos = st.session_state.get("mcp_tool_infos") or []
+        filter_text = st.text_input(
+            "Filter tools",
+            key="mcp_tool_filter",
+            placeholder="Filter by name or description",
+        )
+        ft = (filter_text or "").strip().lower()
+        if ft:
+            filtered = [
+                info
+                for info in tool_infos
+                if ft in info.get("name", "").lower()
+                or ft in (info.get("description", "") or "").lower()
+            ]
+        else:
+            filtered = tool_infos
+        st.caption(f"Showing {len(filtered)} of {len(tool_infos)} tools")
+        if not filtered:
+            st.caption("No tools to display. Click Refresh to load tools.")
+        for info in filtered:
+            name = info.get("name") or "tool"
+            desc = info.get("description") or ""
+            schema_json = info.get("schema_json")
+            st.markdown(f"**{name}**")
+            if desc:
+                st.caption(desc)
+            if schema_json:
+                with st.expander("Input schema", expanded=False):
+                    st.code(schema_json, language="json")
 
 st.divider()
 
