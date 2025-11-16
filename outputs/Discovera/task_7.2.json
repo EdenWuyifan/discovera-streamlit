@@ -1,0 +1,917 @@
+{
+  "ID": "7.2",
+  "Context/Background": "Sonic hedgehog medulloblastoma (SHH-MB), characterized by hyperactivation of the namesake SHH signaling pathway, accounts for ∼30% of all MBs and occurs across all age groups. Cerebellar granule neuron progenitors (GNPs) are the developmental origin of SHH-MB. Germline loss-of-function (LOF) variants in Elongator acetyltransferase complex subunit 1 (ELP1) are the most prevalent predisposing genetic events in childhood medulloblastoma (MB), accounting for ∼30% of the Sonic hedgehog (SHH) 3 subtype. The mechanism(s) by which germline ELP1 deficiency provokes SHH-MB pathogenesis remain unknown. To resolve the mechanistic basis of ELP1-associated SHH-MB, we generated a germline Elp1+/− mouse model using CRISPR/Cas9 gene editing (designated as Elp1HET mice).\n\nTo evaluate the tumorigenic potential of germline Elp1 deficiency using an orthotopic transplantation model, GNPs were isolated from Cas9-GFP;Elp1HET and Cas9-GFP;Elp1WT littermates, transduced with gRNA-carrying lentivirus targeting the SHH-3 MB driver Ptch1, and implanted into the cerebella of immunocompromised mice.",
+  "Prompt": "Provide a cohesive explanation of positively and negatively enriched pathways based on differential genes of Elp1HET;Ptch1gRNA vs Elp1WT;Ptch1gRNA tumors.        ",
+  "status": "ok",
+  "error": null,
+  "output_text": "Introduction/Context  \nGermline heterozygous loss-of-function of Elp1 (Elp1HET) in cerebellar granule neuron progenitors (GNPs) was modeled via orthotopic transplantation of Ptch1-targeted (gRNA) GNPs (Elp1HET;Ptch1gRNA vs Elp1WT;Ptch1gRNA) into immunocompromised mouse cerebella. RNA-seq followed by preranked GSEA (Ahmad_2025_Cancer_Cell_TableS3) revealed coherent shifts in subcellular and process-level programs. Details such as sample size and replicate number are not specified.\n\nKeywords  \n• synaptic exocytosis  \n• vesicle-mediated transport  \n• ribosome biogenesis  \n• rRNA metabolic process  \n• DNA replication  \n\nCandidate Genes  \n• Snap25  \n• Rab3a  \n• Stx1a  \n• Exosc8  \n• Rpl27  \n• Ccne1  \n\nPathway Enrichments  \n(Up: positive NES; Down: negative NES; leading‐edge core genes abbreviated)\n\nGO_Biological_Process_2023 (UP)  \n| Theme                                    | Direction | Leading Genes                |  \n|------------------------------------------|-----------|------------------------------|  \n| synaptic vesicle exocytosis             | Up (NES 2.817) | Fbxo45, Stxbp5l, Snap25, Rims1, Syt9, Rab3a… |  \n| neurotransmitter secretion               | Up (NES 2.681) | Lin7c, Fbxo45, Slc17a8, Cacnb4, Snap91, Syt11… |  \n| vesicle-mediated transport in synapse    | Up (NES 2.637) | Fbxo45, Slc17a8, Rab11a, Doc2b, Snap25, Unc13a… |  \n| neurotransmitter transport               | Up (NES 2.634) | Lin7c, Fbxo45, Slc17a8, Rab3a, Snap25…       |  \n| protein localization to synapse          | Up (NES 2.438) | Lrrtm1, Zdhhc2, Rab11a, Snap25, Mapk10, Homer1… |  \n\nGO_Biological_Process_2023 (DOWN)  \n| Theme                                            | Direction  | Leading Genes                                  |  \n|--------------------------------------------------|------------|-----------------------------------------------|  \n| rRNA metabolic process                           | Down (NES –2.506) | Mak16, Rpp38, Exosc8, Rpl27, Ddx56, Bud23…    |  \n| ribosome biogenesis                              | Down (NES –2.385) | Rpl6, Ddx10, Rpsa, Exosc3, Bud23, Imp4…       |  \n| DNA replication                                  | Down (NES –2.324) | Ccne1, Brca2, Rpa2, Atr, Mcm7, Polg…          |  \n| ncRNA processing                                 | Down (NES –2.267) | Lcmt2, Trub1, Suv39h1, Ddx10, Exosc8, Snrnp70… |  \n| processing_of_capped_intron_containing_pre_mRNA | Down (NES –2.237) | Gpatch1, Cstf1, Wtap, Clp1, Hnrnpk, Sf3b5…    |  \n\nBalanced analysis  \nElp1 haploinsufficiency in SHH-MB shifts the transcriptional landscape from core biosynthetic and cell-cycle programs toward neuronal exocytotic modules. Vesicle-mediated transport and synaptic secretion pathways exhibit the highest positive enrichment (NES > 2.6), driven by leading‐edge genes such as Snap25 and Rab3a. In contrast, fundamental growth processes—rRNA metabolism, ribosome assembly, DNA replication and RNA processing—are markedly downregulated (NES < –2.2). This dichotomy suggests a coordinated reprogramming: enhanced synaptic‐like functions co‐occur with reduced proliferative/translation capacity in Elp1-deficient tumors.\n\nTargeted subset (keyword‐guided)  \n• “synapse” terms: All top GO_Biological_Process_2023 synaptic annotations (e.g., synaptic vesicle exocytosis, vesicle‐mediated transport in synapse) passed keyword filtering for “synap.”  \n• “riboso” terms: rRNA metabolic process and ribosome biogenesis were the only pathways matching “riboso” in the downregulated set.  \n\nKey Genes/Proteins (leading edge)  \n(Shared across multiple enriched pathways)\n\nUp  \n| Gene    | Direction | Role/Function                     | Pathway(s)                                |  \n|---------|-----------|-----------------------------------|-------------------------------------------|  \n| Snap25  | Up        | t-SNARE; vesicle fusion           | exocytic vesicle, synaptic vesicle exocytosis |  \n| Rab3a   | Up        | synaptic vesicle GTPase          | exocytic vesicle, synaptic vesicle membrane |  \n| Stx1a   | Up        | SNARE complex component           | presynaptic membrane, synaptic vesicle exocytosis |  \n\nDown  \n| Gene     | Direction | Role/Function                | Pathway(s)                    |  \n|----------|-----------|------------------------------|-------------------------------|  \n| Exosc8   | Down      | RNA exosome core subunit     | rRNA metabolic process, preribosome |  \n| Rpl27    | Down      | ribosomal protein            | ribosome biogenesis           |  \n| Ccne1    | Down      | Cyclin E                     | DNA replication               |  \n\nComparisons  \nSynaptic/exocytosis modules (high confidence) align with the neuronal origin of SHH-MB, whereas downregulation of ribosome and DNA replication pathways suggests a trade-off in translational and proliferative capacity. No major discordance was noted across subcellular (GO_CC) vs process (GO_BP) enrichments.\n\nImplications  \nEnhanced exocytic and synaptic functions in Elp1HET SHH-MB may reflect aberrant neuronal maturation or secretory adaptation, while suppressed ribosome biogenesis and cell-cycle progression could point to vulnerabilities in translation and replication machinery. Targeting synaptic vesicle release or boosting translation may modulate tumor behavior.\n\nNext Steps & Clarification  \n1. Validate Snap25 and Rab3a protein expression/localization in Elp1HET vs WT tumors by IHC and Western blot.  \n2. Test whether ribosome biogenesis inhibitors (e.g., CX-5461) selectively affect Elp1HET tumor viability.  \n3. Assess cell-cycle dynamics (e.g., EdU incorporation) to confirm reduced DNA replication in Elp1HET tumors.  \n4. Clarify whether stress-response pathways (e.g., unfolded protein response) are engaged secondary to translation downregulation.\n\nReferences  \nNone",
+  "tool_calls_json": [
+    {
+      "name": "csv_record",
+      "args": {
+        "name": "Ahmad_2025_Cancer_Cell_TableS3_Elp1HETvsWT_Ptch1gRNA_RNA_GSEA",
+        "csv_url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-16/Ahmad_2025_Cancer_Cell_TableS3xlsx-Elp1HETvsWTPtch1gRNA_RNA_GSEA.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T053734Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4e7ea1bccd345012a68b5560639990b93b0d9c58963d202006710536c60eec88",
+        "tags": [
+          "dataset",
+          "GSEA"
+        ]
+      }
+    },
+    {
+      "name": "csv_read",
+      "args": {
+        "id": "1763271514_ef152463",
+        "n_rows": 50
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "keep_columns": [
+          "ID",
+          "NES"
+        ],
+        "conditions": [
+          {
+            "column": "core_enrichment",
+            "op": "contains",
+            "value": "Snap25"
+          }
+        ],
+        "name": "snap25_presence"
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "keep_columns": [
+          "ID"
+        ],
+        "conditions": [
+          {
+            "column": "core_enrichment",
+            "op": "contains",
+            "value": "Exosc3"
+          }
+        ],
+        "name": "exosc3_presence"
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "keep_columns": [
+          "ID",
+          "NES"
+        ],
+        "conditions": [
+          {
+            "column": "core_enrichment",
+            "op": "contains",
+            "value": "Rab3a"
+          }
+        ],
+        "name": "rab3a_presence"
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "keep_columns": [
+          "ID"
+        ],
+        "conditions": [
+          {
+            "column": "core_enrichment",
+            "op": "contains",
+            "value": "Elp1"
+          }
+        ],
+        "name": "elp1_presence"
+      }
+    },
+    {
+      "name": "csv_select",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "columns": [
+          "ID",
+          "NES"
+        ],
+        "name": "GSEA_ID_NES"
+      }
+    },
+    {
+      "name": "gsea_pipe",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "hit_col": "ID",
+        "corr_col": "NES",
+        "p_value_threshold": 0.05,
+        "fdr_threshold": 0.05
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "keep_columns": [
+          "ID",
+          "NES",
+          "qvalue",
+          "leading_edge"
+        ],
+        "sort_by": [
+          "-NES"
+        ],
+        "name": "top_up"
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "conditions": [
+          {
+            "column": "ID",
+            "op": "startswith",
+            "value": "GOCC_"
+          },
+          {
+            "column": "NES",
+            "op": ">",
+            "value": 0
+          }
+        ],
+        "name": "gocc_positive"
+      }
+    },
+    {
+      "name": "ora_pipe",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "gene_col": "core_enrichment",
+        "p_value_threshold": 0.05
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763271514_ef152463",
+        "conditions": [
+          {
+            "column": "ID",
+            "op": "startswith",
+            "value": "GOCC_"
+          },
+          {
+            "column": "NES",
+            "op": ">",
+            "value": 0
+          }
+        ],
+        "keep_columns": [
+          "ID",
+          "NES",
+          "leading_edge",
+          "core_enrichment"
+        ],
+        "sort_by": [
+          "-NES"
+        ],
+        "name": "gocc_top5_up"
+      }
+    }
+  ],
+  "tool_events_json": [
+    {
+      "tool": "csv_record",
+      "payload": {
+        "id": "1763271514_ef152463",
+        "name": "Ahmad_2025_Cancer_Cell_TableS3_Elp1HETvsWT_Ptch1gRNA_RNA_GSEA.csv",
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Ahmad_2025_Cancer_Cell_TableS3_Elp1HETvsWT_Ptch1gRNA_RNA_GSEA.csv"
+      }
+    },
+    {
+      "tool": "csv_read",
+      "payload": {
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Ahmad_2025_Cancer_Cell_TableS3_Elp1HETvsWT_Ptch1gRNA_RNA_GSEA.csv",
+        "columns": [
+          "ID",
+          "setSize",
+          "enrichmentScore",
+          "NES",
+          "pvalue",
+          "p.adjust",
+          "qvalue",
+          "leading_edge",
+          "core_enrichment"
+        ],
+        "rows": [
+          {
+            "ID": "GOCC_EXOCYTIC_VESICLE",
+            "setSize": 268,
+            "enrichmentScore": 0.4617745546,
+            "NES": 2.659520211,
+            "pvalue": 4.88e-20,
+            "p.adjust": 1.23e-16,
+            "qvalue": 6.3e-17,
+            "leading_edge": "tags=57%, list=27%, signal=43%",
+            "core_enrichment": "Akap7/Slc17a8/Kcnc4/Rab40b/Clcn3/Otof/Septin4/Rab2a/Rnf112/Doc2b/Synpr/Mctp1/Sv2c/Mylk2/Syt9/Clta/Abcc8/Dnajc5/Stx7/Sv2b/Vps45/Pick1/Atp6v1d/Snap91/Mal2/Clcn4/Rab3a/Bin1/Rab6a/Rph3a/Atp6v0d1/Calm1/Snap25/Lgi3/Ppfia2/Stx12/Rab4a/Rab3b/Mff/Rab3d/Calm2/Syt7/Rab3ip/Atg9a/Btbd8/Cadps2/Atp6v1h/Calm3/Syt11/Syp/Unc13a/Slc18a1/Syt4/Slc35g2/Syngr3/Snca/Septin5/Grin2a/Scamp1/Stx3/Syt2/Rab40c/Dlg2/Snap47/Atp6v1e1/Syngr1/Atp8a1/Atp6v1b2/Svop/Rab12/Rab27a/Psen2/Scamp5/Adam10/Sphk1/Rab5a/Gabra2/Dnm1/Atp6v1f/Kif3c/Atp6v1c1/Pde4b/Bace1/Gria2/Bcl2l1/Vti1a/Gabbr1/Amph/Syt17/Sv2a/Prrt1/Syt3/Atp2b1/Kcnk9/Wdr7/Sytl2/Vdac3/Erc1/Slc17a7/Ap2a2/Atp6ap2/Unc13b/Dlg4/Ntf3/Tprgl/Kirrel3/Unc13c/Slc17a6/Cdk16/Dmd/Atp6v1a/Grin1/Slc2a3/Syt1/Grin2b/Slc6a7/Stxbp5/Syt6/Dnm1l/Syn2/Bsn/Septin6/Dmxl2/Sptbn2/Ndel1/Stx1a/Prrt2/Trappc4/Tor1a/Unc13d/Prkn/Sytl1/Rab35/Atp6v1g2/Madd/Vdac2/Atp6v0e2/Atp6v1g1/Sh3gl2/Rab3c/Dpysl3/Atp6v0a1/Syt12/Vamp2/Atp6v0c/Rab26/Disc1/Aqp2/Atp6ap1/Rab14/Drd2/Dlg1/Rab8a/Brsk1"
+          },
+          {
+            "ID": "GOBP_VESICLE_MEDIATED_TRANSPORT_IN_SYNAPSE",
+            "setSize": 256,
+            "enrichmentScore": 0.4629543991,
+            "NES": 2.637441336,
+            "pvalue": 2.35e-19,
+            "p.adjust": 2.97e-16,
+            "qvalue": 1.52e-16,
+            "leading_edge": "tags=55%, list=25%, signal=42%",
+            "core_enrichment": "Fbxo45/Slc17a8/Hpca/Rab11a/Kcnh1/Vamp4/Clcn3/Stxbp5l/Otof/Cacnb4/Napb/Doc2b/Fgf14/Usp46/Erc2/Cask/Ap3s1/Ppp3r1/Arc/Sv2c/Ppp3cb/Syt9/Pfn2/Dnajc5/Scrn1/Sv2b/Pick1/Atp6v1d/Snap91/Cacna1e/Rab3a/Bin1/Cdk5/Rph3a/Atp6v0d1/Vps35/Rims1/Snap25/Dnajc6/Arfgap3/Ppfia2/Rab3b/Wnt7a/Mff/Clstn1/Prkaca/Pten/Ap3m2/Syt7/Cadps2/Cacna1a/Ppp3cc/Rims3/Atp6v1h/Sh3glb2/Tbc1d24/Dvl1/Syt11/Cdk5r1/Syp/Unc13a/Slc18a1/Syt4/Ppfia3/Snca/Septin5/Stx3/Ap2s1/Syt2/Snap47/Ap1s2/Prkca/Atp6v1e1/Dnm3/Atp6v1b2/Rims2/Stx1b/Scamp5/Cadps/Rab5a/Dnm1/Ap2m1/Atp6v1f/Pacsin1/Stxbp1/Atp6v1c1/Akap5/Bcl2l1/Napa/Rapgef4/Nlgn3/Itsn1/Amph/Sv2a/Fbxl20/Pclo/Nrg1/Nrxn1/Prkcb/Nsg1/Ophn1/Erc1/Slc17a7/Ap2a2/Atp6ap2/Pip5k1c/Prkar1b/Unc13b/Tprgl/Unc13c/Slc17a6/Cplx2/Atp6v1a/Syt1/Stxbp5/Syt6/Dnm1l/Syn2/Bsn/Necap1/Mapk10/Sptbn2/Synj1/Stx1a/Prrt2/Tor1a/Camk2a/Prkn/Cacna1b/Grik5/Sncb/Atp6v1g2/Vps18/Atad1/Atp6v0e2/Cplx1/Atp6v1g1/Sh3gl2/Sacm1l/Atp6v0a1/Syt12/Vamp2"
+          },
+          {
+            "ID": "GOCC_TRANSPORT_VESICLE",
+            "setSize": 350,
+            "enrichmentScore": 0.4095012608,
+            "NES": 2.420118537,
+            "pvalue": 1.91e-18,
+            "p.adjust": 1.61e-15,
+            "qvalue": 8.23e-16,
+            "leading_edge": "tags=52%, list=27%, signal=39%",
+            "core_enrichment": "Lin7c/Akap7/Slc17a8/Kcnc4/Aph1b/Rab11a/Rab40b/Ap4b1/Clcn3/Otof/Septin4/Rab2a/Rnf112/Car4/Doc2b/Azin2/Aph1c/Synpr/Nrgn/Mctp1/Sv2c/Mylk2/Syt9/Clta/Abcc8/Dnajc5/Yipf2/Stx7/Sv2b/Vps45/Pick1/Atp6v1d/Snap91/Mal2/Clcn4/Rab3a/Bin1/Rab6a/Lin7a/Rph3a/Atp6v0d1/Calm1/Snap25/Lgi3/Bloc1s3/Ppfia2/Stx12/Sar1b/Rab4a/Rab3b/Mff/Rab3d/Calm2/Syt7/Aftph/Rab3ip/Atg9a/Btbd8/Cadps2/Atp6v1h/Yipf1/Calm3/Syt11/Sec23a/Syp/Unc13a/Slc18a1/Syt4/Slc35g2/Syngr3/Snca/Septin5/Grin2a/Scamp1/Stx3/Syt2/Lin7b/Rab40c/Dlg2/Snap47/Ap1s2/Atp6v1e1/Syngr1/Atp8a1/Atp6v1b2/Svop/Rab12/Rab27a/Psen2/Scamp5/Adam10/Sphk1/Rab5a/Gabra2/Dnm1/Atp6v1f/Kif3c/Atp6v1c1/Pde4b/Bace1/Gria2/Bcl2l1/Vti1a/Gabbr1/Amph/Syt17/Sv2a/Prrt1/Syt3/Atp2b1/Kcnk9/Wdr7/Sytl2/Vdac3/Erc1/Slc17a7/Ap2a2/Nrsn1/Atp6ap2/Klhl12/Unc13b/Dlg4/Ntf3/Tprgl/Kirrel3/Unc13c/Slc17a6/Cdk16/Dmd/Atp6v1a/Grin1/Slc2a3/Syt1/Grin2b/Slc6a7/Galnt15/Stxbp5/Syt6/Dnm1l/Syn2/Bsn/Septin6/Dmxl2/Sptbn2/Clrn1/Ndel1/Stx1a/Prrt2/Trappc4/Tor1a/Unc13d/Pdcd6/Prkn/Sytl1/Gopc/Ap1s3/Rab35/Atp6v1g2/Madd/Vdac2/Atp6v0e2/Cnst/Atp13a2/Atp6v1g1/Dync1i1/Sh3gl2/Rab3c/Dpysl3/Atp6v0a1/Syt12/Vamp2/Atp6v0c/Rab26/Disc1/Aqp2/Atp6ap1/Rab14/Drd2/Dlg1/Rab8a/Brsk1"
+          },
+          {
+            "ID": "GOCC_PRESYNAPTIC_MEMBRANE",
+            "setSize": 221,
+            "enrichmentScore": 0.4698963172,
+            "NES": 2.634273482,
+            "pvalue": 1.51e-17,
+            "p.adjust": 9.5e-15,
+            "qvalue": 4.86e-15,
+            "leading_edge": "tags=49%, list=23%, signal=38%",
+            "core_enrichment": "Gpm6a/Kcnc4/Kcnh1/Cntnap4/Cyth1/Otof/Napb/Erc2/Cask/Grik2/Kcnj3/Apbb1/Scn11a/Grm1/Kcnj6/Clta/Fxyd6/Pick1/Kcnj11/Cntn6/Snap91/Cacna1e/Rims1/Snap25/Dnajc6/Atp2b3/Ppfia2/Scn2a/Syt7/Cadps2/Cacna1a/Rims3/Oprm1/Cdh10/Syt11/Itga3/Syp/Unc13a/Chrm3/Cadm3/Grin2a/Stx3/Ap2s1/Cntn1/Adora1/Marcks/Kcna1/Adgrl1/Rims2/Adam23/Stx1b/Psen2/Gabrb2/Gabra2/Dnm1/Grik1/Ap2m1/Stxbp1/Nptn/Septin3/Gria2/Napa/Gabbr1/Itsn1/Grm4/Hcn1/Gabra6/Atp2b1/Flot2/Nrg1/Nrxn1/Erbb4/Ache/Cnr1/Nrxn3/L1cam/Pip5k1c/Kcnc3/Unc13b/Mpp4/Unc13c/Cntnap2/Cacna1c/Kcnj9/Kcnc1/Atp2b4/Apba1/Igsf21/Htr1a/Grin1/Syt1/Grin2b/Slc6a7/Stxbp5/Cacna1d/Dnm1l/Nrxn2/Gabrb1/Syap1/Slc1a6/Rgs7bp/Stx1a/Septin7/Prrt2/Gria4/Chrna7/Grik5/Cacna1h/Cacna2d1"
+          },
+          {
+            "ID": "GOBP_RRNA_METABOLIC_PROCESS",
+            "setSize": 243,
+            "enrichmentScore": -0.4795244609,
+            "NES": -2.506294582,
+            "pvalue": 1.92e-17,
+            "p.adjust": 9.71e-15,
+            "qvalue": 4.97e-15,
+            "leading_edge": "tags=53%, list=29%, signal=38%",
+            "core_enrichment": "Mak16/Rpp38/Utp6/Snu13/Mettl15/Exosc8/Rexo4/Rpl27/Exosc3/Riok2/Wdr55/Exosc7/Rps16/Ddx56/Bud23/Ddx51/Rpf2/Mettl18/Rsl1d1/Tfb2m/Rpl14/Ddx52/Eri3/Rrp36/Bop1/Pwp2/Esf1/Wdr18/Smarcb1/Slfn8/Pih1d2/Wdr36/Eri2/Ercc2/Rpp40/Rrp9/Brix1/Imp4/Npm1/Ythdf2/Naf1/Rcl1/Rpusd2/Trp53/Utp18/Rrp15/Dkc1/Ddx27/Rpl7l1/Dis3/Nol6/Nhp2/Ppan/Wdr12/Nsun4/Nol11/Ercc6/Utp3/Lyar/Emg1/Ebna1bp2/Dis3l/Cavin1/Tbl3/Nol8/Prkdc/Exosc1/Top1/Nol9/Ftsj3/Nop9/Fbl/Rrp8/Gar1/Utp25/Wdr3/Wdr43/Tsr1/Las1l/Utp15/Ncl/Tfb1m/Drosha/Nat10/Slfn9/Pa2g4/Mphosph10/Mrto4/Gtpbp4/Usp36/Mtrex/Smarca4/Sart1/Wdr75/Ddx54/Nop14/Znhit6/Wdr46/Pelo/Polr1e/Polr1b/Ddx18/Utp14a/Rrp1b/Pelp1/Shq1/Srfbp1/Ddx21/Mars1/Ddx47/Mettl16/Urb1/Rrs1/Tcof1/Cdkn2a/Kri1/Utp20/Pdcd11/Bms1/Nol10/Nop2/Exosc10/Wbp11/Heatr1/Dhx37/Bysl/Rrp12/Gtf3c1/Polr1a"
+          },
+          {
+            "ID": "GOCC_TRANSPORTER_COMPLEX",
+            "setSize": 358,
+            "enrichmentScore": 0.4006574662,
+            "NES": 2.369975125,
+            "pvalue": 6.59e-17,
+            "p.adjust": 2.77e-14,
+            "qvalue": 1.42e-14,
+            "leading_edge": "tags=46%, list=26%, signal=35%",
+            "core_enrichment": "Slc17a8/Olfm3/Kcnc4/Kcnh1/Trpc6/Micu3/Cacna2d3/Kcnk1/Uqcc3/Clcn2/Kcnab1/Cacnb4/Atp6v0b/Mcub/Grik2/Kcnj3/Scn11a/Tmem30a/Trpc1/Abcc8/Cacnb2/Fkbp1b/Kcnj11/Atp6v1d/Cacna1e/Kcnd2/Kcnk4/Atp6v0d1/Calm1/Snap25/Ndufc2/Cacnb1/Shisa8/Porcn/Ryr2/Scn2a/Atp8a2/Calm2/Kcnab2/Scnn1g/Cacna1a/Atp6v1h/Unc80/Scn2b/Calm3/Ttyh2/Nrn1/Gabrd/Timm9/Ndufc1/Uqcrh/Ndufs4/Grin2a/Kcng2/Ndufb8/Atp8b2/Atp8a1/Dmac2/Kcnmb2/Kcna1/Ndufa8/Eps8/Shisa9/Kcnk2/Kcnip1/Gabrb3/Catspere2/Gabrb2/Ndufb9/Kcnb2/Ndufb4/Gabra2/Grik1/Atp6v1f/Atp6v1c1/Ndufa13/Pde4b/Cacna1g/Atp1a1/Gria2/Timm10b/Dpp6/Slc26a6/Kcnip3/Ndufv3/Kcnmb4/Hcn1/Gabra6/Olfm1/Ndufs3/Ryr3/Pde4d/Atp5g3/Ndufa1/Cnih2/Kcnq2/Glrb/Gabrg2/Ndufb11/Ndufb5/Slc17a7/Uqcrfs1/Pkd1l1/Uqcr10/Atp1b2/Kcnc3/Dlg4/Scn9a/Kcnv1/Clic5/Gabra4/mt-Co1/Kcns2/Cntnap2/mt-Nd3/Cacna1c/Slc17a6/Kcnc1/Scn1b/Kcnab3/Trpc5/Atp6v1a/Pex14/Grin1/Grin2b/Cacnb3/Stxbp5/Cacna1d/Ndufa6/Lrrc55/Atp1b1/Gabrb1/Grin2c/Kcnq4/Ndufs1/Cacna1i/Ndufb2/Chrna1/Cacna1s/Gria4/Cacna1b/Trpc4/Chrna7/Ndufs5/Catsper2/Grik5/Kcnip4/Cacna1h/Cacna2d1/Uqcr11/Ndufb3/Atp6v1g1/Ostm1/Dlg3/Scn4a/Sacm1l/Scn8a/Ndufa7/Cnga2/Vwc2l/Gabrr1/Chrnb2/Cpt1c/Scn3b/Amigo1/Atp6v0c"
+          },
+          {
+            "ID": "GOBP_RIBOSOME_BIOGENESIS",
+            "setSize": 311,
+            "enrichmentScore": -0.4400246556,
+            "NES": -2.385260382,
+            "pvalue": 1.39e-16,
+            "p.adjust": 5.01e-14,
+            "qvalue": 2.56e-14,
+            "leading_edge": "tags=50%, list=30%, signal=36%",
+            "core_enrichment": "Rpl6/Suv39h1/Ddx10/Ran/Xrcc5/Rpsa/Nup88/Mak16/Rpp38/Utp6/Snu13/Mettl15/Exosc8/Ddx31/Rexo4/Rpl27/Xpo1/Exosc3/Riok2/Wdr55/Exosc7/Rps16/Ddx56/Nop16/Bud23/Ddx51/Rpf2/Mettl18/Rps12/Rsl1d1/Nom1/Tfb2m/Rpl14/Ddx52/Eri3/Rrp36/Bop1/Pwp2/Esf1/Wdr18/Nmd3/Pih1d2/Rps23/Wdr36/Eri2/Ercc2/Rpp40/Nop58/Rrp9/Brix1/Imp4/Npm1/Lsg1/Ythdf2/Naf1/Rcl1/Rpusd2/Gnl2/Pno1/Utp18/Rrp15/Dkc1/Ddx27/Nop56/Rpl7l1/Dis3/Nol6/Isg20l2/Nhp2/Ppan/Wdr12/Nsun4/Aatf/Nol11/Mrps2/Utp3/Lyar/Emg1/Serbp1/Ebna1bp2/Rps19bp1/Tbl3/Sdad1/Nol8/Prkdc/Exosc1/Nol9/Riox1/Ftsj3/Grwd1/Ltv1/Nop9/Fbl/Rrp8/Gar1/Utp25/Wdr3/Wdr43/Tsr1/Las1l/Utp15/Noa1/Ncl/Tfb1m/Drosha/Nat10/C1qbp/Pa2g4/Mphosph10/Mrto4/Gtpbp4/Usp36/Mtrex/Rbm10/Sart1/Wdr75/Noc2l/Ddx54/Nop14/Znhit6/Wdr46/Traf7/Spata5/Ipo4/Noc4l/Ddx18/Utp14a/Dhx29/Rrp1b/Pelp1/Shq1/Srfbp1/Ddx21/Mybbp1a/Ddx47/Mettl16/Urb1/Rrs1/Riox2/Ipo9/Cdkn2a/Kri1/Utp20/Pdcd11/Eif5b/Bms1/Nol10/Nop2/Efl1/Exosc10/Wbp11/Heatr1/Dhx37/Mdn1/Bysl/Rrp12"
+          },
+          {
+            "ID": "GOBP_NEUROTRANSMITTER_TRANSPORT",
+            "setSize": 207,
+            "enrichmentScore": 0.4728718797,
+            "NES": 2.634106999,
+            "pvalue": 1.61e-16,
+            "p.adjust": 5.04e-14,
+            "qvalue": 2.58e-14,
+            "leading_edge": "tags=47%, list=23%, signal=37%",
+            "core_enrichment": "Lin7c/Fbxo45/Slc17a8/Kcnc4/Kcnh1/Stxbp5l/Otof/Cacnb4/Napb/Gpm6b/Doc2b/Erc2/Cask/Mctp1/Sv2c/Gpr158/Syt9/Slc6a15/Abcc8/Pfn2/Sv2b/Snap91/Cacna1e/Rab3a/Lin7a/Nos1/Rph3a/Rims1/Snap25/Ppfia2/Rab3b/Wnt7a/Prkaca/Syt7/Cadps2/Cacna1a/Doc2g/Rims3/Dvl1/Syt11/Rph3al/Syp/Unc13a/Slc18a1/Syt4/Ppfia3/Syngr3/Snca/Septin5/Stx3/Syt2/Lin7b/Snap47/Prkca/Pak1/Rims2/Stx1b/Cadps/Sphk1/Rab5a/Gabra2/Stxbp1/Bcl2l1/Ntrk2/Slc6a8/Napa/Sv2a/Fbxl20/Pclo/Flot1/Nrxn1/Prkcb/Nrxn3/Erc1/Slc17a7/Kcnc3/Unc13b/Tprgl/Rhot1/Unc13c/Slc17a6/Cplx2/Syt1/Slc6a13/Slc6a7/Stxbp5/Dnm1l/Syn2/Nrxn2/Sptbn2/Slc1a6/Synj1/Stx1a/Prrt2/Tor1a/Camk2a/Prkn/Cacna1b"
+          },
+          {
+            "ID": "GOBP_NCRNA_PROCESSING",
+            "setSize": 395,
+            "enrichmentScore": -0.4077532367,
+            "NES": -2.266935221,
+            "pvalue": 1.8e-16,
+            "p.adjust": 5.04e-14,
+            "qvalue": 2.58e-14,
+            "leading_edge": "tags=46%, list=31%, signal=33%",
+            "core_enrichment": "Lcmt2/Trub1/Suv39h1/Ddx10/Pnldc1/Spout1/Rpp14/Mak16/Rpp38/Utp6/Pus10/Snu13/Mettl15/Trmt10c/Exosc8/Rexo4/Rpl27/Zc3h10/Exosc3/Riok2/Trnt1/Ddx1/Wdr55/Dtwd2/Piwil2/Zc3h7b/Exosc7/Rps16/Ddx56/Zbtb8os/Parn/Bud23/Ddx51/Rpf2/Mettl18/Rsl1d1/Tdrkh/Tfb2m/Rpl14/Nr2f1/Ddx52/Ago2/Eri3/Ints8/Rrp36/Bop1/Wdr4/Pwp2/Esf1/Wdr18/Pih1d2/Elp2/Wdr36/Eri2/Ercc2/Rpp40/Mtfmt/Kti12/Rrp9/Brix1/Imp4/Npm1/Ints7/Ythdf2/Zmpste24/Thumpd2/Naf1/Rcl1/Adat1/Rpusd2/Nsun2/Trp53/Pus7/Cdkal1/Utp18/Rrp15/Dkc1/Ddx27/Rpl7l1/Pus1/Dis3/Nol6/Ints1/Dus4l/Nhp2/Ppan/Wdr12/Nsun4/Tprkb/Ints2/Nol11/Ago1/Utp3/Lyar/Emg1/Larp7/Sars/Qtrt2/Ebna1bp2/Tert/Tbl3/Trmt44/Nol8/Prkdc/Exosc1/Mettl1/Nol9/Ftsj3/Nop9/Fbl/Rrp8/Gar1/Utp25/Wdr3/Wdr43/Tsr1/Mettl8/Las1l/Utp15/Nup155/Ncbp1/Ncl/Henmt1/Tfb1m/Drosha/Nat10/Pa2g4/Ints4/Mphosph10/Mrto4/Gtpbp4/Usp36/Mtrex/Ripk1/Sart1/Pop1/Thumpd3/Srrt/Wdr75/Elac2/Thg1l/Ddx54/Ints3/Nop14/Znhit6/Wdr46/Akt1/Hnrnpa2b1/Trmt61a/Ddx18/Utp14a/Rrp1b/Ints5/Pelp1/Shq1/Srfbp1/Ddx21/Ddx47/Mettl16/Urb1/Rrs1/Cdkn2a/Kri1/Utp20/Pdcd11/Thada/Bms1/Nol10/Nop2/Tsen2/Exosc10/Wbp11/Heatr1/Tgfb1/Trmt10a/Tut1/Ints9/Dhx37/Bysl/Rrp12/Elp1"
+          },
+          {
+            "ID": "GOBP_NEUROTRANSMITTER_SECRETION",
+            "setSize": 162,
+            "enrichmentScore": 0.5009695412,
+            "NES": 2.681474514,
+            "pvalue": 1.1e-15,
+            "p.adjust": 2.78e-13,
+            "qvalue": 1.42e-13,
+            "leading_edge": "tags=52%, list=24%, signal=40%",
+            "core_enrichment": "Lin7c/Fbxo45/Kcnc4/Kcnh1/Stxbp5l/Otof/Cacnb4/Napb/Doc2b/Erc2/Cask/Mctp1/Sv2c/Gpr158/Syt9/Abcc8/Pfn2/Sv2b/Snap91/Cacna1e/Rab3a/Lin7a/Rph3a/Rims1/Snap25/Ppfia2/Wnt7a/Prkaca/Syt7/Cadps2/Cacna1a/Doc2g/Rims3/Dvl1/Syt11/Rph3al/Syp/Unc13a/Syt4/Ppfia3/Snca/Septin5/Stx3/Syt2/Lin7b/Snap47/Prkca/Pak1/Rims2/Stx1b/Cadps/Sphk1/Rab5a/Stxbp1/Bcl2l1/Ntrk2/Napa/Sv2a/Fbxl20/Pclo/Nrxn1/Prkcb/Nrxn3/Erc1/Kcnc3/Unc13b/Tprgl/Rhot1/Unc13c/Cplx2/Syt1/Stxbp5/Dnm1l/Syn2/Nrxn2/Sptbn2/Synj1/Stx1a/Prrt2/Camk2a/Prkn/Cacna1b/Grik5/Vps18/Cplx1"
+          },
+          {
+            "ID": "REACTOME_NEURONAL_SYSTEM",
+            "setSize": 304,
+            "enrichmentScore": 0.4010066998,
+            "NES": 2.340694385,
+            "pvalue": 1.08e-14,
+            "p.adjust": 2.48e-12,
+            "qvalue": 1.27e-12,
+            "leading_edge": "tags=50%, list=26%, signal=38%",
+            "core_enrichment": "Lin7c/Lrrtm1/Gnb3/Kcnc4/Kcnh1/Cacna2d3/Kcnk1/Camkk2/Kcnab1/Cacnb4/Cask/Grik2/Kcnj3/Grm1/Gnai1/Kcnj6/Adcy1/Abcc8/Dnajc5/Kcnh3/Cacnb2/Pick1/Kcnj11/Lrrtm2/Cacna1e/Rab3a/Kcnd2/Lin7a/Kcnk4/Lrrtm3/Calm1/Rims1/Gjd2/Snap25/Cacnb1/Ppfia2/Slitrk3/Kcnh6/Camk2d/Prkaca/Kcnk10/Calm2/Kcnab2/Kcnh8/Cacna1a/Camk2g/Sh3glb2/Panx2/Calm3/Camk2b/Ppfia3/Rps6ka1/Il1rapl1/Arhgef9/Ncald/Grin2a/Gng3/Ap2s1/Lin7b/Kcng2/Gls2/Dlg2/Rps6ka3/Kcnmb2/Nefl/Kcna1/Kcnk2/Gabrb3/Gng2/Gabrb2/Kcnb2/Gabra2/Grik1/Ap2m1/Stxbp1/Slitrk2/Akap5/Gnb5/Gria2/Ppfia4/Nlgn3/Gabbr1/Camkk1/Dlgap1/Kcnmb4/Shank3/Kcnn2/Hcn1/Gabra6/Flot1/Kcnk9/Flot2/Nrxn1/Tspan7/Prkcb/Grm5/Gls/Glrb/Gabrg2/Nrxn3/Nsf/Slc17a7/Ap2a2/Gng4/Kcnc3/Prkar1b/Unc13b/Dlg4/Kcnv1/Gabra4/Kcns2/Prkacb/Kcnj9/Adcy5/Kcnc1/Prkar1a/Apba1/Kcnab3/Epb41l3/Grin1/Syt1/Kcnk3/Slc6a13/Cacnb3/Tspoap1/Syn2/Nrxn2/Gabrb1/Grin2c/Kcnq4/Kcnj12/Slc1a6/Stx1a/Chrna1/Gria4/Camk2a/Abat/Cacna1b/Adcy9/Chrna7/Grik5/Gnb4/Cplx1/Slitrk4/Arl6ip5/Dlg3/Gabrr1/Chrnb2/Vamp2/Homer1/Shank1/Gabbr2"
+          },
+          {
+            "ID": "GOBP_DNA_REPLICATION",
+            "setSize": 262,
+            "enrichmentScore": -0.4386331189,
+            "NES": -2.323622755,
+            "pvalue": 1.28e-14,
+            "p.adjust": 2.68e-12,
+            "qvalue": 1.37e-12,
+            "leading_edge": "tags=60%, list=30%, signal=43%",
+            "core_enrichment": "Ccne1/Eme2/Smc3/Brca2/Pclaf/Polg/Rpa2/Rfc2/Rbbp7/Atr/Fgfr1/Gins1/Dach1/Poll/Id3/Fancm/Dscc1/Rfc3/Rbbp6/Actl6a/Chaf1b/Dbf4/Dnaja3/Jade2/Stn1/Nfia/Rfc5/Rpa3/Pole2/Ccna2/Mcm9/Pold2/Polk/Ankrd17/Pcna/Yy1/Mettl4/Fbxo5/Kin/Wdr18/Bod1l/Gmnn/Cdk1/Eme1/Dnajc2/Gen1/Cdk2/Senp2/Rrm1/Rnaseh1/Mcm7/Mre11a/Npm1/Zmpste24/Met/Nasp/Wdhd1/Ruvbl2/Zfp365/Nbn/Orc2/Mgme1/Blm/Bcar3/Polq/Rad51/Trp53/Terf1/Twnk/E2f7/Rbbp8/Ctc1/Lig3/Topbp1/Pold3/Inppl1/Dtl/Pif1/Etaa1/Mcm8/Usp37/Adra2a/Zpr1/Brca1/Rpa1/Uchl5/Rmi2/Lig1/Mcm3/Mms22l/Lrwd1/Dna2/Atad5/Cdc45/Smarcal1/Pds5a/Rfc1/Lig4/Pola1/Mcm6/Ddx11/Actr5/Noc3l/Top1/Pold1/Supt16/Poli/Ssrp1/Ehmt2/Grwd1/Kat7/Polh/Tnfaip1/Cdc6/Pola2/Bard1/Zranb3/Ssbp1/Mcm10/Nfic/Ticrr/Recql4/Ing5/Ciz1/Mcmbp/Gli1/Traip/Obi1/Parp1/Ruvbl1/Pole/Ino80b/Gtpbp4/Orc1/Rad50/E2f8/Gli2/Mcm4/Timeless/Pole4/Tonsl/Fam111a/Chtf18/Chaf1a/Rbms1/Recql/Samhd1/Jade1/Dhx9/Baz1a/Sin3a/Ino80e/Carm1/Mcm2/Helb/Atg7/Wiz"
+          },
+          {
+            "ID": "GOBP_SYNAPTIC_VESICLE_EXOCYTOSIS",
+            "setSize": 108,
+            "enrichmentScore": 0.566945666,
+            "NES": 2.816659877,
+            "pvalue": 1.63e-14,
+            "p.adjust": 3.16e-12,
+            "qvalue": 1.62e-12,
+            "leading_edge": "tags=63%, list=26%, signal=47%",
+            "core_enrichment": "Fbxo45/Kcnh1/Stxbp5l/Otof/Cacnb4/Napb/Doc2b/Erc2/Cask/Sv2c/Syt9/Pfn2/Sv2b/Cacna1e/Rab3a/Rph3a/Rims1/Snap25/Ppfia2/Wnt7a/Prkaca/Syt7/Cadps2/Cacna1a/Rims3/Dvl1/Syt11/Syp/Unc13a/Syt4/Ppfia3/Snca/Septin5/Stx3/Syt2/Snap47/Prkca/Rims2/Stx1b/Cadps/Rab5a/Stxbp1/Bcl2l1/Napa/Sv2a/Fbxl20/Pclo/Prkcb/Erc1/Unc13b/Tprgl/Unc13c/Cplx2/Syt1/Stxbp5/Dnm1l/Sptbn2/Synj1/Stx1a/Prrt2/Camk2a/Cacna1b/Grik5/Vps18/Cplx1/Syt12/Vamp2/Cspg5"
+          },
+          {
+            "ID": "GOCC_DISTAL_AXON",
+            "setSize": 368,
+            "enrichmentScore": 0.3634789729,
+            "NES": 2.168633858,
+            "pvalue": 5.21e-14,
+            "p.adjust": 9.38e-12,
+            "qvalue": 4.8e-12,
+            "leading_edge": "tags=43%, list=23%, signal=34%",
+            "core_enrichment": "Dynlt1b/Slc17a8/Gpm6a/Lrrtm1/Kcnc4/Cck/Esr1/Arpc5/Crhbp/Calb2/Clcn3/Amfr/Septin4/Rufy3/Sri/Erc2/Dynlt1a/Grik2/Apbb1/Unc5c/Scn11a/Cdh8/Pink1/Slc9a6/Mylk2/Pafah1b1/Blvrb/Tiam1/Dclk1/Clasp2/Snap91/Dixdc1/Rab3a/Bin1/Cdk5/Nos1/Atp6v0d1/Calm1/Sirt1/Snap25/Dctn2/Slc8a3/Acap3/Pgr/Elavl4/Arhgef7/Calm2/Fgf13/Kcnab2/Wdr47/Syt7/Stim1/Cxadr/Kif5c/Calm3/Dvl1/Map3k12/Syt11/Cdk5r1/Twf2/Itga3/Syp/Ppp2ca/Unc13a/Slc18a1/Elk1/Pard6a/Chrm3/Snca/Septin5/Grin2a/Myh14/Stx3/Rac3/Adora1/Src/Zfp804a/Prkca/Mapt/Prph/Marcks/Pak1/Prnp/Eno2/Nefl/Kcna1/Ror1/Adgrl1/Aqp1/Kcnk2/Psen2/Zfyve27/Map2/Cdkl5/Gabrb3/Inpp5j/Rab5a/Ppp1r9b/Grik1/Pacsin1/Kif3c/Lrig2/Mapk8ip1/Gria2/Kif5a/Ntrk2/Exoc7/Kcnip3/Rapgef4/Stmn2/Ilk/Itsn1/Amph/Pclo/Grm4/Hcn1/Olfm1/Klc1/Nrxn1/Ptbp2/Prkcb/Lamp5/Cnr1/Ophn1/Trpv2/Als2/Nrsn1/L1cam/Kcnc3/Unc13b/Mpp4/Tprgl/Myo9a/C9orf72/Unc13c/Kcnc1/Cplx2/Slc8a2/Trpc5/Grin1/Grin2b/Tmod2/Tspoap1/Brsk2/Septin6/Syap1/Ndel1/Setx/Septin7/Prrt2/Tor1a/Gria4/Prkn/Cacna1b/Trak2/Pcdh9/Chrna7/Grik5/Sncb/Slc8a1"
+          },
+          {
+            "ID": "GOCC_SYNAPTIC_VESICLE_MEMBRANE",
+            "setSize": 137,
+            "enrichmentScore": 0.5031791991,
+            "NES": 2.641156339,
+            "pvalue": 1.66e-13,
+            "p.adjust": 2.8e-11,
+            "qvalue": 1.43e-11,
+            "leading_edge": "tags=63%, list=27%, signal=46%",
+            "core_enrichment": "Slc17a8/Clcn3/Otof/Rab2a/Doc2b/Synpr/Mctp1/Sv2c/Syt9/Clta/Abcc8/Dnajc5/Stx7/Sv2b/Atp6v1d/Mal2/Rab3a/Bin1/Rph3a/Atp6v0d1/Calm1/Stx12/Rab4a/Rab3b/Mff/Calm2/Atp6v1h/Calm3/Syt11/Syp/Unc13a/Slc18a1/Slc35g2/Syngr3/Snca/Scamp1/Syt2/Dlg2/Snap47/Atp6v1e1/Syngr1/Atp8a1/Atp6v1b2/Svop/Scamp5/Rab5a/Gabra2/Atp6v1f/Atp6v1c1/Gria2/Bcl2l1/Amph/Sv2a/Prrt1/Atp2b1/Slc17a7/Atp6ap2/Unc13b/Tprgl/Unc13c/Slc17a6/Dmd/Atp6v1a/Grin1/Slc2a3/Syt1/Slc6a7/Dnm1l/Syn2/Stx1a/Prkn/Rab35/Atp6v1g2/Atp6v0e2/Atp6v1g1/Sh3gl2/Rab3c/Atp6v0a1/Syt12/Vamp2/Atp6v0c/Rab26/Atp6ap1/Rab14/Drd2/Dlg1"
+          },
+          {
+            "ID": "REACTOME_MAJOR_PATHWAY_OF_RRNA_PROCESSING_IN_THE_NUCLEOLUS_AND_CYTOSOL",
+            "setSize": 174,
+            "enrichmentScore": -0.4894221932,
+            "NES": -2.45103739,
+            "pvalue": 3.49e-13,
+            "p.adjust": 5.5e-11,
+            "qvalue": 2.82e-11,
+            "leading_edge": "tags=69%, list=39%, signal=43%",
+            "core_enrichment": "Nob1/Rpl35a/Rpl39/Rpp25/Rps6/Rpl27a/Rpl35/Rps8/Rps9/Rpl11/Utp11/Rpp30/Rpl23/Rpl18/Rps3a1/Exosc2/Imp3/Rplp2/Rps15a/Utp4/Rpl13a/Rps11/Rrp7a/Rps29/Rps17/Rps10/Gnl3/Rps13/Rps27l/Pes1/Rps18/Rpl34/Rpl10/Rpl36a/Rpl8/Rpl22/Rpl30/Rpl6/Rpl29/Rpp14/Rpsa/Tex10/Rpp38/Utp6/Snu13/Exosc8/Rpl27/Rpl4/Rpl21/Exosc3/Riok2/Rplp1/Rpl31/Exosc7/Rps16/Bud23/Rps12/Rpl14/Rps26/Ddx52/Rpl28/Gm11808/Rpl3/Rrp36/Bop1/Pwp2/Wdr18/Rpl12/Rps23/Wdr36/Rpp40/Nop58/Rrp9/Rpl32/Imp4/Rcl1/Pno1/Utp18/Nop56/Dis3/Nol6/Isg20l2/Wdr12/Nol11/Utp3/Emg1/Ebna1bp2/Rps2/Tbl3/Exosc1/Nol9/Rpl10-ps3/Ftsj3/Csnk1d/Ltv1/Fbl/Utp25/Wdr3/Wdr43/Tsr1/Las1l/Utp15/Ncl/Mphosph10/Mtrex/Wdr75/Nop14/Wdr46/Noc4l/Utp14a/Pelp1/Ddx21/Ddx47/Utp20/Pdcd11/Bms1/Exosc10/Heatr1/Dhx37/Bysl"
+          },
+          {
+            "ID": "REACTOME_PROCESSING_OF_CAPPED_INTRON_CONTAINING_PRE_MRNA",
+            "setSize": 263,
+            "enrichmentScore": -0.4225273051,
+            "NES": -2.23746195,
+            "pvalue": 1.12e-12,
+            "p.adjust": 1.66e-10,
+            "qvalue": 8.48e-11,
+            "leading_edge": "tags=57%, list=37%, signal=37%",
+            "core_enrichment": "Gpatch1/Cstf1/Wtap/Cwf19l2/Clp1/Ik/Rnps1/Bcas2/Hnrnpk/Cwc27/Snrpd3/Srsf2/Prpf40a/Phf5a/Lsm3/Cdc40/Magoh/Snrpd1/Snrnp35/Sf3a3/Upf3b/Poldip3/Rnf113a1/Dhx35/Tra2b/Srsf10/Nup37/Mettl3/Sf3b5/Seh1l/Fam50a/Tfip11/Hnrnpl/Nsrp1/Polr2b/Crnkl1/Nup88/Nup93/Snu13/Cpsf3/Nxf1/Thoc6/Snrnp70/Fus/Cstf2/Mettl14/Sf3b3/Cpsf4/Hnrnpd/Hspa8/Nup35/Hnrnpa1/Lsm5/Ybx1/Srsf9/Snrpg/Pcbp2/Prpf4/Cpsf2/Nup43/Smndc1/Rbmx/Sarnp/Rae1/Dhx15/Hnrnpa3/Prpf31/Sf3b2/Ddx46/Sec13/Casc3/Pdcd7/Cwc22/Gtf2f1/Ndc1/Gcfc2/Cpsf1/Cdc5l/Rbm17/Aaas/U2af2/Nupl2/Nxt1/Ppwd1/Tcerg1/Nup210/Bud13/Gtf2f2/Magohb/Fip1l1/Pom121/Lsm8/Nup107/Cactin/Snrpf/Srrm1/Papola/U2af1/Wdr33/Cstf3/Polr2a/Lsm2/Ddx23/Ddx39b/Srrm2/Sf3a2/Dhx8/Nup155/Ncbp1/Yju2/Nup50/Nup62/Prpf6/Isy1/Hnrnpu/Sf3a1/Hnrnpc/Mtrex/Rbm10/Sart1/Srrt/Eftud2/Ddx41/Dhx16/Hnrnpa2b1/Tpr/Nup214/Prpf3/Wdr70/Sf3b4/Pnn/Dhx9/Ptbp1/Gpkow/Txnl4a/Hnrnpf/Nup160/Nup153/Snrpa/Sf1/Acin1/Usp39/Nup98/Snrnp200/Nup205/Wbp11/Aqr/Nup188/Prpf8/Sympk/Pcbp1"
+          },
+          {
+            "ID": "GOCC_TRANSPORT_VESICLE_MEMBRANE",
+            "setSize": 179,
+            "enrichmentScore": 0.4426764301,
+            "NES": 2.390385863,
+            "pvalue": 4.43e-12,
+            "p.adjust": 6.21e-10,
+            "qvalue": 3.18e-10,
+            "leading_edge": "tags=56%, list=27%, signal=42%",
+            "core_enrichment": "Lin7c/Slc17a8/Ap4b1/Clcn3/Otof/Rab2a/Car4/Doc2b/Synpr/Nrgn/Mctp1/Sv2c/Syt9/Clta/Abcc8/Dnajc5/Stx7/Sv2b/Atp6v1d/Mal2/Rab3a/Bin1/Lin7a/Rph3a/Atp6v0d1/Calm1/Stx12/Sar1b/Rab4a/Rab3b/Mff/Calm2/Aftph/Atp6v1h/Calm3/Syt11/Sec23a/Syp/Unc13a/Slc18a1/Slc35g2/Syngr3/Snca/Scamp1/Syt2/Lin7b/Dlg2/Snap47/Ap1s2/Atp6v1e1/Syngr1/Atp8a1/Atp6v1b2/Svop/Scamp5/Rab5a/Gabra2/Atp6v1f/Atp6v1c1/Gria2/Bcl2l1/Vti1a/Amph/Sv2a/Prrt1/Atp2b1/Slc17a7/Atp6ap2/Klhl12/Unc13b/Tprgl/Unc13c/Slc17a6/Dmd/Atp6v1a/Grin1/Slc2a3/Syt1/Grin2b/Slc6a7/Dnm1l/Syn2/Stx1a/Pdcd6/Prkn/Ap1s3/Rab35/Atp6v1g2/Atp6v0e2/Atp6v1g1/Sh3gl2/Rab3c/Atp6v0a1/Syt12/Vamp2/Atp6v0c/Rab26/Atp6ap1/Rab14/Drd2/Dlg1"
+          },
+          {
+            "ID": "GOCC_NUCLEAR_CHROMOSOME",
+            "setSize": 211,
+            "enrichmentScore": -0.437935254,
+            "NES": -2.247423745,
+            "pvalue": 5.25e-12,
+            "p.adjust": 6.97e-10,
+            "qvalue": 3.57e-10,
+            "leading_edge": "tags=53%, list=28%, signal=38%",
+            "core_enrichment": "Nufip1/Birc5/Smc1b/Actl6a/Ncapg/Brd4/Smc4/Rpa3/Pole2/Pold2/Rad9a/Mlh1/Pcna/Yy1/Mlh3/Smarcb1/Anp32e/Nek2/Eme1/Zbtb32/Fignl1/Mcm7/Mre11a/Wdhd1/Ruvbl2/Orc2/Psmc3ip/Blm/Hdac1/Cdc5l/Rad51/Lig3/Topbp1/Top2a/Pold3/Phf12/Iho1/Nol6/E2f1/Chek1/Ncapg2/Etaa1/Ncaph/Pinx1/Brca1/Rpa1/Uchl5/Mcm3/Mms22l/Lrwd1/Cdc45/Smarcal1/Trrap/Rad21/Brd8/Pola1/Spidr/Mcm6/Actr5/Top1/Pold1/Rcc1/Sinhcaf/Ing3/Pola2/Zranb3/Mei4/Smchd1/Hus1/Hmg20b/Chd1/Mcm10/Smc2/Incenp/Sap130/Ep400/Parp1/Hnrnpu/Ruvbl1/Pole/Ino80b/Smarcad1/Orc1/Smarca4/Rad50/Smc1a/Mcm4/Timeless/Pole4/Tonsl/Plk1/H1f6/Trim24/Ncapd2/Ncapd3/Hcfc1/Hspa2/Baz1b/Tubg1/Gon4l/Dhx9/Baz1a/Sin3a/Ino80e/Carm1/Mcm2/Helb/Rrs1/Setd5/Lrpprc/Xlr3b"
+          },
+          {
+            "ID": "GOBP_POSITIVE_REGULATION_OF_CELL_CYCLE",
+            "setSize": 314,
+            "enrichmentScore": -0.3922375578,
+            "NES": -2.125628958,
+            "pvalue": 7.5e-12,
+            "p.adjust": 9.45e-10,
+            "qvalue": 4.84e-10,
+            "leading_edge": "tags=50%, list=29%, signal=36%",
+            "core_enrichment": "Cpsf3/Mdm2/Rbm46/Prdm9/Birc5/Ncapg/Sh2b1/Dbf4/Ccnd2/Ccdc57/Brd4/Ppp1r10/Smc4/Cdca5/Nr2e1/Piwil2/Cenpv/Ndc80/Cdc20/Ankrd17/Ccnb1/Rdx/Poc1a/Tgfb2/Tmod3/Shb/Cdk4/Fbxo5/Rad51b/Racgap1/Cdk1/Ect2/Xrcc3/Plk4/Cdc25b/Nusap1/Gen1/Tal1/Aif1/Rrm1/Sgo2a/Crebbp/Npm1/Met/Lgmn/Cdca8/Ubxn2b/Aurkb/Bub1/Stil/Spag5/Rad51ap1/Calr/Ube2c/Trp53/Pkn2/Lmnb1/E2f7/Tnf/Anapc7/Sfpq/Plcg2/Dtl/Igf2/Chek2/Chek1/Ncapg2/Ncaph/Fgfr2/Numa1/Mepce/Igf1r/Zpr1/Brca1/Aurka/Cep295/Atad5/Epgn/Rrm2/Larp7/Mad1l1/Pdgfrb/Msx2/Ascl1/Tert/Ccnd3/Rad21/Pim1/Thoc5/Csf1r/Adamts1/Med1/Tbx3/Stxbp4/Kif23/Cdc14a/Mtbp/Ezh2/Rad18/Cdc6/Bard1/Ddx39b/Pbx1/Tcf3/Smc5/Mad2l1/Smc2/Incenp/Gli1/Gja1/Nup62/Nupr1/Rad51c/Eif4g3/Hnrnpu/Wnt4/Cdc25a/Fam83d/Phb2/Smoc2/Il1a/Cenpe/Abl1/Orc1/Adam17/E2f8/Ccn2/Hsf1/Kif14/Map3k20/Cenpj/Anp32b/Foxg1/Akt1/Ptpn11/Ncapd2/Rhno1/Ncapd3/Tpr/Hes1/Hspa2/Sin3a/Asns/Ccnd1/Rcc2/Cit/Lrp6/Hyal1/Wiz/Eif4ebp1/Myc/Eif4g1/Ddr2/Tgfb1/Lfng/Wnk1/Tgm1"
+          },
+          {
+            "ID": "REACTOME_EXTRACELLULAR_MATRIX_ORGANIZATION",
+            "setSize": 216,
+            "enrichmentScore": -0.4404009738,
+            "NES": -2.269127505,
+            "pvalue": 8.59e-12,
+            "p.adjust": 9.84e-10,
+            "qvalue": 5.04e-10,
+            "leading_edge": "tags=49%, list=27%, signal=37%",
+            "core_enrichment": "Htra1/Ltbp4/Col6a2/Col3a1/Itga10/Adam15/Furin/Tgfb2/Loxl2/Fgf2/Col6a6/Hapln1/Col6a1/Ctsd/Ctsb/Sdc1/Itgb3/Capn9/P3h3/Sparc/Ibsp/Itga1/Itga9/P4hb/Pcolce/Adamts5/Adamts4/Eln/Mmp2/Plod2/Vcan/Acan/Col5a3/Lox/Col12a1/Mfap5/Col4a1/Itgb1/Jam3/Col16a1/Col1a2/Col8a1/Emilin1/Capn2/Col18a1/Col22a1/Mfap4/Ctss/Itgb8/Col4a2/Spp1/A2m/Adamts14/Sdc3/Agrn/Bgn/Fbln2/Loxl3/Itgad/Pxdn/Efemp2/Mmp17/Vwf/Ddr1/Itga11/P3h1/Itgax/Bmp2/Mmp9/Serpinh1/Mmp13/Ltbp3/Itga5/Col6a3/P4ha1/Itgb2/Itgam/Adam12/Serpine1/Col7a1/Col5a2/Crtap/Col1a1/Adam8/Itgav/Timp1/Tnn/Plod1/Loxl1/Fn1/P3h2/Ddr2/Col14a1/Thbs1/Tgfb1/Col5a1/Itga2b/Col28a1/Comp/Dmp1/Mmp14/Col6a5/Cd44/Col8a2/Fbln5/Plod3"
+          },
+          {
+            "ID": "GOCC_MONOATOMIC_ION_CHANNEL_COMPLEX",
+            "setSize": 253,
+            "enrichmentScore": 0.3906732396,
+            "NES": 2.217381215,
+            "pvalue": 8.26e-12,
+            "p.adjust": 9.84e-10,
+            "qvalue": 5.04e-10,
+            "leading_edge": "tags=47%, list=26%, signal=36%",
+            "core_enrichment": "Slc17a8/Olfm3/Kcnc4/Kcnh1/Trpc6/Micu3/Cacna2d3/Kcnk1/Clcn2/Kcnab1/Cacnb4/Mcub/Grik2/Kcnj3/Scn11a/Trpc1/Abcc8/Cacnb2/Fkbp1b/Kcnj11/Cacna1e/Kcnd2/Kcnk4/Calm1/Snap25/Cacnb1/Shisa8/Porcn/Ryr2/Scn2a/Calm2/Kcnab2/Scnn1g/Cacna1a/Unc80/Scn2b/Calm3/Ttyh2/Nrn1/Gabrd/Grin2a/Kcng2/Kcnmb2/Kcna1/Eps8/Shisa9/Kcnk2/Kcnip1/Gabrb3/Catspere2/Gabrb2/Kcnb2/Gabra2/Grik1/Pde4b/Cacna1g/Gria2/Dpp6/Slc26a6/Kcnip3/Kcnmb4/Hcn1/Gabra6/Olfm1/Ryr3/Pde4d/Atp5g3/Cnih2/Kcnq2/Glrb/Gabrg2/Slc17a7/Pkd1l1/Kcnc3/Dlg4/Scn9a/Kcnv1/Clic5/Gabra4/Kcns2/Cntnap2/Cacna1c/Slc17a6/Kcnc1/Scn1b/Kcnab3/Trpc5/Grin1/Grin2b/Cacnb3/Stxbp5/Cacna1d/Lrrc55/Gabrb1/Grin2c/Kcnq4/Cacna1i/Chrna1/Cacna1s/Gria4/Cacna1b/Trpc4/Chrna7/Catsper2/Grik5/Kcnip4/Cacna1h/Cacna2d1/Ostm1/Dlg3/Scn4a/Sacm1l/Scn8a/Cnga2/Vwc2l/Gabrr1/Chrnb2/Cpt1c/Scn3b/Amigo1"
+          },
+          {
+            "ID": "GOBP_REGULATION_OF_VASCULATURE_DEVELOPMENT",
+            "setSize": 264,
+            "enrichmentScore": -0.4091646468,
+            "NES": -2.164107417,
+            "pvalue": 1.06e-11,
+            "p.adjust": 1.16e-09,
+            "qvalue": 5.95e-10,
+            "leading_edge": "tags=49%, list=29%, signal=35%",
+            "core_enrichment": "Pkm/Chil1/Rras/Ctnnb1/Nras/Acvrl1/Mapk7/Aplnr/S100a1/Stard13/Plcg1/Kdr/Nr2e1/Ramp2/Rock1/Ctsh/Vegfa/Foxo4/Tgfbr2/Tgfb2/Plxnd1/Ngfr/Ago2/Fgf2/Ptgis/Lgals3/E2f2/Ninj1/Nos3/Adgra2/Itgb3/Anxa3/Cx3cr1/Isl1/Cybb/Flt1/Sparc/Foxc2/Ets1/Gata2/Emc10/Cdh5/Sulf1/Notch4/Eng/Klf4/Hgs/Zc3h12a/Tspan12/Tnf/Ccm2/Igf2/Dll1/Ppp1r16b/Brca1/Klf2/Itgb1/Sash1/Reck/Ago1/Adamts9/Pgf/Jcad/Sars/Emilin1/Tert/Adamts1/Gtf2i/Pik3cg/Hspb1/Angpt2/Hgf/Ccl5/Grn/Tnfrsf1a/Itgb8/Col4a2/Nrp1/Cxcr4/Sfrp2/Htatip2/Mdk/Fkbpl/Wnt4/Smoc2/Il1a/Abl1/Ptprm/Shc1/Hhip/Sp1/Thbs2/C3/Itgax/Hmox1/Mmp9/Itga5/Id1/C3ar1/Itgb2/C5ar1/Adam12/Jmjd8/Runx1/Adm2/Serpine1/Emp2/Ecm1/Gpr4/Tjp1/Tnn/Hyal1/Wars2/Pak4/Nfe2l2/Efna3/Pml/Adgrb1/Hk2/Prkd1/Vegfb/Lif/Thbs1/Wnk1/C6/Tspan18/Hipk2/Fbln5/Ptger4/Epha2"
+          },
+          {
+            "ID": "GOCC_NEURON_PROJECTION_TERMINUS",
+            "setSize": 198,
+            "enrichmentScore": 0.4180228461,
+            "NES": 2.305911335,
+            "pvalue": 3.53e-11,
+            "p.adjust": 3.71e-09,
+            "qvalue": 1.9e-09,
+            "leading_edge": "tags=47%, list=23%, signal=37%",
+            "core_enrichment": "Slc17a8/Kcnc4/Cck/Esr1/Crhbp/Calb2/Clcn3/Septin4/Sri/Erc2/Grik2/Cdh8/Slc9a6/Mylk2/Blvrb/Snap91/Dixdc1/Rab3a/Bin1/Nos1/Atp6v0d1/Slc8a3/Pgr/Kcnab2/Syt7/Btbd8/Syt11/Syp/Ppp2ca/Unc13a/Slc18a1/Elk1/Syt4/Chrm3/Mob2/Snca/Septin5/Grin2a/Uchl1/Adora1/Prkca/Prph/Marcks/Prnp/Flrt1/Kcna1/Ror1/Aqp1/Kcnk2/Maco1/Gabrb3/Rab5a/Grik1/Pacsin1/Gria2/Ntrk2/Vti1a/Kcnip3/Rapgef4/Ilk/Itsn1/Amph/Pclo/Grm4/Hcn1/Prkcb/Ophn1/Baiap2/L1cam/Kcnc3/Unc13b/Dlg4/Mpp4/Tprgl/Atcay/Unc13c/Kcnc1/Cplx2/Dmd/Slc8a2/Grin1/Syt1/Grin2b/Tspoap1/Bsn/Septin6/Septin7/Prrt2/Gria4/Prkn/Cacna1b/Grik5/Sncb/Slc8a1"
+          },
+          {
+            "ID": "GOBP_DNA_TEMPLATED_DNA_REPLICATION",
+            "setSize": 146,
+            "enrichmentScore": -0.4811196258,
+            "NES": -2.345636372,
+            "pvalue": 4.14e-11,
+            "p.adjust": 4.01e-09,
+            "qvalue": 2.05e-09,
+            "leading_edge": "tags=64%, list=33%, signal=43%",
+            "core_enrichment": "Ccne1/Eme2/Brca2/Polg/Rfc2/Atr/Fgfr1/Gins1/Dach1/Fancm/Dscc1/Rfc3/Dbf4/Dnaja3/Rfc5/Pole2/Mcm9/Pold2/Pcna/Mettl4/Fbxo5/Wdr18/Bod1l/Eme1/Gen1/Cdk2/Senp2/Rrm1/Rnaseh1/Mcm7/Mre11a/Npm1/Zmpste24/Wdhd1/Zfp365/Nbn/Orc2/Mgme1/Blm/Polq/Rad51/Twnk/E2f7/Rbbp8/Lig3/Topbp1/Pold3/Etaa1/Zpr1/Brca1/Lig1/Mcm3/Mms22l/Dna2/Atad5/Cdc45/Smarcal1/Rfc1/Pola1/Mcm6/Noc3l/Pold1/Kat7/Cdc6/Pola2/Bard1/Zranb3/Ssbp1/Mcm10/Ticrr/Recql4/Ciz1/Mcmbp/Traip/Parp1/Pole/Orc1/Rad50/E2f8/Mcm4/Timeless/Pole4/Tonsl/Fam111a/Chtf18/Recql/Samhd1/Baz1a/Carm1/Mcm2/Helb/Atg7/Wiz"
+          },
+          {
+            "ID": "GOCC_POSTSYNAPTIC_MEMBRANE",
+            "setSize": 331,
+            "enrichmentScore": 0.3553918224,
+            "NES": 2.085004227,
+            "pvalue": 3.99e-11,
+            "p.adjust": 4.01e-09,
+            "qvalue": 2.05e-09,
+            "leading_edge": "tags=48%, list=28%, signal=35%",
+            "core_enrichment": "Col13a1/Lin7c/Zc4h2/Fbxo45/Lrrtm1/Kcnc4/Nectin3/Kcnh1/Clcn3/Adam22/Pcdhb16/Cbln1/Grik2/Neto2/Apbb1/Grm1/Plppr4/Arc/Nrgn/Abhd17b/Kctd8/Gpr158/Tiam1/Adcy1/Fxyd6/Nbea/Lrrtm2/Snap91/Cacna1e/Kcnd2/Lin7a/Rph3a/Lrrtm3/Nrcam/Slc8a3/Shisa8/Slitrk3/Clstn1/Pten/Kcnab2/Rtn4/Cadps2/Cnksr2/Oprm1/Gphn/Lrrc4c/Cdh10/Mpp2/Gabrd/Itga3/Sema4f/Chrm3/Il1rapl1/Grin2a/Lin7b/Iqsec2/Cntn1/Dlg2/Adora1/Marcks/Dnm3/Adgrl3/Kcna1/Shisa9/Syne1/Gabrb3/Adam10/Gabrb2/Rab5a/Gabra2/Grik1/Pacsin1/Nptn/Slitrk2/Rgs7/Gria2/Ntrk2/Slc6a8/Nlgn3/Gabbr1/Prrt1/Dlgap1/Abhd17a/Shank3/Kcnn2/Hcn1/Faim2/Gabra6/Drd5/Nrg1/Htr5a/Erbb4/Ache/Ank1/Cnih2/Grm5/Glrb/Gabrg2/Nsg1/Slc9a5/Atp6ap2/Kcnc3/Dlg4/Gabra4/Arrb1/Cacna1c/Kcnc1/Dmd/Igsf21/Slc8a2/Lrfn5/Grin1/Grin2b/Gabrb1/Grid1/Syap1/Grin2c/Slc1a6/Ank2/Rgs7bp/Stx1a/Prrt2/Trappc4/Slc16a7/Chrna1/Gria4/Clstn3/Chrna7/Nptx2/Grik5/Cacna1h/Magee1/Slc8a1/Cacna2d1/Atad1/Cntn2/Dlg3/Scn8a/Gabrr1/Chrnb2/Itgb4/Cspg5/Shank1/Gabbr2/Drd2/Gper1/Nlgn1/Dlg1/Gpr156/Lrfn3/Igsf9b/Neto1/Slitrk1/Srgap2/Lrrc4b/Tmub1/Epha7/Lrrtm4"
+          },
+          {
+            "ID": "GOBP_POSITIVE_REGULATION_OF_CELL_CYCLE_PROCESS",
+            "setSize": 236,
+            "enrichmentScore": -0.421061909,
+            "NES": -2.196599197,
+            "pvalue": 4.5e-11,
+            "p.adjust": 4.2e-09,
+            "qvalue": 2.15e-09,
+            "leading_edge": "tags=53%, list=29%, signal=38%",
+            "core_enrichment": "Cpsf3/Mdm2/Prdm9/Birc5/Ncapg/Sh2b1/Dbf4/Ccnd2/Brd4/Ppp1r10/Smc4/Cdca5/Piwil2/Cenpv/Ndc80/Cdc20/Ankrd17/Ccnb1/Rdx/Poc1a/Tmod3/Cdk4/Fbxo5/Rad51b/Racgap1/Cdk1/Ect2/Xrcc3/Plk4/Cdc25b/Nusap1/Gen1/Aif1/Rrm1/Sgo2a/Crebbp/Npm1/Met/Cdca8/Ubxn2b/Aurkb/Bub1/Stil/Spag5/Rad51ap1/Ube2c/Pkn2/Lmnb1/E2f7/Tnf/Anapc7/Sfpq/Plcg2/Dtl/Igf2/Chek2/Ncapg2/Ncaph/Numa1/Mepce/Igf1r/Aurka/Cep295/Atad5/Epgn/Rrm2/Larp7/Mad1l1/Pdgfrb/Msx2/Tert/Rad21/Thoc5/Csf1r/Adamts1/Med1/Stxbp4/Kif23/Cdc14a/Mtbp/Ezh2/Rad18/Cdc6/Ddx39b/Pbx1/Smc5/Mad2l1/Smc2/Incenp/Gli1/Gja1/Nup62/Rad51c/Eif4g3/Hnrnpu/Wnt4/Cdc25a/Fam83d/Phb2/Il1a/Cenpe/Orc1/Adam17/E2f8/Ccn2/Kif14/Map3k20/Cenpj/Anp32b/Akt1/Ncapd2/Rhno1/Ncapd3/Tpr/Hspa2/Sin3a/Ccnd1/Rcc2/Cit/Hyal1/Wiz/Eif4g1/Ddr2/Tgfb1/Wnk1"
+          },
+          {
+            "ID": "REACTOME_TRANSMISSION_ACROSS_CHEMICAL_SYNAPSES",
+            "setSize": 191,
+            "enrichmentScore": 0.4205695314,
+            "NES": 2.30221854,
+            "pvalue": 6e-11,
+            "p.adjust": 5.41e-09,
+            "qvalue": 2.77e-09,
+            "leading_edge": "tags=52%, list=25%, signal=39%",
+            "core_enrichment": "Lin7c/Gnb3/Cacna2d3/Camkk2/Cacnb4/Cask/Grik2/Kcnj3/Gnai1/Kcnj6/Adcy1/Dnajc5/Cacnb2/Pick1/Cacna1e/Rab3a/Lin7a/Calm1/Rims1/Snap25/Cacnb1/Ppfia2/Camk2d/Prkaca/Calm2/Cacna1a/Camk2g/Calm3/Camk2b/Ppfia3/Rps6ka1/Arhgef9/Ncald/Grin2a/Gng3/Ap2s1/Lin7b/Gls2/Dlg2/Rps6ka3/Nefl/Gabrb3/Gng2/Gabrb2/Gabra2/Grik1/Ap2m1/Stxbp1/Akap5/Gnb5/Gria2/Ppfia4/Gabbr1/Camkk1/Gabra6/Tspan7/Prkcb/Gls/Glrb/Gabrg2/Nsf/Slc17a7/Ap2a2/Gng4/Prkar1b/Unc13b/Dlg4/Gabra4/Prkacb/Kcnj9/Adcy5/Prkar1a/Apba1/Grin1/Syt1/Slc6a13/Cacnb3/Tspoap1/Syn2/Gabrb1/Grin2c/Kcnj12/Slc1a6/Stx1a/Chrna1/Gria4/Camk2a/Abat/Cacna1b/Adcy9/Chrna7/Grik5/Gnb4/Cplx1/Arl6ip5/Dlg3/Gabrr1/Chrnb2/Vamp2"
+          },
+          {
+            "ID": "GOCC_PRERIBOSOME",
+            "setSize": 111,
+            "enrichmentScore": -0.5270949367,
+            "NES": -2.47225987,
+            "pvalue": 6.69e-11,
+            "p.adjust": 5.82e-09,
+            "qvalue": 2.98e-09,
+            "leading_edge": "tags=76%, list=26%, signal=56%",
+            "core_enrichment": "Rps6/Rps8/Rps9/Utp11/Ngdn/Rps3a1/Imp3/Rps15a/Dnttip2/Utp4/Rpf1/Rps11/Rrp7a/Dimt1/Rps17/Rps13/Wdr74/Pes1/Xrcc5/Mak16/Utp6/Snu13/Riok2/Rps16/Rps27a/Rps12/Rsl1d1/Rrp36/Bop1/Pwp2/Rps23/Wdr36/Nop58/Rrp9/Imp4/Rcl1/Pno1/Utp18/Rrp15/Nop56/Nol6/Ppan/Wdr12/Aatf/Utp3/Emg1/Ebna1bp2/Rps19bp1/Tbl3/Prkdc/Riox1/Ftsj3/Ltv1/Nop9/Fbl/Casp8/Utp25/Wdr3/Wdr43/Tsr1/Las1l/Utp15/Nat10/Mphosph10/Mrto4/Wdr75/Noc2l/Nop14/Wdr46/Noc4l/Utp14a/Rrp1b/Srfbp1/Rrs1/Kri1/Utp20/Pdcd11/Bms1/Nol10/Exosc10/Heatr1/Dhx37/Mdn1/Bysl"
+          },
+          {
+            "ID": "GOBP_EXTRACELLULAR_STRUCTURE_ORGANIZATION",
+            "setSize": 292,
+            "enrichmentScore": -0.391305057,
+            "NES": -2.096962035,
+            "pvalue": 9.04e-11,
+            "p.adjust": 7.59e-09,
+            "qvalue": 3.89e-09,
+            "leading_edge": "tags=42%, list=22%, signal=34%",
+            "core_enrichment": "Itgb3/Phldb2/Fap/Ercc2/Tgfbi/Ibsp/Lamb2/Prickle1/Adamtsl4/Foxc2/Vit/Ets1/Zfp469/Ero1a/Adamts5/Adamts4/Has2/Eln/Egflam/Sulf1/Nphp3/Eng/Mmp2/Adamtsl2/Phldb1/Clasp1/Tnf/Pbxip1/Lcp1/Mad2l2/Acan/Col5a3/Lox/Mkx/Col4a1/Itgb1/Kif9/Reck/Papln/Adamts9/Tmem38b/Col16a1/Col1a2/Col8a1/Emilin1/Fscn1/Col18a1/Col22a1/Hspg2/Adamts1/Prdm5/Fkbp10/Mfap4/Foxf2/Tnfrsf1b/Pomt1/Nfkb2/Ctss/Tnfrsf1a/Postn/Adamts7/Col4a2/Anxa2/Sfrp2/Dag1/Adamts14/Cav1/Notch1/Smad3/Tnfrsf11b/Smoc2/Abl1/Loxl3/Hapln2/Smarca4/Ccn2/Pxdn/Efemp2/Mmp17/Ddr1/P3h1/Bmp2/Adamts20/Sulf2/Mmp9/Serpinh1/Flrt2/Mmp13/Pomt2/Cflar/P4ha1/Col7a1/Col5a2/Smoc1/Crtap/Adamtsl1/Col1a1/Pmp22/Adamts19/Bcl3/Tfap2a/Sh3pxd2b/Antxr1/Loxl1/Aebp1/Fn1/Ddr2/Col14a1/Myo1e/Atp7a/Qsox1/B4galt1/Tgfb1/Col5a1/Olfml2b/Col28a1/Comp/Dmp1/Mmp14/Col8a2/Fbln5/Fbln1/Ccn1/Plod3"
+          },
+          {
+            "ID": "GOMF_HELICASE_ACTIVITY",
+            "setSize": 141,
+            "enrichmentScore": -0.4879676289,
+            "NES": -2.363477658,
+            "pvalue": 1.11e-10,
+            "p.adjust": 9.01e-09,
+            "qvalue": 4.61e-09,
+            "leading_edge": "tags=60%, list=30%, signal=42%",
+            "core_enrichment": "Ddx10/Helz2/Xrcc5/Fancm/Dscc1/Ddx31/Rfc3/Eif4a1/Ddx1/Rfc5/Mcm9/Ddx56/Ddx51/Chd6/Ighmbp2/Brip1/Ifih1/Ddx59/Ddx52/Zgrf1/Dhx15/Rad54l2/Supv3l1/Ercc2/Ddx46/Mcm7/Dhx32/Rad54l/Mre11a/G3bp1/Ruvbl2/Blm/Polq/Rad51/Ercc6l/Twnk/Ddx27/Dhx33/Ddx3y/Pif1/Mcm8/Chd8/Mcm3/Hells/Dna2/Ercc6/Smarcal1/Ercc6l2/Dhx34/Mcm6/Ddx11/Mov10/Ddx23/Ddx20/Zranb3/Ddx39b/Ttf2/Chd1l/Chd1/Dhx8/Recql4/Ep400/Chd4/Ruvbl1/Smarcad1/Mtrex/Smarca4/Rad50/Mcm4/Ddx54/Ddx41/Dhx16/Chtf18/Ddx18/Recql/Dhx9/Dhx29/Ddx21/Ddx47/Mcm2/Helb/Xrcc6/Snrnp200/Aqr/Dhx37"
+          },
+          {
+            "ID": "GOCC_COLLAGEN_CONTAINING_EXTRACELLULAR_MATRIX",
+            "setSize": 327,
+            "enrichmentScore": -0.3723780659,
+            "NES": -2.023435189,
+            "pvalue": 1.57e-10,
+            "p.adjust": 1.23e-08,
+            "qvalue": 6.31e-09,
+            "leading_edge": "tags=42%, list=27%, signal=32%",
+            "core_enrichment": "Prg4/Htra1/Ltbp4/Col6a2/Col3a1/Cd151/Ncan/Lamb1/Vegfa/Tgfb2/Cspg4/Lgals9/Loxl2/S100a13/Angpt1/Scara3/Col6a6/Lgals3/Hapln1/Vwc2/Coch/Col6a1/Igfbpl1/Lamc1/Ctsd/Prelp/Ogn/Ctsb/Anxa3/Vwa5a/Tgfbi/Anxa5/Sparc/Lamb2/Adamtsl4/Mamdc2/Vit/Slit2/Ntn3/Adamts5/Adamts4/Eln/Egflam/Calr/Lgals1/Vcan/Fibcd1/Acan/Igf2/Vwa2/Col5a3/Lox/Col12a1/Mfap5/Mgp/Fgfr2/Ntn1/Ccn3/Efna5/Col4a1/Itgb1/Gpc1/Papln/Adamtsl5/S100a6/Col16a1/Col1a2/Col8a1/Tgm2/Emilin1/Col18a1/Lama5/Col22a1/Hspg2/Adamts1/Fcna/Angptl2/Mfap4/Angpt2/Plxnb2/Megf6/Postn/Col4a2/Anxa2/Dag1/Ctsc/Agrn/Bgn/Smoc2/Fbln2/Loxl3/Hapln2/Pxdn/Efemp2/Vwf/Hnrnpm/Thbs2/P3h1/Mmp9/Serpinh1/Hcfc1/Ltbp3/Col6a3/Gpc6/Runx1/Serpine1/Ctsz/Col7a1/Col5a2/Smoc1/Adamtsl1/Col1a1/Pmp22/Ecm1/S100a11/Timp1/Tnn/Plod1/Loxl1/Fn1/P3h2/Col14a1/Thbs1/Tgfb1/Fmod/Angptl4/Col5a1/Col28a1/Itih3/Comp/Lrrc15/Ssc5d/Col6a5/Col8a2/Fbln5/Fbln1/Ccn1/Plod3"
+          },
+          {
+            "ID": "GOCC_CATION_CHANNEL_COMPLEX",
+            "setSize": 163,
+            "enrichmentScore": 0.4371169352,
+            "NES": 2.344385585,
+            "pvalue": 1.99e-10,
+            "p.adjust": 1.52e-08,
+            "qvalue": 7.77e-09,
+            "leading_edge": "tags=49%, list=26%, signal=37%",
+            "core_enrichment": "Kcnc4/Kcnh1/Trpc6/Micu3/Cacna2d3/Kcnk1/Kcnab1/Cacnb4/Mcub/Grik2/Kcnj3/Scn11a/Trpc1/Abcc8/Cacnb2/Fkbp1b/Kcnj11/Cacna1e/Kcnd2/Kcnk4/Calm1/Snap25/Cacnb1/Ryr2/Scn2a/Calm2/Kcnab2/Scnn1g/Cacna1a/Unc80/Scn2b/Calm3/Kcng2/Kcnmb2/Kcna1/Kcnk2/Kcnip1/Catspere2/Kcnb2/Grik1/Pde4b/Cacna1g/Dpp6/Kcnip3/Kcnmb4/Hcn1/Ryr3/Pde4d/Atp5g3/Kcnq2/Pkd1l1/Kcnc3/Scn9a/Kcnv1/Kcns2/Cntnap2/Cacna1c/Kcnc1/Scn1b/Kcnab3/Trpc5/Cacnb3/Cacna1d/Lrrc55/Kcnq4/Cacna1i/Cacna1s/Gria4/Cacna1b/Trpc4/Catsper2/Grik5/Kcnip4/Cacna1h/Cacna2d1/Scn4a/Scn8a/Cnga2/Scn3b/Amigo1"
+          },
+          {
+            "ID": "REACTOME_M_PHASE",
+            "setSize": 374,
+            "enrichmentScore": -0.3653899924,
+            "NES": -2.019589141,
+            "pvalue": 2.48e-10,
+            "p.adjust": 1.84e-08,
+            "qvalue": 9.4e-09,
+            "leading_edge": "tags=52%, list=33%, signal=36%",
+            "core_enrichment": "H2bc4/H2bc3/Nup37/Smc3/H4c17/Ccp110/H2bc21/Csnk2b/Alms1/Psmd10/Pds5b/Psma5/Cenpl/Cdc27/Dync1h1/Tubb6/Seh1l/Cenpn/Ppp2r5e/Psme4/Ran/H2bc15/H4c2/H4c11/Nup88/Nup93/H2bc22/Banf1/H2ax/H2ac7/Cep72/Ccnb2/Xpo1/Mapre1/Ncapg/Tubb5/Tubb4b/Ska2/Nuf2/H2aj/Ubc/Cenph/Nsl1/Sgo1/Smc4/Cdca5/Psma8/H2ac13/Cc2d1b/Mcph1/Ndc80/Rps27a/Cdc20/H2ac15/Tubgcp4/Ccnb1/H2ac8/H2ac19/Psmd12/Nup35/H4c9/H2bc6/Gm11808/Bub3/Ube2i/Fbxo5/Ska1/Sdccag8/Ankle2/Nup43/Cep63/Psmc2/Cdk1/H2ac6/Rangap1/Vrk1/Rae1/Zwilch/H2ac12/Nek2/Bub1b/Plk4/Pmf1/Ywhae/H2ac11/Sgo2a/Vrk2/H2ac22/Tuba1b/Kif18a/Sec13/Cdca8/H2bc9/H2ac10/H4c18/Aurkb/Knl1/Cep164/Bub1/Cenpq/Anapc2/Nudc/Ndc1/H2ac23/Nedd1/Spdl1/Aaas/Ube2c/Nde1/H2ac4/Lmnb1/Ercc6l/Nupl2/Ppp2r5d/Clasp1/Zw10/H2bc13/Cep131/H2ac24/Anapc7/Nup210/Pttg1/Psmd1/H2bc8/Ncapg2/Haus6/Cep78/Cenpm/Ncaph/H2bc7/Dsn1/Numa1/Psmd2/Cep152/Kif2c/Pom121/Nup107/Mastl/Ppp2r5a/Cep41/Mad1l1/Pds5a/Rad21/Kif20a/H2ac20/Gorasp2/Kif23/Cenpf/Psmd3/Rcc1/Ctdnep1/Espl1/Psmd11/Csnk1d/Cep76/Ahctf1/Kntc1/Cep192/Mad2l1/Emd/Mis12/Smc2/Incenp/Nup155/Ninl/Nup50/Nup62/Ckap5/Kpnb1/Cenpe/Eml4/Smc1a/Cep135/Cdk5rap2/Cenpj/Cep250/Plk1/Cep290/Ncapd2/Ncapd3/Tpr/Nup214/Tubg1/Lpin2/Anapc1/Nup160/Nup153/Rcc2/Nek9/Nup98/Nup205/Nup188/Psme3/Psme2b"
+          },
+          {
+            "ID": "GOBP_DNA_RECOMBINATION",
+            "setSize": 296,
+            "enrichmentScore": -0.3847449513,
+            "NES": -2.071510195,
+            "pvalue": 3.21e-10,
+            "p.adjust": 2.31e-08,
+            "qvalue": 1.18e-08,
+            "leading_edge": "tags=51%, list=30%, signal=36%",
+            "core_enrichment": "Nabp2/Nfkbiz/Xrcc2/Xrcc5/Poll/Ppp4r2/Rnf169/Fancm/H2ax/Fus/Prdm9/Eid3/Pogz/Actl6a/Exosc3/Was/Kdm1a/Rpa3/Inip/Kmt5c/Mcm9/Mnd1/Mlh1/Brip1/Il27ra/Yy1/Trip13/Aunip/Kin/Pot1b/Rad51b/Fancb/Tcf7/Cep63/Xrcc3/Tep1/Eme1/Supv3l1/Ercc2/Gen1/Fignl1/Parpbp/Mcm7/Rad54l/Mre11a/Paxip1/Supt6/Palb2/Ruvbl2/Zfp365/Ptprc/Nbn/Stat6/Psmc3ip/Blm/Rad51ap1/Nono/Polq/Kmt5a/Rad51/Exo1/Rbbp8/Lig3/Topbp1/Cntd1/Top2a/Sfpq/Iho1/Mad2l2/Rad54b/Chek1/Pif1/H1f10/Mcm8/Slc15a4/Brca1/Rpa1/Uchl5/Msh2/Rmi2/Lig1/Mcm3/Mms22l/Atad5/Cdc45/Ercc6/Trrap/Batf/Lig4/Rad21/Brd8/Spidr/Mcm6/Prkdc/Actr5/Msh6/Ezh2/Ing3/Rad18/Trp53bp1/Bard1/Zranb3/Mei4/Smchd1/Tcf3/Hus1/Wrap53/Zfyve26/Smc5/Recql4/Ep400/Parp1/Rad51c/Chd4/Tex19.1/Ruvbl1/Ino80b/Smarcad1/Atm/Abl1/Rad50/Top3a/Mcm4/Ints3/Ubr2/Timeless/Tonsl/Hspd1/H1f6/Chtf18/Rhno1/Hdgfl2/Foxp1/Dcaf1/Sem1/Recql/Samhd1/Zcwpw1/Ubqln4/Fancd2/Cyren/Xrcc1/Mcm2/Helb/Xrcc6/Hrob/Bcl11b/Aplf/Tgfb1/Ccr6"
+          },
+          {
+            "ID": "REACTOME_CELL_CYCLE_CHECKPOINTS",
+            "setSize": 280,
+            "enrichmentScore": -0.3863664548,
+            "NES": -2.057347409,
+            "pvalue": 4.42e-10,
+            "p.adjust": 3.09e-08,
+            "qvalue": 1.58e-08,
+            "leading_edge": "tags=53%, list=33%, signal=36%",
+            "core_enrichment": "Anapc15/Cenpu/Nsd2/H2bc4/H2bc3/Nup37/Ccne1/H4c17/H2bc21/Psmd10/Psma5/Cenpl/Rfc2/Cdc27/Dync1h1/Seh1l/Cenpn/Ppp2r5e/Psme4/H2bc15/Cdc25c/H4c2/H4c11/H2bc22/H2ax/Mdm2/Rfc3/Ccnb2/Xpo1/Mapre1/Dbf4/Ska2/Nuf2/Ubc/Cenph/Nsl1/Sgo1/Rfc5/Rpa3/Psma8/Ccna2/Rad9a/Ndc80/Rps27a/Cdc20/Ccnb1/Brip1/Psmd12/H4c9/H2bc6/Gm11808/Bub3/Ska1/Nup43/Psmc2/Cdk1/Rangap1/Zwilch/Bub1b/Cdk2/Pmf1/Ywhae/Sgo2a/Mcm7/Kif18a/Mre11a/Sec13/Cdca8/H2bc9/Nbn/H4c18/Aurkb/Knl1/Orc2/Bub1/Cenpq/Anapc2/Blm/Nudc/Spdl1/Ube2c/Nde1/Trp53/Ercc6l/Exo1/Ppp2r5d/Clasp1/Rbbp8/Zw10/Topbp1/H2bc13/Anapc7/Psmd1/H2bc8/Chek2/Chek1/Babam2/Mcm8/Cenpm/H2bc7/Dsn1/Psmd2/Brca1/Rpa1/Kif2c/Rmi2/Mcm3/Nup107/Dna2/Cdc45/Ppp2r5a/Mad1l1/Mcm6/Uimc1/Cenpf/Psmd3/Psmd11/Cdc6/Trp53bp1/Bard1/Pkmyt1/Hus1/Ahctf1/Kntc1/Mcm10/Mad2l1/Mis12/Incenp/Clspn/Ckap5/Cdc25a/Cenpe/Atm/Orc1/Rad50/Top3a/Mcm4/Gtse1/Plk1/Rhno1/Wee1/Anapc1/Nup160/Mcm2/Rcc2/Mdc1/Nup98/Psme3/Psme2b"
+          },
+          {
+            "ID": "GOCC_INNER_MITOCHONDRIAL_MEMBRANE_PROTEIN_COMPLEX",
+            "setSize": 139,
+            "enrichmentScore": 0.4479575282,
+            "NES": 2.363120293,
+            "pvalue": 5.43e-10,
+            "p.adjust": 3.7e-08,
+            "qvalue": 1.89e-08,
+            "leading_edge": "tags=55%, list=30%, signal=38%",
+            "core_enrichment": "Trmt10b/Timm29/Micu3/Uqcc3/Mcub/Cox4i1/Apoo/Grpel2/Ndufc2/Cox7a2/Atp5o/Atp5md/Timm9/Ndufc1/Immp1l/Uqcrh/Sdhd/Romo1/Ndufs4/Atp5l/Atp5mpl/Ndufb8/Atp5pb/Dmac2/Ndufa8/Timm22/Ndufb9/Ndufb4/Ndufa13/Dnajc15/Timm10b/Ndufv3/Ndufs3/Atp5g3/Ndufa1/Ndufb11/Ndufb5/Cox7a1/Cox6c/Dnajc19/Uqcrfs1/Uqcr10/mt-Co1/mt-Nd3/Atp5h/Ndufa6/Cox6a1/Cox7a2l/Ndufs1/Cox6b1/Ndufb2/Cox4i2/Atp5k/Ndufs5/Uqcr11/Cox8a/Ndufb3/Atp5j2/Ndufa7/Cox5b/Cox7c/Atp5e/mt-Nd6/Atp5c1/Ndufs7/Ndufb7/Ndufb6/Ndufs2/Uqcrc1/mt-Nd1/mt-Co3/Chchd10/Uqcrc2/Sdhc/Atp5a1/Atp5j"
+          },
+          {
+            "ID": "GOBP_REGULATION_OF_MITOTIC_CELL_CYCLE_PHASE_TRANSITION",
+            "setSize": 317,
+            "enrichmentScore": -0.3671904415,
+            "NES": -1.99149779,
+            "pvalue": 7.25e-10,
+            "p.adjust": 4.81e-08,
+            "qvalue": 2.46e-08,
+            "leading_edge": "tags=48%, list=29%, signal=35%",
+            "core_enrichment": "Cpsf3/Mdm2/Ptpn6/Pbrm1/Birc5/Actl6a/Dbf4/Ccnd2/Bcl2/Nuf2/Riok2/Myo16/Brd4/Cdca5/Ambra1/Arid1a/Inip/Ctdsp2/Ndc80/Cdc20/Foxo4/Ankrd17/Ccnb1/Ttk/Men1/Rdx/Tmod3/Cdk4/Trip13/Arid1b/Bub3/Fbxo5/Bid/Rad51b/Smarcb1/Ddb1/Cdk1/Gjc2/Zwilch/Xrcc3/D7Ertd443e/Bub1b/Cdc25b/Ercc2/Gen1/Cdk2/Fzr1/Senp2/Aif1/Rrm1/Crebbp/Mre11a/Cdca8/Zfp36l1/Nbn/Aurkb/Knl1/Bub1/Stil/Blm/Klf4/Spdl1/Ube2c/Trp53/Lmnb1/Acvr1/E2f7/Rbbp8/Ctc1/Zw10/Topbp1/Casp2/Anapc7/Dtl/Mbd4/Zc3h12d/E2f1/Chek1/Babam2/Pinx1/Cdk5rap3/Mepce/Brca1/Atad5/Tfap4/Rrm2/Larp7/Mad1l1/Rbl1/Tert/Rad21/Adamts1/Prkdc/Cdc14a/Uimc1/Cenpf/Mtbp/Ezh2/Cdc6/Bard1/Pbx1/Tcf3/Hus1/Kntc1/Cep192/Ticrr/Mad2l1/Incenp/Clspn/Rad51c/Cdc25a/Haspin/Phb2/Cenpe/Pidd1/Atm/Orc1/Smarca4/Adam17/Rad50/Cdk5rap2/Kif14/Ints3/Cdk6/Cenpj/Anp32b/Aven/Plk1/Akt1/Tpr/Hspa2/Xpc/Bcl7a/Jade1/Sin3a/Inhba/Ctdsp1/Smarcc1/Ccnd1/Rcc2/Zfp36l2/Rbm38/Phf10/Hyal1/Cdkn2a/Pml/Eif4g1/Ddr2/Nek6/Fam107a/Tgfb1/Gpnmb/Psme3"
+          },
+          {
+            "ID": "GOBP_CELL_SUBSTRATE_ADHESION",
+            "setSize": 338,
+            "enrichmentScore": -0.3674729912,
+            "NES": -2.003916438,
+            "pvalue": 7.62e-10,
+            "p.adjust": 4.93e-08,
+            "qvalue": 2.52e-08,
+            "leading_edge": "tags=45%, list=29%, signal=33%",
+            "core_enrichment": "Rras/Stk4/Ctnnb1/Ldb1/Itga8/Bcar1/Acvrl1/Bcl2/Vamp3/Parvb/Nid2/Fermt1/Lims2/Axl/Ptk2/Kdr/Col3a1/Mkln1/Itga10/Rock1/Lamb1/Vegfa/Adam15/Ndnf/Men1/Hpse/Dab2/Angpt1/Arpc2/Smad6/Fermt2/Bves/Vwc2/Ninj1/Actn1/Actg1/Lamc1/Itgb3/Csf1/Phldb2/Cib1/Thy1/Fndc3b/Lamb2/Itga1/Itga9/P4hb/Parvg/Vit/Ptprk/Zfp469/Srf/Has2/Egflam/Arhgap6/Calr/Coro1c/Clasp1/Lgals1/Akip1/Lims1/Vwa2/Col5a3/Epb41l5/Tesk1/Lpxn/Efna5/Mertk/Itgb1/Crkl/Jam3/Adamts9/Cdh11/Col16a1/Coro2b/Gas6/Col8a1/Emilin1/Eda/Lama5/Rac2/Angpt2/Strc/Rin2/Postn/Itgb8/Nrp1/Ajap1/Itgb5/Spp1/Cass4/Dag1/Spry4/Mdk/Actn4/Fer/Notch1/Wnt4/C1qbp/Cd63/Smad3/Plau/Smoc2/Abl1/Fbln2/Itgad/Itgbl1/Ccn2/Efemp2/Vwf/Kif14/Rreb1/Cdk6/Ddr1/Itga11/Itgax/Ppm1f/Ptpn11/Jag1/Ajuba/Itga5/Rsu1/Itgb2/Sorbs3/Itgam/Serpine1/Dnm2/Emp2/Smoc1/Col1a1/Ston1/Map4k4/Rcc2/Dock1/Adam8/Itgav/Tnn/Antxr1/Cdkn2a/Fn1/Ppard/Flna/Fam107a/Thbs1/Vcl/Dock5/Myh9/Itga2b/Dmp1/Mmp14/Iqgap1/Fbln1/Ccn1"
+          },
+          {
+            "ID": "GOBP_PROTEIN_LOCALIZATION_TO_SYNAPSE",
+            "setSize": 98,
+            "enrichmentScore": 0.5015774845,
+            "NES": 2.438126319,
+            "pvalue": 9.25e-10,
+            "p.adjust": 5.83e-08,
+            "qvalue": 2.98e-08,
+            "leading_edge": "tags=68%, list=27%, signal=50%",
+            "core_enrichment": "Lrrtm1/Zdhhc2/Rab11a/Adam22/Stau2/Neto2/Abhd17b/Nbea/Cdk5/Vps35/Snap25/Prkcz/Slitrk3/Clstn1/Nptxr/Gphn/Kif5c/Nptx1/Grin2a/Stx3/Iqsec2/Dlg2/Snap47/Mapt/Stx1b/Tnik/Adam10/Reln/Kif5a/Rapgef4/Nlgn3/Dlgap1/Pclo/Klc1/Nrxn1/Erbb4/Nrxn3/Nsg1/Baiap2/Asic2/Dlg4/Mpp4/Hras/Lgi1/Mapk8ip3/Grin1/Nrxn2/Bsn/C1ql2/Grin2c/Ogt/Mapk10/Camk2a/Clstn3/Nptx2/Arhgap44/Cplx1/Sacm1l/Vamp2/Map2k1/Homer1/Shank1/Map1a/Nlgn1/Dlg1/Rab8a/Neto1"
+          },
+          {
+            "ID": "REACTOME_MITOTIC_PROPHASE",
+            "setSize": 111,
+            "enrichmentScore": -0.4992911327,
+            "NES": -2.341850291,
+            "pvalue": 2.12e-09,
+            "p.adjust": 1.3e-07,
+            "qvalue": 6.66e-08,
+            "leading_edge": "tags=68%, list=33%, signal=46%",
+            "core_enrichment": "H2bc4/H2bc3/Nup37/H4c17/H2bc21/Seh1l/H2bc15/H4c2/H4c11/Nup88/Nup93/H2bc22/Banf1/H2ax/H2ac7/Ccnb2/H2aj/Smc4/H2ac13/Mcph1/H2ac15/Ccnb1/H2ac8/H2ac19/Nup35/H4c9/H2bc6/Nup43/Cdk1/H2ac6/Vrk1/Rae1/H2ac12/H2ac11/Vrk2/H2ac22/Sec13/H2bc9/H2ac10/H4c18/Ndc1/H2ac23/Aaas/H2ac4/Lmnb1/Nupl2/H2bc13/H2ac24/Nup210/H2bc8/Ncapg2/H2bc7/Numa1/Pom121/Nup107/Mastl/H2ac20/Gorasp2/Ctdnep1/Emd/Smc2/Nup155/Nup50/Nup62/Plk1/Ncapd3/Tpr/Nup214/Lpin2/Nup160/Nup153/Nek9/Nup98/Nup205/Nup188"
+          },
+          {
+            "ID": "GOBP_RIBOSOMAL_SMALL_SUBUNIT_BIOGENESIS",
+            "setSize": 102,
+            "enrichmentScore": -0.5088946782,
+            "NES": -2.344785599,
+            "pvalue": 2.49e-09,
+            "p.adjust": 1.5e-07,
+            "qvalue": 7.66e-08,
+            "leading_edge": "tags=72%, list=39%, signal=44%",
+            "core_enrichment": "2810004N23Rik/Nob1/Rps6/Rps8/Rps9/Utp11/Ngdn/Rps3a1/Imp3/Rps15a/Dnttip2/Utp4/Rps11/Rrp7a/Dimt1/Rps17/Abt1/Rps13/Rps27l/Xrcc5/Rpsa/Utp6/Snu13/Riok2/Rps16/Rps12/Nom1/Ddx52/Rrp36/Pwp2/Rps23/Wdr36/Ercc2/Rpp40/Nop58/Rrp9/Imp4/Npm1/Rcl1/Pno1/Utp18/Nop56/Nol6/Aatf/Nol11/Utp3/Emg1/Rps19bp1/Tbl3/Prkdc/Ltv1/Nop9/Fbl/Utp25/Wdr3/Wdr43/Tsr1/Utp15/Nat10/Mphosph10/Wdr75/Nop14/Wdr46/Srfbp1/Rrs1/Kri1/Utp20/Bms1/Nol10/Exosc10/Heatr1/Dhx37/Bysl"
+          },
+          {
+            "ID": "GOBP_REGULATION_OF_SYNAPTIC_VESICLE_EXOCYTOSIS",
+            "setSize": 56,
+            "enrichmentScore": 0.5892488663,
+            "NES": 2.540573265,
+            "pvalue": 2.65e-09,
+            "p.adjust": 1.55e-07,
+            "qvalue": 7.95e-08,
+            "leading_edge": "tags=50%, list=20%, signal=40%",
+            "core_enrichment": "Fbxo45/Kcnh1/Stxbp5l/Cacnb4/Cask/Sv2c/Pfn2/Sv2b/Cacna1e/Rab3a/Rims1/Ppfia2/Wnt7a/Rims3/Dvl1/Syp/Syt4/Prkca/Rims2/Rab5a/Bcl2l1/Fbxl20/Prkcb/Unc13b/Tprgl/Syt1/Stxbp5/Dnm1l"
+          },
+          {
+            "ID": "GOBP_REGULATION_OF_NEUROTRANSMITTER_TRANSPORT",
+            "setSize": 112,
+            "enrichmentScore": 0.4757882715,
+            "NES": 2.37221008,
+            "pvalue": 2.95e-09,
+            "p.adjust": 1.63e-07,
+            "qvalue": 8.33e-08,
+            "leading_edge": "tags=54%, list=27%, signal=40%",
+            "core_enrichment": "Fbxo45/Slc17a8/Kcnc4/Kcnh1/Stxbp5l/Cacnb4/Gpm6b/Cask/Mctp1/Sv2c/Gpr158/Pfn2/Sv2b/Cacna1e/Rab3a/Nos1/Rims1/Ppfia2/Rab3b/Wnt7a/Cacna1a/Rims3/Dvl1/Syp/Unc13a/Slc18a1/Syt4/Syngr3/Snca/Prkca/Rims2/Stx1b/Sphk1/Rab5a/Stxbp1/Bcl2l1/Ntrk2/Fbxl20/Flot1/Prkcb/Kcnc3/Unc13b/Tprgl/Rhot1/Cplx2/Syt1/Stxbp5/Dnm1l/Stx1a/Tor1a/Camk2a/Prkn/Cacna1b/Vps18/Cplx1/Arl6ip5/Cspg5/Drd2/Nlgn1/Mef2c/Nat8l"
+          },
+          {
+            "ID": "REACTOME_CHROMOSOME_MAINTENANCE",
+            "setSize": 122,
+            "enrichmentScore": -0.4837592802,
+            "NES": -2.300791298,
+            "pvalue": 2.97e-09,
+            "p.adjust": 1.63e-07,
+            "qvalue": 8.33e-08,
+            "leading_edge": "tags=77%, list=40%, signal=47%",
+            "core_enrichment": "Cenpp/H4c4/Cenps/Rtel1/H2bc11/Wrn/H2bc12/Ccna1/Cenpo/Itgb3bp/H4c12/Chtf8/Prim1/Cenpa/Rfc4/Cenpw/Mis18bp1/Oip5/Hjurp/Cenpi/Prim2/Mis18a/Cenpu/Fen1/H2bc4/H2bc3/H4c17/H2bc21/Cenpl/Rfc2/Rbbp7/Cenpn/H2bc15/H4c2/H4c11/H2bc22/H2ax/Dscc1/H2ac7/Rfc3/H2aj/Stn1/Cenph/Rfc5/Rpa3/Ccna2/Pold2/H2ac13/H2ac15/H2ac8/H2ac19/Pcna/H4c9/H2bc6/H2ac6/H2ac12/Cdk2/H2ac11/H2ac22/Npm1/H2bc9/Pot1a/H2ac10/H4c18/Knl1/Cenpq/Blm/H2ac23/H2ac4/Terf1/Ctc1/H2bc13/Pold3/H2ac24/Dkc1/H2bc8/Pif1/Cenpm/H2bc7/Nhp2/Rpa1/Lig1/Dna2/Rfc1/Tert/Pola1/H2ac20/Pold1/Pola2/Gar1/Wrap53/Ruvbl1/Chtf18/Shq1"
+          },
+          {
+            "ID": "GOBP_NEGATIVE_REGULATION_OF_CELL_ADHESION",
+            "setSize": 260,
+            "enrichmentScore": -0.3832282065,
+            "NES": -2.024326186,
+            "pvalue": 2.95e-09,
+            "p.adjust": 1.63e-07,
+            "qvalue": 8.33e-08,
+            "leading_edge": "tags=33%, list=19%, signal=27%",
+            "core_enrichment": "Scrib/Ptprc/Ripor2/Notch4/Klf4/Mmp2/Arhgap6/Coro1c/Zc3h12a/Cblb/Map2k5/Zc3h8/Lgals1/Mad2l2/Epb41l5/Zc3h12d/Lpxn/Efna5/Tmem131l/Plxna4/Jam3/Pde5a/Coro2b/Mad1l1/Foxj1/Vsir/Spi1/Hspg2/Plxnb1/Myo1f/Hlx/Runx3/Tsc2/C1qtnf1/Hspb1/Angpt2/Tnfaip8l2/Ager/Plxnb2/Postn/Ajap1/Ass1/Spry4/Mdk/Cd276/Actn4/Nf2/Plxnb3/Notch1/Gtpbp4/Abl1/Loxl3/Jak3/Dtx1/Nckap1l/Slc4a2/Bmp2/Ppm1f/Akt1/Ptpn11/Dlg5/Mbp/Jag1/Il4ra/Gli3/Havcr2/Runx1/Serpine1/Zfp35/Erbb2/Lag3/Cebpb/Col1a1/Laptm5/Rcc2/Adam8/Cdkn2a/Akna/Fam107a/Thbs1/Tgfb1/Gpnmb/Wnk1/Acp5/Mmp14/Cd44/Fbln1"
+          },
+          {
+            "ID": "GOBP_EXOCYTOSIS",
+            "setSize": 348,
+            "enrichmentScore": 0.324392341,
+            "NES": 1.915949015,
+            "pvalue": 3.17e-09,
+            "p.adjust": 1.7e-07,
+            "qvalue": 8.7e-08,
+            "leading_edge": "tags=42%, list=25%, signal=32%",
+            "core_enrichment": "Lin7c/Fbxo45/Crhr1/Rab11fip2/Rab11a/Kcnh1/Exoc8/Vps4a/Crhbp/Stxbp5l/Otof/Septin4/Cacnb4/Napb/Doc2b/Erc2/Cask/Stam/Scn11a/Sv2c/Rab33b/Ppp3cb/Syt9/Pfn2/Coro1a/Scrn1/Sv2b/Clasp2/Cacna1e/Rab3a/Cdk5/Lin7a/Rph3a/Rims1/Snap25/Srcin1/Atp9a/Lgi3/Exoc3l/Vps41/Ppfia2/Rab3b/Wnt7a/Rab3d/Prkaca/Syt7/Rab3ip/Cadps2/Cacna1a/Doc2g/Rims3/Dvl1/Syt11/Rph3al/Syp/Unc13a/Syt4/Ppfia3/Syngr3/Il1rapl1/Snca/Septin5/Scamp1/Stx3/Syt2/Lin7b/Snap47/Prkca/Pak1/Syngr1/Snx4/Rab12/Rims2/Rab27a/Stx1b/Scamp5/Cadps/Rab5a/Ccr2/Stxbp1/Eqtn/Exoc5/Cacna1g/Bcl2l1/Exoc7/Napa/Rapgef4/Itsn1/Syt17/Sv2a/Syt3/Fbxl20/Pclo/Vsnl1/Chmp2a/Sytl2/Prkcb/Kcnq2/Trim72/Nsf/Rab44/Exph5/Erc1/Trappc11/Pip5k1c/Unc13b/Tprgl/C9orf72/Unc13c/Cacna1c/Cdk16/Cplx2/Rab11fip1/Syt1/Stxbp5/Syt6/Brsk2/Dnm1l/Syn2/Sptbn2/Cacna1i/Synj1/Pdpk1/Stx1a/Prrt2/Rasgrp1/Unc13d/Camk2a/Prkn/Sytl1/Cacna1b/Vamp8/Grik5/Cacna1h/Washc1/Vps18/Rab9/Cplx1/Atp13a2/Foxf1/Sacm1l/Rabgef1/Rab3c/Exoc6/Syt12/Cdk5r2/Vamp2"
+          },
+          {
+            "ID": "GOBP_RNA_LOCALIZATION",
+            "setSize": 156,
+            "enrichmentScore": -0.439444044,
+            "NES": -2.166569875,
+            "pvalue": 3.99e-09,
+            "p.adjust": 2.1e-07,
+            "qvalue": 1.07e-07,
+            "leading_edge": "tags=56%, list=31%, signal=39%",
+            "core_enrichment": "Hnrnpab/Cct2/Tst/Seh1l/Atr/Hhex/Ran/Nup88/Nup93/Nxf1/Thoc6/Xpo1/Rftn2/Snupn/Parn/Tgfbr2/Cct4/Nup35/Hnrnpa1/Yy1/Mrpl18/Ybx1/Nup43/Tcp1/Sarnp/Rae1/Mcm3ap/Hnrnpa3/Alkbh5/Senp2/Nop58/Fubp3/Npm1/Supt6/Sec13/Casc3/Zfp36l1/Ndc1/Rbm15b/Aaas/Nsun2/Khdrbs1/Nupl2/Terf1/Nxt1/Iws1/Nup210/Dkc1/Nol6/Stau1/Magohb/Pom121/Nup107/Thoc5/Rftn1/Fbl/Parp11/Ddx39b/Ahctf1/Wrap53/Nup155/Ncbp1/Bicd2/Nup62/Prpf6/Hnrnpu/Ckap5/Kpnb1/Atm/Hsf1/Znhit6/Hnrnpa2b1/Tpr/Nup214/Sem1/Dhx9/Nup160/Nup153/Xpot/Khsrp/Nup98/Exosc10/Lrpprc/Xpo5/Nup188/Wnk1/Zfp36"
+          },
+          {
+            "ID": "GOBP_TAXIS",
+            "setSize": 363,
+            "enrichmentScore": -0.351997115,
+            "NES": -1.937120123,
+            "pvalue": 4.65e-09,
+            "p.adjust": 2.39e-07,
+            "qvalue": 1.23e-07,
+            "leading_edge": "tags=34%, list=22%, signal=28%",
+            "core_enrichment": "Adgra2/Fpr1/Arrb2/Itgb3/Csf1/Myo9b/Cx3cr1/Gpsm3/Aif1/Flt1/Itga1/Ccl8/Itga9/Slit2/Ccl12/Slc8b1/Met/Lgmn/Scrib/Ripor2/Cx3cl1/Slamf9/Sema3f/Ccr7/Eng/Mmp2/Wasl/Calr/Kit/Padi2/Stk39/Ackr3/Lox/Rho/Ntn1/Ednra/Ccn3/Tafa4/Plekhg5/Plxna4/Ackr2/Crkl/Pdgfa/Ccl6/Jam3/Bin2/Pgf/Gas6/Pdgfrb/Spi1/Cxcl16/Csf1r/Cmklr1/Dock2/Saa3/Pik3cg/Ccr5/Tsc2/C5ar2/Hspb1/Rac2/Angpt2/Ager/Hgf/Ccl5/Gstp2/Nrp1/Cxcr4/Spp1/Mdk/Agrn/Tirap/Fer/Plxnb3/Notch1/Pla2g6/C1qbp/Smad3/Smoc2/Syk/Gpr35/Adam17/Cmtm3/Dpep1/Ccl3/Ptafr/Fcer1g/Nckap1l/Trpm2/Ppm1f/Fcgr3/Mmp9/Vav1/C3ar1/Itgb2/Itgam/C5ar1/Serpine1/Robo1/Sema7a/Slit1/Rab13/Ccl4/Adam8/Abcc1/Il17ra/Itgav/Sema4b/Ntrk3/Gbf1/Dysf/Fn1/Prkd1/Vegfb/Thbs1/Tgfb1/Wnk1/Fgf7/Ccr6/Ano6/Rin3/Rhog/Epha2/Ccn1/Cxcl13"
+          },
+          {
+            "ID": "GOMF_INTEGRIN_BINDING",
+            "setSize": 139,
+            "enrichmentScore": -0.4630438569,
+            "NES": -2.240186798,
+            "pvalue": 5.44e-09,
+            "p.adjust": 2.74e-07,
+            "qvalue": 1.4e-07,
+            "leading_edge": "tags=52%, list=28%, signal=38%",
+            "core_enrichment": "Plpp3/Fermt1/Ptk2/Kdr/Col3a1/Cd151/Itga10/Lamb1/Adam15/Gfap/Dab2/Fgf2/Fermt2/Actn1/Gfra1/Cd9/Itgb3/Fap/Dst/Thy1/Nisch/Ibsp/Lamb2/Itga1/Itga9/P4hb/Cx3cl1/Calr/Lcp1/Igf2/Ccn3/Itgb1/Jam3/Col16a1/Emilin1/S1pr2/Lama5/Itgb8/Itgb5/Spp1/Nf2/Tcam1/Syk/Itgad/Itgbl1/Adam17/Ccn2/Vwf/Itga11/Itgax/Itga5/Ccn4/Itgb2/Itgam/Sema7a/Emp2/Adam8/Itgav/Tnn/Fn1/Thbs1/Gpnmb/Pdia4/Myh9/Itga2b/Comp/Mmp14/Fbln5/Tln1/Fbln1/Ccn1/Ccn5"
+          }
+        ],
+        "total_rows": 1116
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "ID",
+          "NES"
+        ],
+        "rows": "[{\"ID\":\"GOCC_EXOCYTIC_VESICLE\",\"NES\":2.659520211},{\"ID\":\"GOBP_VESICLE_MEDIATED_TRANSPORT_IN_SYNAPSE\",\"NES\":2.637441336},{\"ID\":\"GOCC_TRANSPORT_VESICLE\",\"NES\":2.420118537},{\"ID\":\"GOCC_PRESYNAPTIC_MEMBRANE\",\"NES\":2.634273482},{\"ID\":\"GOCC_TRANSPORTER_COMPLEX\",\"NES\":2.369975125},{\"ID\":\"GOBP_NEUROTRANSMITTER_TRANSPORT\",\"NES\":2.634106999},{\"ID\":\"GOBP_NEUROTRANSMITTER_SECRETION\",\"NES\":2.681474514},{\"ID\":\"REACTOME_NEURONAL_SYSTEM\",\"NES\":2.340694385},{\"ID\":\"GOBP_SYNAPTIC_VESICLE_EXOCYTOSIS\",\"NES\":2.816659877},{\"ID\":\"GOCC_DISTAL_AXON\",\"NES\":2.168633858},{\"ID\":\"GOCC_MONOATOMIC_ION_CHANNEL_COMPLEX\",\"NES\":2.217381215},{\"ID\":\"REACTOME_TRANSMISSION_ACROSS_CHEMICAL_SYNAPSES\",\"NES\":2.30221854},{\"ID\":\"GOCC_CATION_CHANNEL_COMPLEX\",\"NES\":2.344385585},{\"ID\":\"GOBP_PROTEIN_LOCALIZATION_TO_SYNAPSE\",\"NES\":2.438126319},{\"ID\":\"GOBP_EXOCYTOSIS\",\"NES\":1.915949015},{\"ID\":\"GOBP_REGULATION_OF_SYNAPTIC_PLASTICITY\",\"NES\":2.004495788},{\"ID\":\"GOBP_COGNITION\",\"NES\":1.860969116},{\"ID\":\"GOMF_METAL_ION_TRANSMEMBRANE_TRANSPORTER_ACTIVITY\",\"NES\":1.789110141},{\"ID\":\"GOMF_POTASSIUM_ION_TRANSMEMBRANE_TRANSPORTER_ACTIVITY\",\"NES\":2.141322094},{\"ID\":\"GOCC_PRESYNAPTIC_ACTIVE_ZONE\",\"NES\":2.187944538}]",
+        "total_rows": 62,
+        "storage_entry": {
+          "id": "1763271584_57b265bb",
+          "name": "snap25_presence_49a0d0b13a.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/snap25_presence_49a0d0b13a.csv"
+        }
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "ID"
+        ],
+        "rows": "[{\"ID\":\"GOBP_RRNA_METABOLIC_PROCESS\"},{\"ID\":\"GOBP_RIBOSOME_BIOGENESIS\"},{\"ID\":\"GOBP_NCRNA_PROCESSING\"},{\"ID\":\"REACTOME_MAJOR_PATHWAY_OF_RRNA_PROCESSING_IN_THE_NUCLEOLUS_AND_CYTOSOL\"},{\"ID\":\"GOBP_DNA_RECOMBINATION\"},{\"ID\":\"GOBP_RNA_CATABOLIC_PROCESS\"},{\"ID\":\"GOBP_LEUKOCYTE_MEDIATED_IMMUNITY\"},{\"ID\":\"GOBP_POSITIVE_REGULATION_OF_DNA_METABOLIC_PROCESS\"},{\"ID\":\"GOBP_TRNA_METABOLIC_PROCESS\"},{\"ID\":\"GOBP_MRNA_CATABOLIC_PROCESS\"},{\"ID\":\"GOBP_REGULATION_OF_RNA_STABILITY\"},{\"ID\":\"GOBP_REGULATION_OF_MRNA_METABOLIC_PROCESS\"},{\"ID\":\"GOBP_REGULATION_OF_MRNA_CATABOLIC_PROCESS\"},{\"ID\":\"GOBP_ADAPTIVE_IMMUNE_RESPONSE\"},{\"ID\":\"GOBP_PRODUCTION_OF_MOLECULAR_MEDIATOR_OF_IMMUNE_RESPONSE\"},{\"ID\":\"GOBP_ADAPTIVE_IMMUNE_RESPONSE_BASED_ON_SOMATIC_RECOMBINATION_OF_IMMUNE_RECEPTORS_BUILT_FROM_IMMUNOGLOBULIN_SUPERFAMILY_DOMAINS\"},{\"ID\":\"GOBP_REGULATION_OF_IMMUNE_EFFECTOR_PROCESS\"},{\"ID\":\"GOBP_POSITIVE_REGULATION_OF_CELL_ACTIVATION\"},{\"ID\":\"GOBP_B_CELL_MEDIATED_IMMUNITY\"},{\"ID\":\"GOBP_CELLULAR_NITROGEN_COMPOUND_CATABOLIC_PROCESS\"}]",
+        "total_rows": 38,
+        "storage_entry": {
+          "id": "1763271630_7151ef8f",
+          "name": "exosc3_presence_aaa269193b.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/exosc3_presence_aaa269193b.csv"
+        }
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "ID",
+          "NES"
+        ],
+        "rows": "[{\"ID\":\"GOCC_EXOCYTIC_VESICLE\",\"NES\":2.659520211},{\"ID\":\"GOBP_VESICLE_MEDIATED_TRANSPORT_IN_SYNAPSE\",\"NES\":2.637441336},{\"ID\":\"GOCC_TRANSPORT_VESICLE\",\"NES\":2.420118537},{\"ID\":\"GOBP_NEUROTRANSMITTER_TRANSPORT\",\"NES\":2.634106999},{\"ID\":\"GOBP_NEUROTRANSMITTER_SECRETION\",\"NES\":2.681474514},{\"ID\":\"REACTOME_NEURONAL_SYSTEM\",\"NES\":2.340694385},{\"ID\":\"GOBP_SYNAPTIC_VESICLE_EXOCYTOSIS\",\"NES\":2.816659877},{\"ID\":\"GOCC_DISTAL_AXON\",\"NES\":2.168633858},{\"ID\":\"GOCC_SYNAPTIC_VESICLE_MEMBRANE\",\"NES\":2.641156339},{\"ID\":\"GOCC_TRANSPORT_VESICLE_MEMBRANE\",\"NES\":2.390385863},{\"ID\":\"GOCC_NEURON_PROJECTION_TERMINUS\",\"NES\":2.305911335},{\"ID\":\"REACTOME_TRANSMISSION_ACROSS_CHEMICAL_SYNAPSES\",\"NES\":2.30221854},{\"ID\":\"GOBP_REGULATION_OF_SYNAPTIC_VESICLE_EXOCYTOSIS\",\"NES\":2.540573265},{\"ID\":\"GOBP_REGULATION_OF_NEUROTRANSMITTER_TRANSPORT\",\"NES\":2.37221008},{\"ID\":\"GOBP_EXOCYTOSIS\",\"NES\":1.915949015},{\"ID\":\"GOBP_REGULATION_OF_NEUROTRANSMITTER_SECRETION\",\"NES\":2.317794315},{\"ID\":\"GOBP_REGULATION_OF_NEURONAL_SYNAPTIC_PLASTICITY\",\"NES\":2.395544461},{\"ID\":\"GOBP_REGULATION_OF_SYNAPTIC_PLASTICITY\",\"NES\":2.004495788},{\"ID\":\"GOCC_PRESYNAPTIC_ACTIVE_ZONE\",\"NES\":2.187944538},{\"ID\":\"GOBP_VESICLE_ORGANIZATION\",\"NES\":1.76691642}]",
+        "total_rows": 55,
+        "storage_entry": {
+          "id": "1763271658_b1732037",
+          "name": "rab3a_presence_3d40f84c3f.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/rab3a_presence_3d40f84c3f.csv"
+        }
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "ID"
+        ],
+        "rows": "[{\"ID\":\"GOBP_RRNA_METABOLIC_PROCESS\"},{\"ID\":\"GOBP_RIBOSOME_BIOGENESIS\"},{\"ID\":\"GOBP_NCRNA_PROCESSING\"},{\"ID\":\"REACTOME_MAJOR_PATHWAY_OF_RRNA_PROCESSING_IN_THE_NUCLEOLUS_AND_CYTOSOL\"},{\"ID\":\"GOBP_TRNA_METABOLIC_PROCESS\"},{\"ID\":\"GOBP_RNA_MODIFICATION\"},{\"ID\":\"GOMF_TRNA_BINDING\"},{\"ID\":\"GOBP_CANONICAL_NF_KAPPAB_SIGNAL_TRANSDUCTION\"},{\"ID\":\"GOBP_TRNA_PROCESSING\"},{\"ID\":\"GOCC_EUCHROMATIN\"},{\"ID\":\"GOBP_TRNA_MODIFICATION\"}]",
+        "total_rows": 11,
+        "storage_entry": {
+          "id": "1763271687_975354a0",
+          "name": "elp1_presence_5c415eed93.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/elp1_presence_5c415eed93.csv"
+        }
+      }
+    },
+    {
+      "tool": "csv_select",
+      "payload": {
+        "columns": [
+          "ID",
+          "NES"
+        ],
+        "rows": "[{\"ID\":\"GOCC_EXOCYTIC_VESICLE\",\"NES\":2.659520211},{\"ID\":\"GOBP_VESICLE_MEDIATED_TRANSPORT_IN_SYNAPSE\",\"NES\":2.637441336},{\"ID\":\"GOCC_TRANSPORT_VESICLE\",\"NES\":2.420118537},{\"ID\":\"GOCC_PRESYNAPTIC_MEMBRANE\",\"NES\":2.634273482},{\"ID\":\"GOBP_RRNA_METABOLIC_PROCESS\",\"NES\":-2.506294582},{\"ID\":\"GOCC_TRANSPORTER_COMPLEX\",\"NES\":2.369975125},{\"ID\":\"GOBP_RIBOSOME_BIOGENESIS\",\"NES\":-2.385260382},{\"ID\":\"GOBP_NEUROTRANSMITTER_TRANSPORT\",\"NES\":2.634106999},{\"ID\":\"GOBP_NCRNA_PROCESSING\",\"NES\":-2.266935221},{\"ID\":\"GOBP_NEUROTRANSMITTER_SECRETION\",\"NES\":2.681474514},{\"ID\":\"REACTOME_NEURONAL_SYSTEM\",\"NES\":2.340694385},{\"ID\":\"GOBP_DNA_REPLICATION\",\"NES\":-2.323622755},{\"ID\":\"GOBP_SYNAPTIC_VESICLE_EXOCYTOSIS\",\"NES\":2.816659877},{\"ID\":\"GOCC_DISTAL_AXON\",\"NES\":2.168633858},{\"ID\":\"GOCC_SYNAPTIC_VESICLE_MEMBRANE\",\"NES\":2.641156339},{\"ID\":\"REACTOME_MAJOR_PATHWAY_OF_RRNA_PROCESSING_IN_THE_NUCLEOLUS_AND_CYTOSOL\",\"NES\":-2.45103739},{\"ID\":\"REACTOME_PROCESSING_OF_CAPPED_INTRON_CONTAINING_PRE_MRNA\",\"NES\":-2.23746195},{\"ID\":\"GOCC_TRANSPORT_VESICLE_MEMBRANE\",\"NES\":2.390385863},{\"ID\":\"GOCC_NUCLEAR_CHROMOSOME\",\"NES\":-2.247423745},{\"ID\":\"GOBP_POSITIVE_REGULATION_OF_CELL_CYCLE\",\"NES\":-2.125628958}]",
+        "total_rows": 1116,
+        "storage_entry": {
+          "id": "1763271709_17f9295e",
+          "name": "GSEA_ID_NES_a42f7de9b9.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/GSEA_ID_NES_a42f7de9b9.csv"
+        }
+      }
+    },
+    {
+      "tool": "gsea_pipe",
+      "payload": {
+        "top_high_nes": {},
+        "top_low_nes": {},
+        "gsea_result_metadata": {}
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": "Error: ToolException(\"Input validation error: 'conditions' is a required property\")\n Please fix your mistakes."
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "ID",
+          "setSize",
+          "enrichmentScore",
+          "NES",
+          "pvalue",
+          "p.adjust",
+          "qvalue",
+          "leading_edge",
+          "core_enrichment"
+        ],
+        "rows": "[{\"ID\":\"GOCC_EXOCYTIC_VESICLE\",\"setSize\":268,\"enrichmentScore\":0.4617745546,\"NES\":2.659520211,\"pvalue\":4.88e-20,\"p.adjust\":1.23e-16,\"qvalue\":6.3e-17,\"leading_edge\":\"tags=57%, list=27%, signal=43%\",\"core_enrichment\":\"Akap7\\/Slc17a8\\/Kcnc4\\/Rab40b\\/Clcn3\\/Otof\\/Septin4\\/Rab2a\\/Rnf112\\/Doc2b\\/Synpr\\/Mctp1\\/Sv2c\\/Mylk2\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Stx7\\/Sv2b\\/Vps45\\/Pick1\\/Atp6v1d\\/Snap91\\/Mal2\\/Clcn4\\/Rab3a\\/Bin1\\/Rab6a\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Snap25\\/Lgi3\\/Ppfia2\\/Stx12\\/Rab4a\\/Rab3b\\/Mff\\/Rab3d\\/Calm2\\/Syt7\\/Rab3ip\\/Atg9a\\/Btbd8\\/Cadps2\\/Atp6v1h\\/Calm3\\/Syt11\\/Syp\\/Unc13a\\/Slc18a1\\/Syt4\\/Slc35g2\\/Syngr3\\/Snca\\/Septin5\\/Grin2a\\/Scamp1\\/Stx3\\/Syt2\\/Rab40c\\/Dlg2\\/Snap47\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Rab12\\/Rab27a\\/Psen2\\/Scamp5\\/Adam10\\/Sphk1\\/Rab5a\\/Gabra2\\/Dnm1\\/Atp6v1f\\/Kif3c\\/Atp6v1c1\\/Pde4b\\/Bace1\\/Gria2\\/Bcl2l1\\/Vti1a\\/Gabbr1\\/Amph\\/Syt17\\/Sv2a\\/Prrt1\\/Syt3\\/Atp2b1\\/Kcnk9\\/Wdr7\\/Sytl2\\/Vdac3\\/Erc1\\/Slc17a7\\/Ap2a2\\/Atp6ap2\\/Unc13b\\/Dlg4\\/Ntf3\\/Tprgl\\/Kirrel3\\/Unc13c\\/Slc17a6\\/Cdk16\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Grin2b\\/Slc6a7\\/Stxbp5\\/Syt6\\/Dnm1l\\/Syn2\\/Bsn\\/Septin6\\/Dmxl2\\/Sptbn2\\/Ndel1\\/Stx1a\\/Prrt2\\/Trappc4\\/Tor1a\\/Unc13d\\/Prkn\\/Sytl1\\/Rab35\\/Atp6v1g2\\/Madd\\/Vdac2\\/Atp6v0e2\\/Atp6v1g1\\/Sh3gl2\\/Rab3c\\/Dpysl3\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Disc1\\/Aqp2\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\\/Rab8a\\/Brsk1\"},{\"ID\":\"GOCC_TRANSPORT_VESICLE\",\"setSize\":350,\"enrichmentScore\":0.4095012608,\"NES\":2.420118537,\"pvalue\":1.91e-18,\"p.adjust\":0.0,\"qvalue\":8.23e-16,\"leading_edge\":\"tags=52%, list=27%, signal=39%\",\"core_enrichment\":\"Lin7c\\/Akap7\\/Slc17a8\\/Kcnc4\\/Aph1b\\/Rab11a\\/Rab40b\\/Ap4b1\\/Clcn3\\/Otof\\/Septin4\\/Rab2a\\/Rnf112\\/Car4\\/Doc2b\\/Azin2\\/Aph1c\\/Synpr\\/Nrgn\\/Mctp1\\/Sv2c\\/Mylk2\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Yipf2\\/Stx7\\/Sv2b\\/Vps45\\/Pick1\\/Atp6v1d\\/Snap91\\/Mal2\\/Clcn4\\/Rab3a\\/Bin1\\/Rab6a\\/Lin7a\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Snap25\\/Lgi3\\/Bloc1s3\\/Ppfia2\\/Stx12\\/Sar1b\\/Rab4a\\/Rab3b\\/Mff\\/Rab3d\\/Calm2\\/Syt7\\/Aftph\\/Rab3ip\\/Atg9a\\/Btbd8\\/Cadps2\\/Atp6v1h\\/Yipf1\\/Calm3\\/Syt11\\/Sec23a\\/Syp\\/Unc13a\\/Slc18a1\\/Syt4\\/Slc35g2\\/Syngr3\\/Snca\\/Septin5\\/Grin2a\\/Scamp1\\/Stx3\\/Syt2\\/Lin7b\\/Rab40c\\/Dlg2\\/Snap47\\/Ap1s2\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Rab12\\/Rab27a\\/Psen2\\/Scamp5\\/Adam10\\/Sphk1\\/Rab5a\\/Gabra2\\/Dnm1\\/Atp6v1f\\/Kif3c\\/Atp6v1c1\\/Pde4b\\/Bace1\\/Gria2\\/Bcl2l1\\/Vti1a\\/Gabbr1\\/Amph\\/Syt17\\/Sv2a\\/Prrt1\\/Syt3\\/Atp2b1\\/Kcnk9\\/Wdr7\\/Sytl2\\/Vdac3\\/Erc1\\/Slc17a7\\/Ap2a2\\/Nrsn1\\/Atp6ap2\\/Klhl12\\/Unc13b\\/Dlg4\\/Ntf3\\/Tprgl\\/Kirrel3\\/Unc13c\\/Slc17a6\\/Cdk16\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Grin2b\\/Slc6a7\\/Galnt15\\/Stxbp5\\/Syt6\\/Dnm1l\\/Syn2\\/Bsn\\/Septin6\\/Dmxl2\\/Sptbn2\\/Clrn1\\/Ndel1\\/Stx1a\\/Prrt2\\/Trappc4\\/Tor1a\\/Unc13d\\/Pdcd6\\/Prkn\\/Sytl1\\/Gopc\\/Ap1s3\\/Rab35\\/Atp6v1g2\\/Madd\\/Vdac2\\/Atp6v0e2\\/Cnst\\/Atp13a2\\/Atp6v1g1\\/Dync1i1\\/Sh3gl2\\/Rab3c\\/Dpysl3\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Disc1\\/Aqp2\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\\/Rab8a\\/Brsk1\"},{\"ID\":\"GOCC_PRESYNAPTIC_MEMBRANE\",\"setSize\":221,\"enrichmentScore\":0.4698963172,\"NES\":2.634273482,\"pvalue\":1.51e-17,\"p.adjust\":0.0,\"qvalue\":0.0,\"leading_edge\":\"tags=49%, list=23%, signal=38%\",\"core_enrichment\":\"Gpm6a\\/Kcnc4\\/Kcnh1\\/Cntnap4\\/Cyth1\\/Otof\\/Napb\\/Erc2\\/Cask\\/Grik2\\/Kcnj3\\/Apbb1\\/Scn11a\\/Grm1\\/Kcnj6\\/Clta\\/Fxyd6\\/Pick1\\/Kcnj11\\/Cntn6\\/Snap91\\/Cacna1e\\/Rims1\\/Snap25\\/Dnajc6\\/Atp2b3\\/Ppfia2\\/Scn2a\\/Syt7\\/Cadps2\\/Cacna1a\\/Rims3\\/Oprm1\\/Cdh10\\/Syt11\\/Itga3\\/Syp\\/Unc13a\\/Chrm3\\/Cadm3\\/Grin2a\\/Stx3\\/Ap2s1\\/Cntn1\\/Adora1\\/Marcks\\/Kcna1\\/Adgrl1\\/Rims2\\/Adam23\\/Stx1b\\/Psen2\\/Gabrb2\\/Gabra2\\/Dnm1\\/Grik1\\/Ap2m1\\/Stxbp1\\/Nptn\\/Septin3\\/Gria2\\/Napa\\/Gabbr1\\/Itsn1\\/Grm4\\/Hcn1\\/Gabra6\\/Atp2b1\\/Flot2\\/Nrg1\\/Nrxn1\\/Erbb4\\/Ache\\/Cnr1\\/Nrxn3\\/L1cam\\/Pip5k1c\\/Kcnc3\\/Unc13b\\/Mpp4\\/Unc13c\\/Cntnap2\\/Cacna1c\\/Kcnj9\\/Kcnc1\\/Atp2b4\\/Apba1\\/Igsf21\\/Htr1a\\/Grin1\\/Syt1\\/Grin2b\\/Slc6a7\\/Stxbp5\\/Cacna1d\\/Dnm1l\\/Nrxn2\\/Gabrb1\\/Syap1\\/Slc1a6\\/Rgs7bp\\/Stx1a\\/Septin7\\/Prrt2\\/Gria4\\/Chrna7\\/Grik5\\/Cacna1h\\/Cacna2d1\"},{\"ID\":\"GOCC_TRANSPORTER_COMPLEX\",\"setSize\":358,\"enrichmentScore\":0.4006574662,\"NES\":2.369975125,\"pvalue\":6.59e-17,\"p.adjust\":0.0,\"qvalue\":0.0,\"leading_edge\":\"tags=46%, list=26%, signal=35%\",\"core_enrichment\":\"Slc17a8\\/Olfm3\\/Kcnc4\\/Kcnh1\\/Trpc6\\/Micu3\\/Cacna2d3\\/Kcnk1\\/Uqcc3\\/Clcn2\\/Kcnab1\\/Cacnb4\\/Atp6v0b\\/Mcub\\/Grik2\\/Kcnj3\\/Scn11a\\/Tmem30a\\/Trpc1\\/Abcc8\\/Cacnb2\\/Fkbp1b\\/Kcnj11\\/Atp6v1d\\/Cacna1e\\/Kcnd2\\/Kcnk4\\/Atp6v0d1\\/Calm1\\/Snap25\\/Ndufc2\\/Cacnb1\\/Shisa8\\/Porcn\\/Ryr2\\/Scn2a\\/Atp8a2\\/Calm2\\/Kcnab2\\/Scnn1g\\/Cacna1a\\/Atp6v1h\\/Unc80\\/Scn2b\\/Calm3\\/Ttyh2\\/Nrn1\\/Gabrd\\/Timm9\\/Ndufc1\\/Uqcrh\\/Ndufs4\\/Grin2a\\/Kcng2\\/Ndufb8\\/Atp8b2\\/Atp8a1\\/Dmac2\\/Kcnmb2\\/Kcna1\\/Ndufa8\\/Eps8\\/Shisa9\\/Kcnk2\\/Kcnip1\\/Gabrb3\\/Catspere2\\/Gabrb2\\/Ndufb9\\/Kcnb2\\/Ndufb4\\/Gabra2\\/Grik1\\/Atp6v1f\\/Atp6v1c1\\/Ndufa13\\/Pde4b\\/Cacna1g\\/Atp1a1\\/Gria2\\/Timm10b\\/Dpp6\\/Slc26a6\\/Kcnip3\\/Ndufv3\\/Kcnmb4\\/Hcn1\\/Gabra6\\/Olfm1\\/Ndufs3\\/Ryr3\\/Pde4d\\/Atp5g3\\/Ndufa1\\/Cnih2\\/Kcnq2\\/Glrb\\/Gabrg2\\/Ndufb11\\/Ndufb5\\/Slc17a7\\/Uqcrfs1\\/Pkd1l1\\/Uqcr10\\/Atp1b2\\/Kcnc3\\/Dlg4\\/Scn9a\\/Kcnv1\\/Clic5\\/Gabra4\\/mt-Co1\\/Kcns2\\/Cntnap2\\/mt-Nd3\\/Cacna1c\\/Slc17a6\\/Kcnc1\\/Scn1b\\/Kcnab3\\/Trpc5\\/Atp6v1a\\/Pex14\\/Grin1\\/Grin2b\\/Cacnb3\\/Stxbp5\\/Cacna1d\\/Ndufa6\\/Lrrc55\\/Atp1b1\\/Gabrb1\\/Grin2c\\/Kcnq4\\/Ndufs1\\/Cacna1i\\/Ndufb2\\/Chrna1\\/Cacna1s\\/Gria4\\/Cacna1b\\/Trpc4\\/Chrna7\\/Ndufs5\\/Catsper2\\/Grik5\\/Kcnip4\\/Cacna1h\\/Cacna2d1\\/Uqcr11\\/Ndufb3\\/Atp6v1g1\\/Ostm1\\/Dlg3\\/Scn4a\\/Sacm1l\\/Scn8a\\/Ndufa7\\/Cnga2\\/Vwc2l\\/Gabrr1\\/Chrnb2\\/Cpt1c\\/Scn3b\\/Amigo1\\/Atp6v0c\"},{\"ID\":\"GOCC_DISTAL_AXON\",\"setSize\":368,\"enrichmentScore\":0.3634789729,\"NES\":2.168633858,\"pvalue\":0.0,\"p.adjust\":0.0,\"qvalue\":0.0,\"leading_edge\":\"tags=43%, list=23%, signal=34%\",\"core_enrichment\":\"Dynlt1b\\/Slc17a8\\/Gpm6a\\/Lrrtm1\\/Kcnc4\\/Cck\\/Esr1\\/Arpc5\\/Crhbp\\/Calb2\\/Clcn3\\/Amfr\\/Septin4\\/Rufy3\\/Sri\\/Erc2\\/Dynlt1a\\/Grik2\\/Apbb1\\/Unc5c\\/Scn11a\\/Cdh8\\/Pink1\\/Slc9a6\\/Mylk2\\/Pafah1b1\\/Blvrb\\/Tiam1\\/Dclk1\\/Clasp2\\/Snap91\\/Dixdc1\\/Rab3a\\/Bin1\\/Cdk5\\/Nos1\\/Atp6v0d1\\/Calm1\\/Sirt1\\/Snap25\\/Dctn2\\/Slc8a3\\/Acap3\\/Pgr\\/Elavl4\\/Arhgef7\\/Calm2\\/Fgf13\\/Kcnab2\\/Wdr47\\/Syt7\\/Stim1\\/Cxadr\\/Kif5c\\/Calm3\\/Dvl1\\/Map3k12\\/Syt11\\/Cdk5r1\\/Twf2\\/Itga3\\/Syp\\/Ppp2ca\\/Unc13a\\/Slc18a1\\/Elk1\\/Pard6a\\/Chrm3\\/Snca\\/Septin5\\/Grin2a\\/Myh14\\/Stx3\\/Rac3\\/Adora1\\/Src\\/Zfp804a\\/Prkca\\/Mapt\\/Prph\\/Marcks\\/Pak1\\/Prnp\\/Eno2\\/Nefl\\/Kcna1\\/Ror1\\/Adgrl1\\/Aqp1\\/Kcnk2\\/Psen2\\/Zfyve27\\/Map2\\/Cdkl5\\/Gabrb3\\/Inpp5j\\/Rab5a\\/Ppp1r9b\\/Grik1\\/Pacsin1\\/Kif3c\\/Lrig2\\/Mapk8ip1\\/Gria2\\/Kif5a\\/Ntrk2\\/Exoc7\\/Kcnip3\\/Rapgef4\\/Stmn2\\/Ilk\\/Itsn1\\/Amph\\/Pclo\\/Grm4\\/Hcn1\\/Olfm1\\/Klc1\\/Nrxn1\\/Ptbp2\\/Prkcb\\/Lamp5\\/Cnr1\\/Ophn1\\/Trpv2\\/Als2\\/Nrsn1\\/L1cam\\/Kcnc3\\/Unc13b\\/Mpp4\\/Tprgl\\/Myo9a\\/C9orf72\\/Unc13c\\/Kcnc1\\/Cplx2\\/Slc8a2\\/Trpc5\\/Grin1\\/Grin2b\\/Tmod2\\/Tspoap1\\/Brsk2\\/Septin6\\/Syap1\\/Ndel1\\/Setx\\/Septin7\\/Prrt2\\/Tor1a\\/Gria4\\/Prkn\\/Cacna1b\\/Trak2\\/Pcdh9\\/Chrna7\\/Grik5\\/Sncb\\/Slc8a1\"},{\"ID\":\"GOCC_SYNAPTIC_VESICLE_MEMBRANE\",\"setSize\":137,\"enrichmentScore\":0.5031791991,\"NES\":2.641156339,\"pvalue\":0.0,\"p.adjust\":0.0,\"qvalue\":0.0,\"leading_edge\":\"tags=63%, list=27%, signal=46%\",\"core_enrichment\":\"Slc17a8\\/Clcn3\\/Otof\\/Rab2a\\/Doc2b\\/Synpr\\/Mctp1\\/Sv2c\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Stx7\\/Sv2b\\/Atp6v1d\\/Mal2\\/Rab3a\\/Bin1\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Stx12\\/Rab4a\\/Rab3b\\/Mff\\/Calm2\\/Atp6v1h\\/Calm3\\/Syt11\\/Syp\\/Unc13a\\/Slc18a1\\/Slc35g2\\/Syngr3\\/Snca\\/Scamp1\\/Syt2\\/Dlg2\\/Snap47\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Scamp5\\/Rab5a\\/Gabra2\\/Atp6v1f\\/Atp6v1c1\\/Gria2\\/Bcl2l1\\/Amph\\/Sv2a\\/Prrt1\\/Atp2b1\\/Slc17a7\\/Atp6ap2\\/Unc13b\\/Tprgl\\/Unc13c\\/Slc17a6\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Slc6a7\\/Dnm1l\\/Syn2\\/Stx1a\\/Prkn\\/Rab35\\/Atp6v1g2\\/Atp6v0e2\\/Atp6v1g1\\/Sh3gl2\\/Rab3c\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\"},{\"ID\":\"GOCC_TRANSPORT_VESICLE_MEMBRANE\",\"setSize\":179,\"enrichmentScore\":0.4426764301,\"NES\":2.390385863,\"pvalue\":0.0,\"p.adjust\":0.0000000006,\"qvalue\":0.0000000003,\"leading_edge\":\"tags=56%, list=27%, signal=42%\",\"core_enrichment\":\"Lin7c\\/Slc17a8\\/Ap4b1\\/Clcn3\\/Otof\\/Rab2a\\/Car4\\/Doc2b\\/Synpr\\/Nrgn\\/Mctp1\\/Sv2c\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Stx7\\/Sv2b\\/Atp6v1d\\/Mal2\\/Rab3a\\/Bin1\\/Lin7a\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Stx12\\/Sar1b\\/Rab4a\\/Rab3b\\/Mff\\/Calm2\\/Aftph\\/Atp6v1h\\/Calm3\\/Syt11\\/Sec23a\\/Syp\\/Unc13a\\/Slc18a1\\/Slc35g2\\/Syngr3\\/Snca\\/Scamp1\\/Syt2\\/Lin7b\\/Dlg2\\/Snap47\\/Ap1s2\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Scamp5\\/Rab5a\\/Gabra2\\/Atp6v1f\\/Atp6v1c1\\/Gria2\\/Bcl2l1\\/Vti1a\\/Amph\\/Sv2a\\/Prrt1\\/Atp2b1\\/Slc17a7\\/Atp6ap2\\/Klhl12\\/Unc13b\\/Tprgl\\/Unc13c\\/Slc17a6\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Grin2b\\/Slc6a7\\/Dnm1l\\/Syn2\\/Stx1a\\/Pdcd6\\/Prkn\\/Ap1s3\\/Rab35\\/Atp6v1g2\\/Atp6v0e2\\/Atp6v1g1\\/Sh3gl2\\/Rab3c\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\"},{\"ID\":\"GOCC_MONOATOMIC_ION_CHANNEL_COMPLEX\",\"setSize\":253,\"enrichmentScore\":0.3906732396,\"NES\":2.217381215,\"pvalue\":0.0,\"p.adjust\":0.000000001,\"qvalue\":0.0000000005,\"leading_edge\":\"tags=47%, list=26%, signal=36%\",\"core_enrichment\":\"Slc17a8\\/Olfm3\\/Kcnc4\\/Kcnh1\\/Trpc6\\/Micu3\\/Cacna2d3\\/Kcnk1\\/Clcn2\\/Kcnab1\\/Cacnb4\\/Mcub\\/Grik2\\/Kcnj3\\/Scn11a\\/Trpc1\\/Abcc8\\/Cacnb2\\/Fkbp1b\\/Kcnj11\\/Cacna1e\\/Kcnd2\\/Kcnk4\\/Calm1\\/Snap25\\/Cacnb1\\/Shisa8\\/Porcn\\/Ryr2\\/Scn2a\\/Calm2\\/Kcnab2\\/Scnn1g\\/Cacna1a\\/Unc80\\/Scn2b\\/Calm3\\/Ttyh2\\/Nrn1\\/Gabrd\\/Grin2a\\/Kcng2\\/Kcnmb2\\/Kcna1\\/Eps8\\/Shisa9\\/Kcnk2\\/Kcnip1\\/Gabrb3\\/Catspere2\\/Gabrb2\\/Kcnb2\\/Gabra2\\/Grik1\\/Pde4b\\/Cacna1g\\/Gria2\\/Dpp6\\/Slc26a6\\/Kcnip3\\/Kcnmb4\\/Hcn1\\/Gabra6\\/Olfm1\\/Ryr3\\/Pde4d\\/Atp5g3\\/Cnih2\\/Kcnq2\\/Glrb\\/Gabrg2\\/Slc17a7\\/Pkd1l1\\/Kcnc3\\/Dlg4\\/Scn9a\\/Kcnv1\\/Clic5\\/Gabra4\\/Kcns2\\/Cntnap2\\/Cacna1c\\/Slc17a6\\/Kcnc1\\/Scn1b\\/Kcnab3\\/Trpc5\\/Grin1\\/Grin2b\\/Cacnb3\\/Stxbp5\\/Cacna1d\\/Lrrc55\\/Gabrb1\\/Grin2c\\/Kcnq4\\/Cacna1i\\/Chrna1\\/Cacna1s\\/Gria4\\/Cacna1b\\/Trpc4\\/Chrna7\\/Catsper2\\/Grik5\\/Kcnip4\\/Cacna1h\\/Cacna2d1\\/Ostm1\\/Dlg3\\/Scn4a\\/Sacm1l\\/Scn8a\\/Cnga2\\/Vwc2l\\/Gabrr1\\/Chrnb2\\/Cpt1c\\/Scn3b\\/Amigo1\"},{\"ID\":\"GOCC_NEURON_PROJECTION_TERMINUS\",\"setSize\":198,\"enrichmentScore\":0.4180228461,\"NES\":2.305911335,\"pvalue\":0.0,\"p.adjust\":0.0000000037,\"qvalue\":0.0000000019,\"leading_edge\":\"tags=47%, list=23%, signal=37%\",\"core_enrichment\":\"Slc17a8\\/Kcnc4\\/Cck\\/Esr1\\/Crhbp\\/Calb2\\/Clcn3\\/Septin4\\/Sri\\/Erc2\\/Grik2\\/Cdh8\\/Slc9a6\\/Mylk2\\/Blvrb\\/Snap91\\/Dixdc1\\/Rab3a\\/Bin1\\/Nos1\\/Atp6v0d1\\/Slc8a3\\/Pgr\\/Kcnab2\\/Syt7\\/Btbd8\\/Syt11\\/Syp\\/Ppp2ca\\/Unc13a\\/Slc18a1\\/Elk1\\/Syt4\\/Chrm3\\/Mob2\\/Snca\\/Septin5\\/Grin2a\\/Uchl1\\/Adora1\\/Prkca\\/Prph\\/Marcks\\/Prnp\\/Flrt1\\/Kcna1\\/Ror1\\/Aqp1\\/Kcnk2\\/Maco1\\/Gabrb3\\/Rab5a\\/Grik1\\/Pacsin1\\/Gria2\\/Ntrk2\\/Vti1a\\/Kcnip3\\/Rapgef4\\/Ilk\\/Itsn1\\/Amph\\/Pclo\\/Grm4\\/Hcn1\\/Prkcb\\/Ophn1\\/Baiap2\\/L1cam\\/Kcnc3\\/Unc13b\\/Dlg4\\/Mpp4\\/Tprgl\\/Atcay\\/Unc13c\\/Kcnc1\\/Cplx2\\/Dmd\\/Slc8a2\\/Grin1\\/Syt1\\/Grin2b\\/Tspoap1\\/Bsn\\/Septin6\\/Septin7\\/Prrt2\\/Gria4\\/Prkn\\/Cacna1b\\/Grik5\\/Sncb\\/Slc8a1\"},{\"ID\":\"GOCC_POSTSYNAPTIC_MEMBRANE\",\"setSize\":331,\"enrichmentScore\":0.3553918224,\"NES\":2.085004227,\"pvalue\":0.0,\"p.adjust\":0.000000004,\"qvalue\":0.000000002,\"leading_edge\":\"tags=48%, list=28%, signal=35%\",\"core_enrichment\":\"Col13a1\\/Lin7c\\/Zc4h2\\/Fbxo45\\/Lrrtm1\\/Kcnc4\\/Nectin3\\/Kcnh1\\/Clcn3\\/Adam22\\/Pcdhb16\\/Cbln1\\/Grik2\\/Neto2\\/Apbb1\\/Grm1\\/Plppr4\\/Arc\\/Nrgn\\/Abhd17b\\/Kctd8\\/Gpr158\\/Tiam1\\/Adcy1\\/Fxyd6\\/Nbea\\/Lrrtm2\\/Snap91\\/Cacna1e\\/Kcnd2\\/Lin7a\\/Rph3a\\/Lrrtm3\\/Nrcam\\/Slc8a3\\/Shisa8\\/Slitrk3\\/Clstn1\\/Pten\\/Kcnab2\\/Rtn4\\/Cadps2\\/Cnksr2\\/Oprm1\\/Gphn\\/Lrrc4c\\/Cdh10\\/Mpp2\\/Gabrd\\/Itga3\\/Sema4f\\/Chrm3\\/Il1rapl1\\/Grin2a\\/Lin7b\\/Iqsec2\\/Cntn1\\/Dlg2\\/Adora1\\/Marcks\\/Dnm3\\/Adgrl3\\/Kcna1\\/Shisa9\\/Syne1\\/Gabrb3\\/Adam10\\/Gabrb2\\/Rab5a\\/Gabra2\\/Grik1\\/Pacsin1\\/Nptn\\/Slitrk2\\/Rgs7\\/Gria2\\/Ntrk2\\/Slc6a8\\/Nlgn3\\/Gabbr1\\/Prrt1\\/Dlgap1\\/Abhd17a\\/Shank3\\/Kcnn2\\/Hcn1\\/Faim2\\/Gabra6\\/Drd5\\/Nrg1\\/Htr5a\\/Erbb4\\/Ache\\/Ank1\\/Cnih2\\/Grm5\\/Glrb\\/Gabrg2\\/Nsg1\\/Slc9a5\\/Atp6ap2\\/Kcnc3\\/Dlg4\\/Gabra4\\/Arrb1\\/Cacna1c\\/Kcnc1\\/Dmd\\/Igsf21\\/Slc8a2\\/Lrfn5\\/Grin1\\/Grin2b\\/Gabrb1\\/Grid1\\/Syap1\\/Grin2c\\/Slc1a6\\/Ank2\\/Rgs7bp\\/Stx1a\\/Prrt2\\/Trappc4\\/Slc16a7\\/Chrna1\\/Gria4\\/Clstn3\\/Chrna7\\/Nptx2\\/Grik5\\/Cacna1h\\/Magee1\\/Slc8a1\\/Cacna2d1\\/Atad1\\/Cntn2\\/Dlg3\\/Scn8a\\/Gabrr1\\/Chrnb2\\/Itgb4\\/Cspg5\\/Shank1\\/Gabbr2\\/Drd2\\/Gper1\\/Nlgn1\\/Dlg1\\/Gpr156\\/Lrfn3\\/Igsf9b\\/Neto1\\/Slitrk1\\/Srgap2\\/Lrrc4b\\/Tmub1\\/Epha7\\/Lrrtm4\"},{\"ID\":\"GOCC_CATION_CHANNEL_COMPLEX\",\"setSize\":163,\"enrichmentScore\":0.4371169352,\"NES\":2.344385585,\"pvalue\":0.0000000002,\"p.adjust\":0.0000000152,\"qvalue\":0.0000000078,\"leading_edge\":\"tags=49%, list=26%, signal=37%\",\"core_enrichment\":\"Kcnc4\\/Kcnh1\\/Trpc6\\/Micu3\\/Cacna2d3\\/Kcnk1\\/Kcnab1\\/Cacnb4\\/Mcub\\/Grik2\\/Kcnj3\\/Scn11a\\/Trpc1\\/Abcc8\\/Cacnb2\\/Fkbp1b\\/Kcnj11\\/Cacna1e\\/Kcnd2\\/Kcnk4\\/Calm1\\/Snap25\\/Cacnb1\\/Ryr2\\/Scn2a\\/Calm2\\/Kcnab2\\/Scnn1g\\/Cacna1a\\/Unc80\\/Scn2b\\/Calm3\\/Kcng2\\/Kcnmb2\\/Kcna1\\/Kcnk2\\/Kcnip1\\/Catspere2\\/Kcnb2\\/Grik1\\/Pde4b\\/Cacna1g\\/Dpp6\\/Kcnip3\\/Kcnmb4\\/Hcn1\\/Ryr3\\/Pde4d\\/Atp5g3\\/Kcnq2\\/Pkd1l1\\/Kcnc3\\/Scn9a\\/Kcnv1\\/Kcns2\\/Cntnap2\\/Cacna1c\\/Kcnc1\\/Scn1b\\/Kcnab3\\/Trpc5\\/Cacnb3\\/Cacna1d\\/Lrrc55\\/Kcnq4\\/Cacna1i\\/Cacna1s\\/Gria4\\/Cacna1b\\/Trpc4\\/Catsper2\\/Grik5\\/Kcnip4\\/Cacna1h\\/Cacna2d1\\/Scn4a\\/Scn8a\\/Cnga2\\/Scn3b\\/Amigo1\"},{\"ID\":\"GOCC_INNER_MITOCHONDRIAL_MEMBRANE_PROTEIN_COMPLEX\",\"setSize\":139,\"enrichmentScore\":0.4479575282,\"NES\":2.363120293,\"pvalue\":0.0000000005,\"p.adjust\":0.000000037,\"qvalue\":0.0000000189,\"leading_edge\":\"tags=55%, list=30%, signal=38%\",\"core_enrichment\":\"Trmt10b\\/Timm29\\/Micu3\\/Uqcc3\\/Mcub\\/Cox4i1\\/Apoo\\/Grpel2\\/Ndufc2\\/Cox7a2\\/Atp5o\\/Atp5md\\/Timm9\\/Ndufc1\\/Immp1l\\/Uqcrh\\/Sdhd\\/Romo1\\/Ndufs4\\/Atp5l\\/Atp5mpl\\/Ndufb8\\/Atp5pb\\/Dmac2\\/Ndufa8\\/Timm22\\/Ndufb9\\/Ndufb4\\/Ndufa13\\/Dnajc15\\/Timm10b\\/Ndufv3\\/Ndufs3\\/Atp5g3\\/Ndufa1\\/Ndufb11\\/Ndufb5\\/Cox7a1\\/Cox6c\\/Dnajc19\\/Uqcrfs1\\/Uqcr10\\/mt-Co1\\/mt-Nd3\\/Atp5h\\/Ndufa6\\/Cox6a1\\/Cox7a2l\\/Ndufs1\\/Cox6b1\\/Ndufb2\\/Cox4i2\\/Atp5k\\/Ndufs5\\/Uqcr11\\/Cox8a\\/Ndufb3\\/Atp5j2\\/Ndufa7\\/Cox5b\\/Cox7c\\/Atp5e\\/mt-Nd6\\/Atp5c1\\/Ndufs7\\/Ndufb7\\/Ndufb6\\/Ndufs2\\/Uqcrc1\\/mt-Nd1\\/mt-Co3\\/Chchd10\\/Uqcrc2\\/Sdhc\\/Atp5a1\\/Atp5j\"},{\"ID\":\"GOCC_RESPIRASOME\",\"setSize\":88,\"enrichmentScore\":0.4969621584,\"NES\":2.364825556,\"pvalue\":0.0000000219,\"p.adjust\":0.000000863,\"qvalue\":0.000000442,\"leading_edge\":\"tags=59%, list=30%, signal=41%\",\"core_enrichment\":\"Uqcc3\\/Cox4i1\\/Ndufc2\\/Cox7a2\\/Ndufc1\\/Uqcrh\\/Sdhd\\/Ndufs4\\/Ndufb8\\/Dmac2\\/Ndufa8\\/Rab5if\\/Ndufb9\\/Ndufb4\\/Ndufa13\\/Ndufv3\\/Ndufs3\\/Ndufa1\\/Ndufb11\\/Ndufb5\\/Cox7a1\\/Cox6c\\/Uqcrfs1\\/Uqcr10\\/mt-Co1\\/mt-Nd3\\/Ndufa6\\/Ttc19\\/Cox6a1\\/Cox7a2l\\/Ndufs1\\/Cox6b1\\/Ndufb2\\/Cox4i2\\/Ndufs5\\/Uqcr11\\/Cox8a\\/Ndufb3\\/Ndufa7\\/Cox5b\\/Cox7c\\/mt-Nd6\\/Ndufs7\\/Ndufb7\\/Ndufb6\\/Ndufs2\\/Uqcrc1\\/mt-Nd1\\/mt-Co3\\/Uqcrc2\\/Coa6\\/Sdhc\"},{\"ID\":\"GOCC_EXCITATORY_SYNAPSE\",\"setSize\":98,\"enrichmentScore\":0.4607058523,\"NES\":2.239452724,\"pvalue\":0.0000000853,\"p.adjust\":0.00000236,\"qvalue\":0.00000121,\"leading_edge\":\"tags=52%, list=22%, signal=41%\",\"core_enrichment\":\"Slc17a8\\/Gpm6a\\/Lrrtm1\\/Kcnh1\\/Calb2\\/Cbln1\\/Kcnj3\\/Ppp3r1\\/Kcnj6\\/Cntn6\\/Lrrtm2\\/Snap91\\/Atp2b3\\/Cadps2\\/Syt11\\/Itga3\\/Syp\\/Unc13a\\/Cadm3\\/Grin2a\\/Ntm\\/Stxbp1\\/Akap5\\/Pde4b\\/Ntrk2\\/Ppfia4\\/Rapgef4\\/Nlgn3\\/Shank3\\/Pclo\\/Grm4\\/Nrxn1\\/Slc17a7\\/Baiap2\\/Dlg4\\/Unc13c\\/Cntnap2\\/Kcnj9\\/Slc17a6\\/Grin1\\/Syt1\\/Grin2b\\/Bsn\\/C1ql2\\/Ogt\\/Sptbn2\\/Slc1a6\\/Synj1\\/Plcb4\\/Slc16a7\\/Ywhah\"},{\"ID\":\"GOCC_POSTSYNAPTIC_SPECIALIZATION_MEMBRANE\",\"setSize\":147,\"enrichmentScore\":0.4076752804,\"NES\":2.167062357,\"pvalue\":0.000000113,\"p.adjust\":0.00000299,\"qvalue\":0.00000153,\"leading_edge\":\"tags=52%, list=28%, signal=38%\",\"core_enrichment\":\"Lrrtm1\\/Nectin3\\/Adam22\\/Grik2\\/Neto2\\/Grm1\\/Plppr4\\/Arc\\/Abhd17b\\/Tiam1\\/Adcy1\\/Lrrtm2\\/Kcnd2\\/Lrrtm3\\/Nrcam\\/Slitrk3\\/Clstn1\\/Kcnab2\\/Rtn4\\/Cnksr2\\/Lrrc4c\\/Cdh10\\/Mpp2\\/Sema4f\\/Chrm3\\/Il1rapl1\\/Grin2a\\/Iqsec2\\/Dlg2\\/Shisa9\\/Gabrb3\\/Gabrb2\\/Gabra2\\/Grik1\\/Pacsin1\\/Nptn\\/Gria2\\/Nlgn3\\/Prrt1\\/Abhd17a\\/Gabra6\\/Drd5\\/Nrg1\\/Htr5a\\/Erbb4\\/Cnih2\\/Grm5\\/Gabrg2\\/Dlg4\\/Gabra4\\/Lrfn5\\/Grin1\\/Grin2b\\/Gabrb1\\/Grid1\\/Grin2c\\/Rgs7bp\\/Stx1a\\/Slc16a7\\/Chrna1\\/Gria4\\/Clstn3\\/Chrna7\\/Nptx2\\/Grik5\\/Dlg3\\/Scn8a\\/Chrnb2\\/Nlgn1\\/Dlg1\\/Lrfn3\\/Neto1\\/Slitrk1\\/Lrrc4b\\/Epha7\\/Lrrtm4\"},{\"ID\":\"GOCC_PRESYNAPTIC_ACTIVE_ZONE\",\"setSize\":117,\"enrichmentScore\":0.4340827524,\"NES\":2.187944538,\"pvalue\":0.000000202,\"p.adjust\":0.00000472,\"qvalue\":0.00000241,\"leading_edge\":\"tags=50%, list=23%, signal=39%\",\"core_enrichment\":\"Gpm6a\\/Otof\\/Napb\\/Erc2\\/Snap91\\/Rab3a\\/Rims1\\/Snap25\\/Arfgap3\\/Ppfia2\\/Cacna1a\\/Rims3\\/Cdh10\\/Syt11\\/Itga3\\/Syp\\/Unc13a\\/Ppfia3\\/Stx3\\/Iqsec2\\/Snap47\\/Adora1\\/Rims2\\/Stx1b\\/Gabrb2\\/Gabra2\\/Stxbp1\\/Nptn\\/Gria2\\/Ntrk2\\/Ppfia4\\/Napa\\/Sv2a\\/Pclo\\/Grm4\\/Hcn1\\/Atp2b1\\/Flot1\\/Flot2\\/Nrg1\\/Nrxn1\\/Erc1\\/Slc17a7\\/Unc13b\\/Unc13c\\/Cntnap2\\/Atp2b4\\/Apba1\\/Grin1\\/Grin2b\\/Cacna1d\\/Gabrb1\\/Bsn\\/Stx1a\\/Gria4\\/Cacna1b\\/Cacna1h\\/Arhgap44\\/Cacna2d1\"},{\"ID\":\"GOCC_NEURON_SPINE\",\"setSize\":206,\"enrichmentScore\":0.355381188,\"NES\":1.981008698,\"pvalue\":0.000000215,\"p.adjust\":0.00000497,\"qvalue\":0.00000255,\"leading_edge\":\"tags=42%, list=23%, signal=32%\",\"core_enrichment\":\"Hpca\\/Ppp3ca\\/Sri\\/Abi2\\/Apbb1\\/Grm1\\/Arc\\/Nrgn\\/Slc9a6\\/Mylk2\\/Tiam1\\/Ppp1cc\\/Pick1\\/Kcnd2\\/Rph3a\\/Ppp1ca\\/Lzts3\\/Slc8a3\\/Shisa8\\/Ppfia2\\/Pgr\\/Clstn1\\/Hip1r\\/Prkaca\\/Pten\\/Neurl1a\\/Oprm1\\/Cript\\/Psd\\/Mpp2\\/Dvl1\\/Syt11\\/Cdk5r1\\/Mob4\\/Syp\\/Grin2a\\/Adora1\\/Zfp804a\\/Grk3\\/Marcks\\/Dnm3\\/Shisa9\\/Adam10\\/Grk2\\/Ppp1r9b\\/Akap5\\/Pde4b\\/Frmpd4\\/Gria2\\/Ntrk2\\/Add1\\/Rapgef4\\/Gabbr1\\/Itsn1\\/Shank3\\/Kcnn2\\/Atp2b1\\/Drd5\\/Eea1\\/Cnih2\\/Grm5\\/Strn4\\/Ophn1\\/Synpo\\/Als2\\/Baiap2\\/Slc9a5\\/Asic2\\/Dlg4\\/Aplp2\\/Arrb1\\/Cntnap2\\/Cryab\\/Apba1\\/Slc8a2\\/Grin1\\/Grin2b\\/Cdc42\\/Rgs7bp\\/Cacna1s\\/Gria4\\/Camk2a\\/Apba2\\/Chrna7\\/Arhgap44\\/Slc8a1\"},{\"ID\":\"GOCC_POTASSIUM_CHANNEL_COMPLEX\",\"setSize\":83,\"enrichmentScore\":0.4627682944,\"NES\":2.173622709,\"pvalue\":0.0000014,\"p.adjust\":0.000023,\"qvalue\":0.0000118,\"leading_edge\":\"tags=47%, list=23%, signal=36%\",\"core_enrichment\":\"Kcnc4\\/Kcnh1\\/Kcnk1\\/Kcnab1\\/Grik2\\/Kcnj3\\/Abcc8\\/Kcnj11\\/Kcnd2\\/Kcnk4\\/Calm1\\/Snap25\\/Calm2\\/Kcnab2\\/Calm3\\/Kcng2\\/Kcnmb2\\/Kcna1\\/Kcnk2\\/Kcnip1\\/Kcnb2\\/Grik1\\/Dpp6\\/Kcnip3\\/Kcnmb4\\/Hcn1\\/Pde4d\\/Kcnq2\\/Kcnc3\\/Kcnv1\\/Kcns2\\/Cntnap2\\/Kcnc1\\/Kcnab3\\/Lrrc55\\/Kcnq4\\/Gria4\\/Grik5\\/Kcnip4\"},{\"ID\":\"GOCC_CALCIUM_CHANNEL_COMPLEX\",\"setSize\":52,\"enrichmentScore\":0.529914963,\"NES\":2.269758091,\"pvalue\":0.00000287,\"p.adjust\":0.0000409,\"qvalue\":0.0000209,\"leading_edge\":\"tags=56%, list=23%, signal=43%\",\"core_enrichment\":\"Micu3\\/Cacna2d3\\/Cacnb4\\/Mcub\\/Cacnb2\\/Fkbp1b\\/Cacna1e\\/Calm1\\/Cacnb1\\/Ryr2\\/Calm2\\/Cacna1a\\/Calm3\\/Catspere2\\/Pde4b\\/Cacna1g\\/Ryr3\\/Pde4d\\/Pkd1l1\\/Cacna1c\\/Trpc5\\/Cacnb3\\/Cacna1d\\/Cacna1s\\/Cacna1b\\/Trpc4\\/Catsper2\\/Cacna1h\\/Cacna2d1\"},{\"ID\":\"GOCC_PRESYNAPTIC_ACTIVE_ZONE_MEMBRANE\",\"setSize\":62,\"enrichmentScore\":0.4900043549,\"NES\":2.150909768,\"pvalue\":0.00000325,\"p.adjust\":0.0000446,\"qvalue\":0.0000228,\"leading_edge\":\"tags=58%, list=25%, signal=44%\",\"core_enrichment\":\"Gpm6a\\/Otof\\/Napb\\/Snap91\\/Rims1\\/Snap25\\/Cacna1a\\/Cdh10\\/Syt11\\/Itga3\\/Stx3\\/Stx1b\\/Gabrb2\\/Gabra2\\/Stxbp1\\/Nptn\\/Gria2\\/Napa\\/Grm4\\/Hcn1\\/Atp2b1\\/Flot2\\/Nrg1\\/Nrxn1\\/Cntnap2\\/Atp2b4\\/Apba1\\/Grin1\\/Grin2b\\/Cacna1d\\/Gabrb1\\/Stx1a\\/Gria4\\/Cacna1h\\/Cacna2d1\\/Scn8a\"}]",
+        "total_rows": 47,
+        "storage_entry": {
+          "id": "1763271829_647b7d51",
+          "name": "gocc_positive_9fa8f0a62a.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/gocc_positive_9fa8f0a62a.csv"
+        }
+      }
+    },
+    {
+      "tool": "ora_pipe",
+      "payload": {
+        "ora_results": {},
+        "ora_result_metadata": {}
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "ID",
+          "NES",
+          "leading_edge",
+          "core_enrichment"
+        ],
+        "rows": "[{\"ID\":\"GOCC_EXOCYTIC_VESICLE\",\"NES\":2.659520211,\"leading_edge\":\"tags=57%, list=27%, signal=43%\",\"core_enrichment\":\"Akap7\\/Slc17a8\\/Kcnc4\\/Rab40b\\/Clcn3\\/Otof\\/Septin4\\/Rab2a\\/Rnf112\\/Doc2b\\/Synpr\\/Mctp1\\/Sv2c\\/Mylk2\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Stx7\\/Sv2b\\/Vps45\\/Pick1\\/Atp6v1d\\/Snap91\\/Mal2\\/Clcn4\\/Rab3a\\/Bin1\\/Rab6a\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Snap25\\/Lgi3\\/Ppfia2\\/Stx12\\/Rab4a\\/Rab3b\\/Mff\\/Rab3d\\/Calm2\\/Syt7\\/Rab3ip\\/Atg9a\\/Btbd8\\/Cadps2\\/Atp6v1h\\/Calm3\\/Syt11\\/Syp\\/Unc13a\\/Slc18a1\\/Syt4\\/Slc35g2\\/Syngr3\\/Snca\\/Septin5\\/Grin2a\\/Scamp1\\/Stx3\\/Syt2\\/Rab40c\\/Dlg2\\/Snap47\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Rab12\\/Rab27a\\/Psen2\\/Scamp5\\/Adam10\\/Sphk1\\/Rab5a\\/Gabra2\\/Dnm1\\/Atp6v1f\\/Kif3c\\/Atp6v1c1\\/Pde4b\\/Bace1\\/Gria2\\/Bcl2l1\\/Vti1a\\/Gabbr1\\/Amph\\/Syt17\\/Sv2a\\/Prrt1\\/Syt3\\/Atp2b1\\/Kcnk9\\/Wdr7\\/Sytl2\\/Vdac3\\/Erc1\\/Slc17a7\\/Ap2a2\\/Atp6ap2\\/Unc13b\\/Dlg4\\/Ntf3\\/Tprgl\\/Kirrel3\\/Unc13c\\/Slc17a6\\/Cdk16\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Grin2b\\/Slc6a7\\/Stxbp5\\/Syt6\\/Dnm1l\\/Syn2\\/Bsn\\/Septin6\\/Dmxl2\\/Sptbn2\\/Ndel1\\/Stx1a\\/Prrt2\\/Trappc4\\/Tor1a\\/Unc13d\\/Prkn\\/Sytl1\\/Rab35\\/Atp6v1g2\\/Madd\\/Vdac2\\/Atp6v0e2\\/Atp6v1g1\\/Sh3gl2\\/Rab3c\\/Dpysl3\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Disc1\\/Aqp2\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\\/Rab8a\\/Brsk1\"},{\"ID\":\"GOCC_SYNAPTIC_VESICLE_MEMBRANE\",\"NES\":2.641156339,\"leading_edge\":\"tags=63%, list=27%, signal=46%\",\"core_enrichment\":\"Slc17a8\\/Clcn3\\/Otof\\/Rab2a\\/Doc2b\\/Synpr\\/Mctp1\\/Sv2c\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Stx7\\/Sv2b\\/Atp6v1d\\/Mal2\\/Rab3a\\/Bin1\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Stx12\\/Rab4a\\/Rab3b\\/Mff\\/Calm2\\/Atp6v1h\\/Calm3\\/Syt11\\/Syp\\/Unc13a\\/Slc18a1\\/Slc35g2\\/Syngr3\\/Snca\\/Scamp1\\/Syt2\\/Dlg2\\/Snap47\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Scamp5\\/Rab5a\\/Gabra2\\/Atp6v1f\\/Atp6v1c1\\/Gria2\\/Bcl2l1\\/Amph\\/Sv2a\\/Prrt1\\/Atp2b1\\/Slc17a7\\/Atp6ap2\\/Unc13b\\/Tprgl\\/Unc13c\\/Slc17a6\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Slc6a7\\/Dnm1l\\/Syn2\\/Stx1a\\/Prkn\\/Rab35\\/Atp6v1g2\\/Atp6v0e2\\/Atp6v1g1\\/Sh3gl2\\/Rab3c\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\"},{\"ID\":\"GOCC_PRESYNAPTIC_MEMBRANE\",\"NES\":2.634273482,\"leading_edge\":\"tags=49%, list=23%, signal=38%\",\"core_enrichment\":\"Gpm6a\\/Kcnc4\\/Kcnh1\\/Cntnap4\\/Cyth1\\/Otof\\/Napb\\/Erc2\\/Cask\\/Grik2\\/Kcnj3\\/Apbb1\\/Scn11a\\/Grm1\\/Kcnj6\\/Clta\\/Fxyd6\\/Pick1\\/Kcnj11\\/Cntn6\\/Snap91\\/Cacna1e\\/Rims1\\/Snap25\\/Dnajc6\\/Atp2b3\\/Ppfia2\\/Scn2a\\/Syt7\\/Cadps2\\/Cacna1a\\/Rims3\\/Oprm1\\/Cdh10\\/Syt11\\/Itga3\\/Syp\\/Unc13a\\/Chrm3\\/Cadm3\\/Grin2a\\/Stx3\\/Ap2s1\\/Cntn1\\/Adora1\\/Marcks\\/Kcna1\\/Adgrl1\\/Rims2\\/Adam23\\/Stx1b\\/Psen2\\/Gabrb2\\/Gabra2\\/Dnm1\\/Grik1\\/Ap2m1\\/Stxbp1\\/Nptn\\/Septin3\\/Gria2\\/Napa\\/Gabbr1\\/Itsn1\\/Grm4\\/Hcn1\\/Gabra6\\/Atp2b1\\/Flot2\\/Nrg1\\/Nrxn1\\/Erbb4\\/Ache\\/Cnr1\\/Nrxn3\\/L1cam\\/Pip5k1c\\/Kcnc3\\/Unc13b\\/Mpp4\\/Unc13c\\/Cntnap2\\/Cacna1c\\/Kcnj9\\/Kcnc1\\/Atp2b4\\/Apba1\\/Igsf21\\/Htr1a\\/Grin1\\/Syt1\\/Grin2b\\/Slc6a7\\/Stxbp5\\/Cacna1d\\/Dnm1l\\/Nrxn2\\/Gabrb1\\/Syap1\\/Slc1a6\\/Rgs7bp\\/Stx1a\\/Septin7\\/Prrt2\\/Gria4\\/Chrna7\\/Grik5\\/Cacna1h\\/Cacna2d1\"},{\"ID\":\"GOCC_TRANSPORT_VESICLE\",\"NES\":2.420118537,\"leading_edge\":\"tags=52%, list=27%, signal=39%\",\"core_enrichment\":\"Lin7c\\/Akap7\\/Slc17a8\\/Kcnc4\\/Aph1b\\/Rab11a\\/Rab40b\\/Ap4b1\\/Clcn3\\/Otof\\/Septin4\\/Rab2a\\/Rnf112\\/Car4\\/Doc2b\\/Azin2\\/Aph1c\\/Synpr\\/Nrgn\\/Mctp1\\/Sv2c\\/Mylk2\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Yipf2\\/Stx7\\/Sv2b\\/Vps45\\/Pick1\\/Atp6v1d\\/Snap91\\/Mal2\\/Clcn4\\/Rab3a\\/Bin1\\/Rab6a\\/Lin7a\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Snap25\\/Lgi3\\/Bloc1s3\\/Ppfia2\\/Stx12\\/Sar1b\\/Rab4a\\/Rab3b\\/Mff\\/Rab3d\\/Calm2\\/Syt7\\/Aftph\\/Rab3ip\\/Atg9a\\/Btbd8\\/Cadps2\\/Atp6v1h\\/Yipf1\\/Calm3\\/Syt11\\/Sec23a\\/Syp\\/Unc13a\\/Slc18a1\\/Syt4\\/Slc35g2\\/Syngr3\\/Snca\\/Septin5\\/Grin2a\\/Scamp1\\/Stx3\\/Syt2\\/Lin7b\\/Rab40c\\/Dlg2\\/Snap47\\/Ap1s2\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Rab12\\/Rab27a\\/Psen2\\/Scamp5\\/Adam10\\/Sphk1\\/Rab5a\\/Gabra2\\/Dnm1\\/Atp6v1f\\/Kif3c\\/Atp6v1c1\\/Pde4b\\/Bace1\\/Gria2\\/Bcl2l1\\/Vti1a\\/Gabbr1\\/Amph\\/Syt17\\/Sv2a\\/Prrt1\\/Syt3\\/Atp2b1\\/Kcnk9\\/Wdr7\\/Sytl2\\/Vdac3\\/Erc1\\/Slc17a7\\/Ap2a2\\/Nrsn1\\/Atp6ap2\\/Klhl12\\/Unc13b\\/Dlg4\\/Ntf3\\/Tprgl\\/Kirrel3\\/Unc13c\\/Slc17a6\\/Cdk16\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Grin2b\\/Slc6a7\\/Galnt15\\/Stxbp5\\/Syt6\\/Dnm1l\\/Syn2\\/Bsn\\/Septin6\\/Dmxl2\\/Sptbn2\\/Clrn1\\/Ndel1\\/Stx1a\\/Prrt2\\/Trappc4\\/Tor1a\\/Unc13d\\/Pdcd6\\/Prkn\\/Sytl1\\/Gopc\\/Ap1s3\\/Rab35\\/Atp6v1g2\\/Madd\\/Vdac2\\/Atp6v0e2\\/Cnst\\/Atp13a2\\/Atp6v1g1\\/Dync1i1\\/Sh3gl2\\/Rab3c\\/Dpysl3\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Disc1\\/Aqp2\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\\/Rab8a\\/Brsk1\"},{\"ID\":\"GOCC_TRANSPORT_VESICLE_MEMBRANE\",\"NES\":2.390385863,\"leading_edge\":\"tags=56%, list=27%, signal=42%\",\"core_enrichment\":\"Lin7c\\/Slc17a8\\/Ap4b1\\/Clcn3\\/Otof\\/Rab2a\\/Car4\\/Doc2b\\/Synpr\\/Nrgn\\/Mctp1\\/Sv2c\\/Syt9\\/Clta\\/Abcc8\\/Dnajc5\\/Stx7\\/Sv2b\\/Atp6v1d\\/Mal2\\/Rab3a\\/Bin1\\/Lin7a\\/Rph3a\\/Atp6v0d1\\/Calm1\\/Stx12\\/Sar1b\\/Rab4a\\/Rab3b\\/Mff\\/Calm2\\/Aftph\\/Atp6v1h\\/Calm3\\/Syt11\\/Sec23a\\/Syp\\/Unc13a\\/Slc18a1\\/Slc35g2\\/Syngr3\\/Snca\\/Scamp1\\/Syt2\\/Lin7b\\/Dlg2\\/Snap47\\/Ap1s2\\/Atp6v1e1\\/Syngr1\\/Atp8a1\\/Atp6v1b2\\/Svop\\/Scamp5\\/Rab5a\\/Gabra2\\/Atp6v1f\\/Atp6v1c1\\/Gria2\\/Bcl2l1\\/Vti1a\\/Amph\\/Sv2a\\/Prrt1\\/Atp2b1\\/Slc17a7\\/Atp6ap2\\/Klhl12\\/Unc13b\\/Tprgl\\/Unc13c\\/Slc17a6\\/Dmd\\/Atp6v1a\\/Grin1\\/Slc2a3\\/Syt1\\/Grin2b\\/Slc6a7\\/Dnm1l\\/Syn2\\/Stx1a\\/Pdcd6\\/Prkn\\/Ap1s3\\/Rab35\\/Atp6v1g2\\/Atp6v0e2\\/Atp6v1g1\\/Sh3gl2\\/Rab3c\\/Atp6v0a1\\/Syt12\\/Vamp2\\/Atp6v0c\\/Rab26\\/Atp6ap1\\/Rab14\\/Drd2\\/Dlg1\"},{\"ID\":\"GOCC_TRANSPORTER_COMPLEX\",\"NES\":2.369975125,\"leading_edge\":\"tags=46%, list=26%, signal=35%\",\"core_enrichment\":\"Slc17a8\\/Olfm3\\/Kcnc4\\/Kcnh1\\/Trpc6\\/Micu3\\/Cacna2d3\\/Kcnk1\\/Uqcc3\\/Clcn2\\/Kcnab1\\/Cacnb4\\/Atp6v0b\\/Mcub\\/Grik2\\/Kcnj3\\/Scn11a\\/Tmem30a\\/Trpc1\\/Abcc8\\/Cacnb2\\/Fkbp1b\\/Kcnj11\\/Atp6v1d\\/Cacna1e\\/Kcnd2\\/Kcnk4\\/Atp6v0d1\\/Calm1\\/Snap25\\/Ndufc2\\/Cacnb1\\/Shisa8\\/Porcn\\/Ryr2\\/Scn2a\\/Atp8a2\\/Calm2\\/Kcnab2\\/Scnn1g\\/Cacna1a\\/Atp6v1h\\/Unc80\\/Scn2b\\/Calm3\\/Ttyh2\\/Nrn1\\/Gabrd\\/Timm9\\/Ndufc1\\/Uqcrh\\/Ndufs4\\/Grin2a\\/Kcng2\\/Ndufb8\\/Atp8b2\\/Atp8a1\\/Dmac2\\/Kcnmb2\\/Kcna1\\/Ndufa8\\/Eps8\\/Shisa9\\/Kcnk2\\/Kcnip1\\/Gabrb3\\/Catspere2\\/Gabrb2\\/Ndufb9\\/Kcnb2\\/Ndufb4\\/Gabra2\\/Grik1\\/Atp6v1f\\/Atp6v1c1\\/Ndufa13\\/Pde4b\\/Cacna1g\\/Atp1a1\\/Gria2\\/Timm10b\\/Dpp6\\/Slc26a6\\/Kcnip3\\/Ndufv3\\/Kcnmb4\\/Hcn1\\/Gabra6\\/Olfm1\\/Ndufs3\\/Ryr3\\/Pde4d\\/Atp5g3\\/Ndufa1\\/Cnih2\\/Kcnq2\\/Glrb\\/Gabrg2\\/Ndufb11\\/Ndufb5\\/Slc17a7\\/Uqcrfs1\\/Pkd1l1\\/Uqcr10\\/Atp1b2\\/Kcnc3\\/Dlg4\\/Scn9a\\/Kcnv1\\/Clic5\\/Gabra4\\/mt-Co1\\/Kcns2\\/Cntnap2\\/mt-Nd3\\/Cacna1c\\/Slc17a6\\/Kcnc1\\/Scn1b\\/Kcnab3\\/Trpc5\\/Atp6v1a\\/Pex14\\/Grin1\\/Grin2b\\/Cacnb3\\/Stxbp5\\/Cacna1d\\/Ndufa6\\/Lrrc55\\/Atp1b1\\/Gabrb1\\/Grin2c\\/Kcnq4\\/Ndufs1\\/Cacna1i\\/Ndufb2\\/Chrna1\\/Cacna1s\\/Gria4\\/Cacna1b\\/Trpc4\\/Chrna7\\/Ndufs5\\/Catsper2\\/Grik5\\/Kcnip4\\/Cacna1h\\/Cacna2d1\\/Uqcr11\\/Ndufb3\\/Atp6v1g1\\/Ostm1\\/Dlg3\\/Scn4a\\/Sacm1l\\/Scn8a\\/Ndufa7\\/Cnga2\\/Vwc2l\\/Gabrr1\\/Chrnb2\\/Cpt1c\\/Scn3b\\/Amigo1\\/Atp6v0c\"},{\"ID\":\"GOCC_RESPIRASOME\",\"NES\":2.364825556,\"leading_edge\":\"tags=59%, list=30%, signal=41%\",\"core_enrichment\":\"Uqcc3\\/Cox4i1\\/Ndufc2\\/Cox7a2\\/Ndufc1\\/Uqcrh\\/Sdhd\\/Ndufs4\\/Ndufb8\\/Dmac2\\/Ndufa8\\/Rab5if\\/Ndufb9\\/Ndufb4\\/Ndufa13\\/Ndufv3\\/Ndufs3\\/Ndufa1\\/Ndufb11\\/Ndufb5\\/Cox7a1\\/Cox6c\\/Uqcrfs1\\/Uqcr10\\/mt-Co1\\/mt-Nd3\\/Ndufa6\\/Ttc19\\/Cox6a1\\/Cox7a2l\\/Ndufs1\\/Cox6b1\\/Ndufb2\\/Cox4i2\\/Ndufs5\\/Uqcr11\\/Cox8a\\/Ndufb3\\/Ndufa7\\/Cox5b\\/Cox7c\\/mt-Nd6\\/Ndufs7\\/Ndufb7\\/Ndufb6\\/Ndufs2\\/Uqcrc1\\/mt-Nd1\\/mt-Co3\\/Uqcrc2\\/Coa6\\/Sdhc\"},{\"ID\":\"GOCC_INNER_MITOCHONDRIAL_MEMBRANE_PROTEIN_COMPLEX\",\"NES\":2.363120293,\"leading_edge\":\"tags=55%, list=30%, signal=38%\",\"core_enrichment\":\"Trmt10b\\/Timm29\\/Micu3\\/Uqcc3\\/Mcub\\/Cox4i1\\/Apoo\\/Grpel2\\/Ndufc2\\/Cox7a2\\/Atp5o\\/Atp5md\\/Timm9\\/Ndufc1\\/Immp1l\\/Uqcrh\\/Sdhd\\/Romo1\\/Ndufs4\\/Atp5l\\/Atp5mpl\\/Ndufb8\\/Atp5pb\\/Dmac2\\/Ndufa8\\/Timm22\\/Ndufb9\\/Ndufb4\\/Ndufa13\\/Dnajc15\\/Timm10b\\/Ndufv3\\/Ndufs3\\/Atp5g3\\/Ndufa1\\/Ndufb11\\/Ndufb5\\/Cox7a1\\/Cox6c\\/Dnajc19\\/Uqcrfs1\\/Uqcr10\\/mt-Co1\\/mt-Nd3\\/Atp5h\\/Ndufa6\\/Cox6a1\\/Cox7a2l\\/Ndufs1\\/Cox6b1\\/Ndufb2\\/Cox4i2\\/Atp5k\\/Ndufs5\\/Uqcr11\\/Cox8a\\/Ndufb3\\/Atp5j2\\/Ndufa7\\/Cox5b\\/Cox7c\\/Atp5e\\/mt-Nd6\\/Atp5c1\\/Ndufs7\\/Ndufb7\\/Ndufb6\\/Ndufs2\\/Uqcrc1\\/mt-Nd1\\/mt-Co3\\/Chchd10\\/Uqcrc2\\/Sdhc\\/Atp5a1\\/Atp5j\"},{\"ID\":\"GOCC_CATION_CHANNEL_COMPLEX\",\"NES\":2.344385585,\"leading_edge\":\"tags=49%, list=26%, signal=37%\",\"core_enrichment\":\"Kcnc4\\/Kcnh1\\/Trpc6\\/Micu3\\/Cacna2d3\\/Kcnk1\\/Kcnab1\\/Cacnb4\\/Mcub\\/Grik2\\/Kcnj3\\/Scn11a\\/Trpc1\\/Abcc8\\/Cacnb2\\/Fkbp1b\\/Kcnj11\\/Cacna1e\\/Kcnd2\\/Kcnk4\\/Calm1\\/Snap25\\/Cacnb1\\/Ryr2\\/Scn2a\\/Calm2\\/Kcnab2\\/Scnn1g\\/Cacna1a\\/Unc80\\/Scn2b\\/Calm3\\/Kcng2\\/Kcnmb2\\/Kcna1\\/Kcnk2\\/Kcnip1\\/Catspere2\\/Kcnb2\\/Grik1\\/Pde4b\\/Cacna1g\\/Dpp6\\/Kcnip3\\/Kcnmb4\\/Hcn1\\/Ryr3\\/Pde4d\\/Atp5g3\\/Kcnq2\\/Pkd1l1\\/Kcnc3\\/Scn9a\\/Kcnv1\\/Kcns2\\/Cntnap2\\/Cacna1c\\/Kcnc1\\/Scn1b\\/Kcnab3\\/Trpc5\\/Cacnb3\\/Cacna1d\\/Lrrc55\\/Kcnq4\\/Cacna1i\\/Cacna1s\\/Gria4\\/Cacna1b\\/Trpc4\\/Catsper2\\/Grik5\\/Kcnip4\\/Cacna1h\\/Cacna2d1\\/Scn4a\\/Scn8a\\/Cnga2\\/Scn3b\\/Amigo1\"},{\"ID\":\"GOCC_NEURON_PROJECTION_TERMINUS\",\"NES\":2.305911335,\"leading_edge\":\"tags=47%, list=23%, signal=37%\",\"core_enrichment\":\"Slc17a8\\/Kcnc4\\/Cck\\/Esr1\\/Crhbp\\/Calb2\\/Clcn3\\/Septin4\\/Sri\\/Erc2\\/Grik2\\/Cdh8\\/Slc9a6\\/Mylk2\\/Blvrb\\/Snap91\\/Dixdc1\\/Rab3a\\/Bin1\\/Nos1\\/Atp6v0d1\\/Slc8a3\\/Pgr\\/Kcnab2\\/Syt7\\/Btbd8\\/Syt11\\/Syp\\/Ppp2ca\\/Unc13a\\/Slc18a1\\/Elk1\\/Syt4\\/Chrm3\\/Mob2\\/Snca\\/Septin5\\/Grin2a\\/Uchl1\\/Adora1\\/Prkca\\/Prph\\/Marcks\\/Prnp\\/Flrt1\\/Kcna1\\/Ror1\\/Aqp1\\/Kcnk2\\/Maco1\\/Gabrb3\\/Rab5a\\/Grik1\\/Pacsin1\\/Gria2\\/Ntrk2\\/Vti1a\\/Kcnip3\\/Rapgef4\\/Ilk\\/Itsn1\\/Amph\\/Pclo\\/Grm4\\/Hcn1\\/Prkcb\\/Ophn1\\/Baiap2\\/L1cam\\/Kcnc3\\/Unc13b\\/Dlg4\\/Mpp4\\/Tprgl\\/Atcay\\/Unc13c\\/Kcnc1\\/Cplx2\\/Dmd\\/Slc8a2\\/Grin1\\/Syt1\\/Grin2b\\/Tspoap1\\/Bsn\\/Septin6\\/Septin7\\/Prrt2\\/Gria4\\/Prkn\\/Cacna1b\\/Grik5\\/Sncb\\/Slc8a1\"},{\"ID\":\"GOCC_CALCIUM_CHANNEL_COMPLEX\",\"NES\":2.269758091,\"leading_edge\":\"tags=56%, list=23%, signal=43%\",\"core_enrichment\":\"Micu3\\/Cacna2d3\\/Cacnb4\\/Mcub\\/Cacnb2\\/Fkbp1b\\/Cacna1e\\/Calm1\\/Cacnb1\\/Ryr2\\/Calm2\\/Cacna1a\\/Calm3\\/Catspere2\\/Pde4b\\/Cacna1g\\/Ryr3\\/Pde4d\\/Pkd1l1\\/Cacna1c\\/Trpc5\\/Cacnb3\\/Cacna1d\\/Cacna1s\\/Cacna1b\\/Trpc4\\/Catsper2\\/Cacna1h\\/Cacna2d1\"},{\"ID\":\"GOCC_EXCITATORY_SYNAPSE\",\"NES\":2.239452724,\"leading_edge\":\"tags=52%, list=22%, signal=41%\",\"core_enrichment\":\"Slc17a8\\/Gpm6a\\/Lrrtm1\\/Kcnh1\\/Calb2\\/Cbln1\\/Kcnj3\\/Ppp3r1\\/Kcnj6\\/Cntn6\\/Lrrtm2\\/Snap91\\/Atp2b3\\/Cadps2\\/Syt11\\/Itga3\\/Syp\\/Unc13a\\/Cadm3\\/Grin2a\\/Ntm\\/Stxbp1\\/Akap5\\/Pde4b\\/Ntrk2\\/Ppfia4\\/Rapgef4\\/Nlgn3\\/Shank3\\/Pclo\\/Grm4\\/Nrxn1\\/Slc17a7\\/Baiap2\\/Dlg4\\/Unc13c\\/Cntnap2\\/Kcnj9\\/Slc17a6\\/Grin1\\/Syt1\\/Grin2b\\/Bsn\\/C1ql2\\/Ogt\\/Sptbn2\\/Slc1a6\\/Synj1\\/Plcb4\\/Slc16a7\\/Ywhah\"},{\"ID\":\"GOCC_MONOATOMIC_ION_CHANNEL_COMPLEX\",\"NES\":2.217381215,\"leading_edge\":\"tags=47%, list=26%, signal=36%\",\"core_enrichment\":\"Slc17a8\\/Olfm3\\/Kcnc4\\/Kcnh1\\/Trpc6\\/Micu3\\/Cacna2d3\\/Kcnk1\\/Clcn2\\/Kcnab1\\/Cacnb4\\/Mcub\\/Grik2\\/Kcnj3\\/Scn11a\\/Trpc1\\/Abcc8\\/Cacnb2\\/Fkbp1b\\/Kcnj11\\/Cacna1e\\/Kcnd2\\/Kcnk4\\/Calm1\\/Snap25\\/Cacnb1\\/Shisa8\\/Porcn\\/Ryr2\\/Scn2a\\/Calm2\\/Kcnab2\\/Scnn1g\\/Cacna1a\\/Unc80\\/Scn2b\\/Calm3\\/Ttyh2\\/Nrn1\\/Gabrd\\/Grin2a\\/Kcng2\\/Kcnmb2\\/Kcna1\\/Eps8\\/Shisa9\\/Kcnk2\\/Kcnip1\\/Gabrb3\\/Catspere2\\/Gabrb2\\/Kcnb2\\/Gabra2\\/Grik1\\/Pde4b\\/Cacna1g\\/Gria2\\/Dpp6\\/Slc26a6\\/Kcnip3\\/Kcnmb4\\/Hcn1\\/Gabra6\\/Olfm1\\/Ryr3\\/Pde4d\\/Atp5g3\\/Cnih2\\/Kcnq2\\/Glrb\\/Gabrg2\\/Slc17a7\\/Pkd1l1\\/Kcnc3\\/Dlg4\\/Scn9a\\/Kcnv1\\/Clic5\\/Gabra4\\/Kcns2\\/Cntnap2\\/Cacna1c\\/Slc17a6\\/Kcnc1\\/Scn1b\\/Kcnab3\\/Trpc5\\/Grin1\\/Grin2b\\/Cacnb3\\/Stxbp5\\/Cacna1d\\/Lrrc55\\/Gabrb1\\/Grin2c\\/Kcnq4\\/Cacna1i\\/Chrna1\\/Cacna1s\\/Gria4\\/Cacna1b\\/Trpc4\\/Chrna7\\/Catsper2\\/Grik5\\/Kcnip4\\/Cacna1h\\/Cacna2d1\\/Ostm1\\/Dlg3\\/Scn4a\\/Sacm1l\\/Scn8a\\/Cnga2\\/Vwc2l\\/Gabrr1\\/Chrnb2\\/Cpt1c\\/Scn3b\\/Amigo1\"},{\"ID\":\"GOCC_PRESYNAPTIC_ACTIVE_ZONE\",\"NES\":2.187944538,\"leading_edge\":\"tags=50%, list=23%, signal=39%\",\"core_enrichment\":\"Gpm6a\\/Otof\\/Napb\\/Erc2\\/Snap91\\/Rab3a\\/Rims1\\/Snap25\\/Arfgap3\\/Ppfia2\\/Cacna1a\\/Rims3\\/Cdh10\\/Syt11\\/Itga3\\/Syp\\/Unc13a\\/Ppfia3\\/Stx3\\/Iqsec2\\/Snap47\\/Adora1\\/Rims2\\/Stx1b\\/Gabrb2\\/Gabra2\\/Stxbp1\\/Nptn\\/Gria2\\/Ntrk2\\/Ppfia4\\/Napa\\/Sv2a\\/Pclo\\/Grm4\\/Hcn1\\/Atp2b1\\/Flot1\\/Flot2\\/Nrg1\\/Nrxn1\\/Erc1\\/Slc17a7\\/Unc13b\\/Unc13c\\/Cntnap2\\/Atp2b4\\/Apba1\\/Grin1\\/Grin2b\\/Cacna1d\\/Gabrb1\\/Bsn\\/Stx1a\\/Gria4\\/Cacna1b\\/Cacna1h\\/Arhgap44\\/Cacna2d1\"},{\"ID\":\"GOCC_POTASSIUM_CHANNEL_COMPLEX\",\"NES\":2.173622709,\"leading_edge\":\"tags=47%, list=23%, signal=36%\",\"core_enrichment\":\"Kcnc4\\/Kcnh1\\/Kcnk1\\/Kcnab1\\/Grik2\\/Kcnj3\\/Abcc8\\/Kcnj11\\/Kcnd2\\/Kcnk4\\/Calm1\\/Snap25\\/Calm2\\/Kcnab2\\/Calm3\\/Kcng2\\/Kcnmb2\\/Kcna1\\/Kcnk2\\/Kcnip1\\/Kcnb2\\/Grik1\\/Dpp6\\/Kcnip3\\/Kcnmb4\\/Hcn1\\/Pde4d\\/Kcnq2\\/Kcnc3\\/Kcnv1\\/Kcns2\\/Cntnap2\\/Kcnc1\\/Kcnab3\\/Lrrc55\\/Kcnq4\\/Gria4\\/Grik5\\/Kcnip4\"},{\"ID\":\"GOCC_DISTAL_AXON\",\"NES\":2.168633858,\"leading_edge\":\"tags=43%, list=23%, signal=34%\",\"core_enrichment\":\"Dynlt1b\\/Slc17a8\\/Gpm6a\\/Lrrtm1\\/Kcnc4\\/Cck\\/Esr1\\/Arpc5\\/Crhbp\\/Calb2\\/Clcn3\\/Amfr\\/Septin4\\/Rufy3\\/Sri\\/Erc2\\/Dynlt1a\\/Grik2\\/Apbb1\\/Unc5c\\/Scn11a\\/Cdh8\\/Pink1\\/Slc9a6\\/Mylk2\\/Pafah1b1\\/Blvrb\\/Tiam1\\/Dclk1\\/Clasp2\\/Snap91\\/Dixdc1\\/Rab3a\\/Bin1\\/Cdk5\\/Nos1\\/Atp6v0d1\\/Calm1\\/Sirt1\\/Snap25\\/Dctn2\\/Slc8a3\\/Acap3\\/Pgr\\/Elavl4\\/Arhgef7\\/Calm2\\/Fgf13\\/Kcnab2\\/Wdr47\\/Syt7\\/Stim1\\/Cxadr\\/Kif5c\\/Calm3\\/Dvl1\\/Map3k12\\/Syt11\\/Cdk5r1\\/Twf2\\/Itga3\\/Syp\\/Ppp2ca\\/Unc13a\\/Slc18a1\\/Elk1\\/Pard6a\\/Chrm3\\/Snca\\/Septin5\\/Grin2a\\/Myh14\\/Stx3\\/Rac3\\/Adora1\\/Src\\/Zfp804a\\/Prkca\\/Mapt\\/Prph\\/Marcks\\/Pak1\\/Prnp\\/Eno2\\/Nefl\\/Kcna1\\/Ror1\\/Adgrl1\\/Aqp1\\/Kcnk2\\/Psen2\\/Zfyve27\\/Map2\\/Cdkl5\\/Gabrb3\\/Inpp5j\\/Rab5a\\/Ppp1r9b\\/Grik1\\/Pacsin1\\/Kif3c\\/Lrig2\\/Mapk8ip1\\/Gria2\\/Kif5a\\/Ntrk2\\/Exoc7\\/Kcnip3\\/Rapgef4\\/Stmn2\\/Ilk\\/Itsn1\\/Amph\\/Pclo\\/Grm4\\/Hcn1\\/Olfm1\\/Klc1\\/Nrxn1\\/Ptbp2\\/Prkcb\\/Lamp5\\/Cnr1\\/Ophn1\\/Trpv2\\/Als2\\/Nrsn1\\/L1cam\\/Kcnc3\\/Unc13b\\/Mpp4\\/Tprgl\\/Myo9a\\/C9orf72\\/Unc13c\\/Kcnc1\\/Cplx2\\/Slc8a2\\/Trpc5\\/Grin1\\/Grin2b\\/Tmod2\\/Tspoap1\\/Brsk2\\/Septin6\\/Syap1\\/Ndel1\\/Setx\\/Septin7\\/Prrt2\\/Tor1a\\/Gria4\\/Prkn\\/Cacna1b\\/Trak2\\/Pcdh9\\/Chrna7\\/Grik5\\/Sncb\\/Slc8a1\"},{\"ID\":\"GOCC_POSTSYNAPTIC_SPECIALIZATION_MEMBRANE\",\"NES\":2.167062357,\"leading_edge\":\"tags=52%, list=28%, signal=38%\",\"core_enrichment\":\"Lrrtm1\\/Nectin3\\/Adam22\\/Grik2\\/Neto2\\/Grm1\\/Plppr4\\/Arc\\/Abhd17b\\/Tiam1\\/Adcy1\\/Lrrtm2\\/Kcnd2\\/Lrrtm3\\/Nrcam\\/Slitrk3\\/Clstn1\\/Kcnab2\\/Rtn4\\/Cnksr2\\/Lrrc4c\\/Cdh10\\/Mpp2\\/Sema4f\\/Chrm3\\/Il1rapl1\\/Grin2a\\/Iqsec2\\/Dlg2\\/Shisa9\\/Gabrb3\\/Gabrb2\\/Gabra2\\/Grik1\\/Pacsin1\\/Nptn\\/Gria2\\/Nlgn3\\/Prrt1\\/Abhd17a\\/Gabra6\\/Drd5\\/Nrg1\\/Htr5a\\/Erbb4\\/Cnih2\\/Grm5\\/Gabrg2\\/Dlg4\\/Gabra4\\/Lrfn5\\/Grin1\\/Grin2b\\/Gabrb1\\/Grid1\\/Grin2c\\/Rgs7bp\\/Stx1a\\/Slc16a7\\/Chrna1\\/Gria4\\/Clstn3\\/Chrna7\\/Nptx2\\/Grik5\\/Dlg3\\/Scn8a\\/Chrnb2\\/Nlgn1\\/Dlg1\\/Lrfn3\\/Neto1\\/Slitrk1\\/Lrrc4b\\/Epha7\\/Lrrtm4\"},{\"ID\":\"GOCC_PRESYNAPTIC_ACTIVE_ZONE_MEMBRANE\",\"NES\":2.150909768,\"leading_edge\":\"tags=58%, list=25%, signal=44%\",\"core_enrichment\":\"Gpm6a\\/Otof\\/Napb\\/Snap91\\/Rims1\\/Snap25\\/Cacna1a\\/Cdh10\\/Syt11\\/Itga3\\/Stx3\\/Stx1b\\/Gabrb2\\/Gabra2\\/Stxbp1\\/Nptn\\/Gria2\\/Napa\\/Grm4\\/Hcn1\\/Atp2b1\\/Flot2\\/Nrg1\\/Nrxn1\\/Cntnap2\\/Atp2b4\\/Apba1\\/Grin1\\/Grin2b\\/Cacna1d\\/Gabrb1\\/Stx1a\\/Gria4\\/Cacna1h\\/Cacna2d1\\/Scn8a\"},{\"ID\":\"GOCC_POSTSYNAPTIC_MEMBRANE\",\"NES\":2.085004227,\"leading_edge\":\"tags=48%, list=28%, signal=35%\",\"core_enrichment\":\"Col13a1\\/Lin7c\\/Zc4h2\\/Fbxo45\\/Lrrtm1\\/Kcnc4\\/Nectin3\\/Kcnh1\\/Clcn3\\/Adam22\\/Pcdhb16\\/Cbln1\\/Grik2\\/Neto2\\/Apbb1\\/Grm1\\/Plppr4\\/Arc\\/Nrgn\\/Abhd17b\\/Kctd8\\/Gpr158\\/Tiam1\\/Adcy1\\/Fxyd6\\/Nbea\\/Lrrtm2\\/Snap91\\/Cacna1e\\/Kcnd2\\/Lin7a\\/Rph3a\\/Lrrtm3\\/Nrcam\\/Slc8a3\\/Shisa8\\/Slitrk3\\/Clstn1\\/Pten\\/Kcnab2\\/Rtn4\\/Cadps2\\/Cnksr2\\/Oprm1\\/Gphn\\/Lrrc4c\\/Cdh10\\/Mpp2\\/Gabrd\\/Itga3\\/Sema4f\\/Chrm3\\/Il1rapl1\\/Grin2a\\/Lin7b\\/Iqsec2\\/Cntn1\\/Dlg2\\/Adora1\\/Marcks\\/Dnm3\\/Adgrl3\\/Kcna1\\/Shisa9\\/Syne1\\/Gabrb3\\/Adam10\\/Gabrb2\\/Rab5a\\/Gabra2\\/Grik1\\/Pacsin1\\/Nptn\\/Slitrk2\\/Rgs7\\/Gria2\\/Ntrk2\\/Slc6a8\\/Nlgn3\\/Gabbr1\\/Prrt1\\/Dlgap1\\/Abhd17a\\/Shank3\\/Kcnn2\\/Hcn1\\/Faim2\\/Gabra6\\/Drd5\\/Nrg1\\/Htr5a\\/Erbb4\\/Ache\\/Ank1\\/Cnih2\\/Grm5\\/Glrb\\/Gabrg2\\/Nsg1\\/Slc9a5\\/Atp6ap2\\/Kcnc3\\/Dlg4\\/Gabra4\\/Arrb1\\/Cacna1c\\/Kcnc1\\/Dmd\\/Igsf21\\/Slc8a2\\/Lrfn5\\/Grin1\\/Grin2b\\/Gabrb1\\/Grid1\\/Syap1\\/Grin2c\\/Slc1a6\\/Ank2\\/Rgs7bp\\/Stx1a\\/Prrt2\\/Trappc4\\/Slc16a7\\/Chrna1\\/Gria4\\/Clstn3\\/Chrna7\\/Nptx2\\/Grik5\\/Cacna1h\\/Magee1\\/Slc8a1\\/Cacna2d1\\/Atad1\\/Cntn2\\/Dlg3\\/Scn8a\\/Gabrr1\\/Chrnb2\\/Itgb4\\/Cspg5\\/Shank1\\/Gabbr2\\/Drd2\\/Gper1\\/Nlgn1\\/Dlg1\\/Gpr156\\/Lrfn3\\/Igsf9b\\/Neto1\\/Slitrk1\\/Srgap2\\/Lrrc4b\\/Tmub1\\/Epha7\\/Lrrtm4\"},{\"ID\":\"GOCC_VOLTAGE_GATED_POTASSIUM_CHANNEL_COMPLEX\",\"NES\":2.073642281,\"leading_edge\":\"tags=43%, list=21%, signal=35%\",\"core_enrichment\":\"Kcnc4\\/Kcnh1\\/Kcnk1\\/Kcnab1\\/Kcnj3\\/Kcnd2\\/Calm1\\/Snap25\\/Calm2\\/Kcnab2\\/Calm3\\/Kcng2\\/Kcnmb2\\/Kcna1\\/Kcnk2\\/Kcnip1\\/Kcnb2\\/Dpp6\\/Kcnip3\\/Kcnmb4\\/Hcn1\\/Kcnq2\\/Kcnc3\\/Kcnv1\\/Kcns2\\/Cntnap2\\/Kcnc1\\/Kcnab3\\/Lrrc55\\/Kcnq4\"}]",
+        "total_rows": 47,
+        "storage_entry": {
+          "id": "1763271881_2df6e852",
+          "name": "gocc_top5_up_ccb2b8cf54.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/gocc_top5_up_ccb2b8cf54.csv"
+        }
+      }
+    }
+  ],
+  "uploaded_files": [
+    {
+      "name": "Ahmad_2025_Cancer_Cell_TableS3.xlsx - Elp1HETvsWT;Ptch1gRNA_RNA_GSEA.csv",
+      "type": "csv",
+      "preview": "ID,setSize,enrichmentScore,NES,pvalue,p.adjust,qvalue,leading_edge,core_enrichment\nGOCC_EXOCYTIC_VESICLE,268,0.4617745546,2.659520211,4.88E-20,1.23E-16,6.30E-17,\"tags=57%, list=27%, signal=43%\",Akap7/Slc17a8/Kcnc4/Rab40b/Clcn3/Otof/Septin4/Rab2a/Rnf112/Doc2b/Synpr/Mctp1/Sv2c/Mylk2/Syt9/Clta/Abcc8/Dnajc5/Stx7/Sv2b/Vps45/Pick1/Atp6v1d/Snap91/Mal2/Clcn4/Rab3a/Bin1/Rab6a/Rph3a/Atp6v0d1/Calm1/Snap25/Lgi3/Ppfia2/Stx12/Rab4a/Rab3b/Mff/Rab3d/Calm2/Syt7/Rab3ip/Atg9a/Btbd8/Cadps2/Atp6v1h/Calm3/Syt11/Syp/Unc13a/Slc18a1/Syt4/Slc35g2/Syngr3/Snca/Septin5/Grin2a/Scamp1/Stx3/Syt2/Rab40c/Dlg2/Snap47/Atp6v1e1/Syngr1/Atp8a1/Atp6v1b2/Svop/Rab12/Rab27a/Psen2/Scamp5/Adam10/Sphk1/Rab5a/Gabra2/Dnm1/Atp6v1f/Kif3c/Atp6v1c1/Pde4b/Bace1/Gria2/Bcl2l1/Vti1a/Gabbr1/Amph/Syt17/Sv2a/Prrt1/Syt3/Atp2b1/Kcnk9/Wdr7/Sytl2/Vdac3/Erc1/Slc17a7/Ap2a2/Atp6ap2/Unc13b/Dlg4/Ntf3/Tprgl/Kirrel3/Unc13c/Slc17a6/Cdk16/Dmd/Atp6v1a/Grin1/Slc2a3/Syt1/Grin2b/Slc6a7/Stxbp5/Syt6/Dnm1l/Syn2/Bsn/Septin6/Dmxl2/Sptbn2/Ndel1/Stx1a/Prrt2/Trappc4/Tor1a/Unc13d/Prkn/Sytl1/Rab35/Atp6v1g2/Madd/Vdac2/Atp6v0e2/Atp6v1g1/Sh3gl2/Rab3c/Dpysl3/Atp6v0a1/Syt12/Vamp2/Atp6v0c/Rab26/Disc1/Aqp2/Atp6ap1/Rab14/Drd2/Dlg1/Rab8a/Brsk1\nGOBP_VESICLE_MEDIATED_TRANSPORT_IN_SYNAPSE,256,0.4629543991,2.637441336,2.35E-19,2.97E-16,1.52E-16,\"tags=55%, list=25%, signal=42%\",Fbxo45/Slc17a8/Hpca/Rab11a/Kcnh1/Vamp4/Clcn3/Stxbp5l/Otof/Cacnb4/Napb/Doc2b/Fgf14/Usp46/Erc2/Cask/Ap3s1/Ppp3r1/Arc/Sv2c/Ppp3cb/Syt9/Pfn2/Dnajc5/Scrn1/Sv2b/Pick1/Atp6v1d/Snap91/Cacna1e/Rab3a/Bin1/Cdk5/Rph3a/Atp6v0d1/Vps35/Rims1/Snap25/Dnajc6/Arfgap3/Ppfia2/Rab3b/Wnt7a/Mff/Clstn1/Prkaca/Pten/Ap3m2/Syt7/Cadps2/Cacna1a/Ppp3cc/Rims3/Atp6v1h/Sh3glb2/Tbc1d24/Dvl1/Syt11/Cdk5r1/Syp/Unc13a/Slc18a1/Syt4/Ppfia3/Snca/Septin5/Stx3/Ap2s1/Syt2/Snap47/Ap1s2/Prkca/Atp6v1e1/Dnm3/Atp6v1b2/Rims2/Stx1b/Scamp5/Cadps/Rab5a/Dnm1/Ap2m1/Atp6v1f/Pacsin1/Stxbp1/Atp6v1c1/Akap5/Bcl2l1/Napa/Rapgef4/Nlgn3/Itsn1/Amph/Sv2a/Fbxl20/Pclo/Nrg1/Nrxn1/Prkcb/Nsg1/Ophn1/Erc1/Slc17a7/Ap2a2/Atp6ap2/Pip5k1c/Prkar1b/Unc13b/Tprgl/Unc13c/Slc17a6/Cplx2/Atp6v1a/Syt1/Stxbp5/Syt6/Dnm1l/Syn2/Bsn/Necap1/Mapk10/Sptbn2/Synj1/Stx1a/Prrt2/Tor1a/Camk2a/Prkn/Cacna1b/Grik5/Sncb/Atp6v1g2/Vps18/Atad1/Atp6v0e2/Cplx1/Atp6v1g1/Sh3gl2/Sacm1l/Atp6v0a1/Syt12/Vamp2",
+      "url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-16/Ahmad_2025_Cancer_Cell_TableS3xlsx-Elp1HETvsWTPtch1gRNA_RNA_GSEA.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T053734Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=4e7ea1bccd345012a68b5560639990b93b0d9c58963d202006710536c60eec88",
+      "s3_key": "uploads/2025-11-16/Ahmad_2025_Cancer_Cell_TableS3xlsx-Elp1HETvsWTPtch1gRNA_RNA_GSEA.csv"
+    }
+  ]
+}

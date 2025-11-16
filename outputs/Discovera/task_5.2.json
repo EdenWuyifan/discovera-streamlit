@@ -1,0 +1,4871 @@
+{
+  "ID": "5.2",
+  "Context/Background": "Prostate cancer (PCa) is the second leading cause of male cancer-related deaths. To date, the strategy to develop therapies for PCa mainly focuses on blocking either the activity or the transcriptional targets of known oncogenes. While the PCa transcriptome has been studied for decades, we have little knowledge of the translatome. The importance of this post-transcriptional regulation is underscored by the realization that RNA transcript levels are a poor proxy for protein abundance.\n\nTranslation initiation is a tightly regulated step critical to maintain the accurate protein dosage of growth and survival factors in cells.Importantly, emerging studies show that translation factors act in a rapid, selective, and robust manner to control the production of specific proteins. One of the most important of those factors is the RNA-binding protein and translation factor eukaryotic initiation factor 4A (eIF4A), which helps to unwind structured 5′ UTRs to increase translation initiation of select mRNAs in cancer.\n\nPharmacologic inhibition of eIF4A with zotatifin, a clinical compound, suppressed tumor growth in vivo, reducing both primary tumor growth and metastasis.\n\nWe investigated the effect of zotatifin on the PCa translatome and proteome, by performing ribosome profiling (Ribo-seq) and MS after 6 h of zotatifin treatment in 22Rv1 cell xenografts in vivo.  By cross-referencing Ribo-Seq and MS results, we found a potential target, HIF1α.\n\nHIF1α regulates an entire transcriptional program crucial for cell survival under hypoxic conditions. To investigate the effect of zotatifin treatment on this program and to understand whether any transcriptional changes are responsible for the impact of the inhibitor on repressing tumorigenesis, we performed a genome-wide RNA-seq experiment under normoxic and hypoxic (1% O2) conditions with or without zotatifin for 24 h. RNA-seq analyses revealed 108 genes that were upregulated explicitly under hypoxic conditions and significantly downregulated when cells were treated with zotatifin.",
+  "Prompt": "From the DEG results, how do you confirm that the identified top genes are HIF1α targets?\n\nBased on the results and molecular mechanisms of hypoxia, can you suggest a possible mechanism that zotatifin acts on HIF1α to reduce tumor burden?",
+  "status": "ok",
+  "error": null,
+  "output_text": "Introduction/Context  \nRNA-seq in 22Rv1 prostate cancer xenografts compared hypoxia (1% O₂) vs normoxia (Hyp_vs_Norm), hypoxia+zotatifin vs hypoxia vehicle (HypZot_vs_HypVeh), and normoxia+zotatifin vs normoxia vehicle (NormZot_vs_NormVeh). 108 genes were hypoxia-up and zotatifin-down (padj<0.05). Top hypoxia-induced genes include PGK1, VEGFA, SLC2A1, LDHA, and PDK1 (log₂FC>1, padj<1e-16). Under hypoxia with zotatifin, PGK1 (–0.997, padj 5.2e-45), LDHA (–0.305, padj 9.2e-05), and PDK1 (–0.781, padj 3.5e-04) were significantly down; VEGFA and SLC2A1 were unchanged or up, consistent with selective reprogramming. Details not specified: number of replicates; sequencing platform.\n\nFrom the DEG results, confirmation that the top genes are HIF1α targets  \n1. Candidate HIF1α targets (PGK1, VEGFA, SLC2A1, LDHA, PDK1) are significantly up in Hyp_vs_Norm and among the leading‐edge of MSigDB_Hallmark “Hypoxia” (NES 3.88, FDR 0.0026; lead_genes include SLC2A1, VEGFA, LDHA, PDK1, PGK1).  \n2. Filtering Hyp_vs_Norm for known HIF targets yielded six genes (HIF1A, PGK1, VEGFA, SLC2A1, LDHA, PDK1) all upregulated under hypoxia (padj ≤6.9e-26).  \n3. In HypZot_vs_HypVeh, three of these (PGK1, LDHA, PDK1) were significantly downregulated by zotatifin (padj <3.5e-04), mirroring HIF1α‐dependent control.  \n4. Gene annotations (gene_info) confirm these five genes are canonical HIF1α transcriptional targets involved in glycolysis and angiogenesis.\n\nPossible mechanism: zotatifin acts on HIF1α via eIF4A inhibition  \nZotatifin binds and inhibits the RNA helicase eIF4A, which is required to unwind structured 5′ UTRs during cap-dependent initiation. HIF1A mRNA and many HIF1α target transcripts (e.g., PGK1, LDHA, PDK1) harbor highly structured 5′ UTR elements and G-quadruplex motifs. By preventing eIF4A from resolving these structures, zotatifin selectively impairs translation initiation of HIF1A itself and/or its downstream mRNAs under hypoxia. The resulting loss of HIF1α protein and its transcriptional program reduces expression of glycolytic and angiogenic effectors, thereby blunting hypoxic adaptation, tumor cell survival, and angiogenesis to lower tumor burden.",
+  "tool_calls_json": [
+    {
+      "name": "csv_record",
+      "args": {
+        "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm",
+        "csv_url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T045608Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=22038665a68c7c1e3f1f93e0a60d63ca26c2bdf5cf5c752abd9f432a5dd7ab9a"
+      }
+    },
+    {
+      "name": "csv_record",
+      "args": {
+        "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh",
+        "csv_url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T045609Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f25075443ec7236d1c68949ba264d9be42b5d4da1bb3ec15d435ae99723045fb"
+      }
+    },
+    {
+      "name": "csv_record",
+      "args": {
+        "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh",
+        "csv_url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T045610Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=26a3ef9d434278d5ebe5377a7824a373abeea9100a7b8a5b35e675d2eccea15e"
+      }
+    },
+    {
+      "name": "csv_read",
+      "args": {
+        "id": "1763269012_e0004c01",
+        "n_rows": 20
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763269012_e0004c01",
+        "keep_columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "sort_by": [
+          "-log2FoldChange"
+        ],
+        "distinct": true,
+        "name": "Hyp_vs_Norm_up"
+      }
+    },
+    {
+      "name": "csv_read",
+      "args": {
+        "id": "1763269038_3304e42a",
+        "n_rows": 20
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763269012_e0004c01",
+        "conditions": [
+          {
+            "column": "gene_name",
+            "op": "in",
+            "value": [
+              "VEGFA",
+              "SLC2A1",
+              "CA9",
+              "LDHA",
+              "PGK1"
+            ]
+          }
+        ],
+        "keep_columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "name": "candidate_genes_in_Hyp_vs_Norm"
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763269012_e0004c01",
+        "conditions": [
+          {
+            "column": "log2FoldChange",
+            "op": ">",
+            "value": 1
+          },
+          {
+            "column": "padj",
+            "op": "<",
+            "value": 0.05
+          }
+        ],
+        "keep_columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "name": "Hyp_vs_Norm_up"
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763269038_3304e42a",
+        "conditions": [
+          {
+            "column": "padj",
+            "op": "<",
+            "value": 0.05
+          },
+          {
+            "column": "log2FoldChange",
+            "op": "<",
+            "value": 0
+          }
+        ],
+        "keep_columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "name": "HypZot_vs_HypVeh_down"
+      }
+    },
+    {
+      "name": "gsea_pipe",
+      "args": {
+        "csv_id": "1763269012_e0004c01",
+        "hit_col": "gene_name",
+        "corr_col": "log2FoldChange",
+        "gene_sets": [
+          "MSigDB_Hallmark_2020",
+          "KEGG_2016",
+          "GO_Biological_Process_2023",
+          "Reactome_Pathways_2024"
+        ],
+        "p_value_threshold": 0.05,
+        "fdr_threshold": 0.25
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763269012_e0004c01",
+        "conditions": [
+          {
+            "column": "gene_name",
+            "op": "in",
+            "value": [
+              "HIF1A",
+              "VEGFA",
+              "SLC2A1",
+              "LDHA",
+              "PGK1",
+              "PDK1",
+              "CA9"
+            ]
+          }
+        ],
+        "keep_columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "name": "Hyp_vs_Norm_HIF_targets"
+      }
+    },
+    {
+      "name": "csv_join",
+      "args": {
+        "left_csv_id": "1763269183_cff17eb2",
+        "right_csv_id": "1763269196_11ccc054",
+        "on": "gene_name",
+        "how": "inner",
+        "name": "Hyp_up_and_Zot_down_intersection"
+      }
+    },
+    {
+      "name": "query_table_rumma",
+      "args": {
+        "term": "Hypoxia"
+      }
+    },
+    {
+      "name": "query_string_rumma",
+      "args": {
+        "term": "PGK1 HIF1A",
+        "retmax": 10
+      }
+    },
+    {
+      "name": "gene_info",
+      "args": {
+        "gene_list": [
+          "PGK1",
+          "VEGFA",
+          "SLC2A1",
+          "LDHA",
+          "PDK1",
+          "CA9"
+        ]
+      }
+    },
+    {
+      "name": "query_string_rumma",
+      "args": {
+        "term": "eIF4A HIF1A translation",
+        "retmax": 10
+      }
+    },
+    {
+      "name": "sets_info_rumm",
+      "args": {
+        "gene_set_id": "07a0ecdc-700f-4965-b987-e8b0bc3fce72"
+      }
+    },
+    {
+      "name": "query_table_rumma",
+      "args": {
+        "term": "HIF1A targets"
+      }
+    },
+    {
+      "name": "query_string_rumma",
+      "args": {
+        "term": "zotatifin HIF1A",
+        "retmax": 10
+      }
+    },
+    {
+      "name": "gene_info",
+      "args": {
+        "gene_list": [
+          "EIF4A1",
+          "HIF1A"
+        ]
+      }
+    },
+    {
+      "name": "csv_read",
+      "args": {
+        "id": "1763269043_d110b5ef",
+        "n_rows": 20
+      }
+    },
+    {
+      "name": "csv_filter",
+      "args": {
+        "csv_id": "1763269038_3304e42a",
+        "conditions": [
+          {
+            "column": "gene_name",
+            "op": "in",
+            "value": [
+              "PGK1",
+              "VEGFA",
+              "SLC2A1",
+              "LDHA",
+              "PDK1"
+            ]
+          }
+        ],
+        "keep_columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "name": "HypZot_vs_HypVeh_HIF_targets"
+      }
+    }
+  ],
+  "tool_events_json": [
+    {
+      "tool": "csv_record",
+      "payload": {
+        "id": "1763269012_e0004c01",
+        "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm.csv",
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm.csv"
+      }
+    },
+    {
+      "tool": "csv_record",
+      "payload": {
+        "id": "1763269038_3304e42a",
+        "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh.csv",
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh.csv"
+      }
+    },
+    {
+      "tool": "csv_record",
+      "payload": {
+        "id": "1763269043_d110b5ef",
+        "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh.csv",
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh.csv"
+      }
+    },
+    {
+      "tool": "csv_read",
+      "payload": {
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm.csv",
+        "columns": [
+          "gene_name",
+          "baseMean",
+          "log2FoldChange",
+          "lfcSE",
+          "stat",
+          "pvalue",
+          "padj"
+        ],
+        "rows": [
+          {
+            "gene_name": "TSPAN6",
+            "baseMean": 70.10815446,
+            "log2FoldChange": 0.131235602,
+            "lfcSE": 0.383601786,
+            "stat": 0.342114157,
+            "pvalue": 0.732264984,
+            "padj": 0.870217863
+          },
+          {
+            "gene_name": "DPM1",
+            "baseMean": 517.0022098,
+            "log2FoldChange": -0.339086568,
+            "lfcSE": 0.114327911,
+            "stat": -2.965912394,
+            "pvalue": 0.003017864,
+            "padj": 0.020003822
+          },
+          {
+            "gene_name": "SCYL3",
+            "baseMean": 430.4702834,
+            "log2FoldChange": -0.30052808,
+            "lfcSE": 0.122095781,
+            "stat": -2.461412492,
+            "pvalue": 0.013839115,
+            "padj": 0.065497462
+          },
+          {
+            "gene_name": "C1orf112",
+            "baseMean": 147.1104584,
+            "log2FoldChange": -0.409847846,
+            "lfcSE": 0.170905785,
+            "stat": -2.398092285,
+            "pvalue": 0.016480712,
+            "padj": 0.074607648
+          },
+          {
+            "gene_name": "CFH",
+            "baseMean": 5.588546461,
+            "log2FoldChange": -0.189385415,
+            "lfcSE": 1.314483917,
+            "stat": -0.144075871,
+            "pvalue": 0.885440558,
+            "padj": 0.948430734
+          },
+          {
+            "gene_name": "FUCA2",
+            "baseMean": 644.0895573,
+            "log2FoldChange": -0.231160347,
+            "lfcSE": 0.087737837,
+            "stat": -2.634671159,
+            "pvalue": 0.008421883,
+            "padj": 0.044834306
+          },
+          {
+            "gene_name": "GCLC",
+            "baseMean": 1266.160793,
+            "log2FoldChange": 0.462371436,
+            "lfcSE": 0.10067123,
+            "stat": 4.592885545,
+            "pvalue": 4.37e-06,
+            "padj": 7.51e-05
+          },
+          {
+            "gene_name": "NFYA",
+            "baseMean": 1413.467355,
+            "log2FoldChange": 0.130357548,
+            "lfcSE": 0.062278434,
+            "stat": 2.093141068,
+            "pvalue": 0.036336564,
+            "padj": 0.13251803
+          },
+          {
+            "gene_name": "STPG1",
+            "baseMean": 103.4483859,
+            "log2FoldChange": -0.100241401,
+            "lfcSE": 0.232488634,
+            "stat": -0.43116689,
+            "pvalue": 0.666347027,
+            "padj": 0.829908422
+          },
+          {
+            "gene_name": "NIPAL3",
+            "baseMean": 1293.252693,
+            "log2FoldChange": 0.035308707,
+            "lfcSE": 0.083585852,
+            "stat": 0.422424445,
+            "pvalue": 0.672715239,
+            "padj": 0.833970513
+          },
+          {
+            "gene_name": "LAS1L",
+            "baseMean": 849.7596727,
+            "log2FoldChange": -0.368183244,
+            "lfcSE": 0.082411539,
+            "stat": -4.46761763,
+            "pvalue": 7.91e-06,
+            "padj": 0.000126516
+          },
+          {
+            "gene_name": "ENPP4",
+            "baseMean": 224.0606678,
+            "log2FoldChange": 0.09261986,
+            "lfcSE": 0.168653042,
+            "stat": 0.549173964,
+            "pvalue": 0.58288607,
+            "padj": 0.77804836
+          },
+          {
+            "gene_name": "SEMA3F",
+            "baseMean": 20.76244783,
+            "log2FoldChange": 0.36311717,
+            "lfcSE": 0.657129653,
+            "stat": 0.55258071,
+            "pvalue": 0.580550554,
+            "padj": 0.776417161
+          },
+          {
+            "gene_name": "CFTR",
+            "baseMean": 4.160034821,
+            "log2FoldChange": 1.803235605,
+            "lfcSE": 1.278395131,
+            "stat": 1.410546365,
+            "pvalue": 0.158378416,
+            "padj": 0.363832931
+          },
+          {
+            "gene_name": "ANKIB1",
+            "baseMean": 1971.187795,
+            "log2FoldChange": 0.234776129,
+            "lfcSE": 0.118717384,
+            "stat": 1.977605308,
+            "pvalue": 0.04797325,
+            "padj": 0.162340455
+          },
+          {
+            "gene_name": "CYP51A1",
+            "baseMean": 4145.959301,
+            "log2FoldChange": -0.537095483,
+            "lfcSE": 0.057400171,
+            "stat": -9.357036224,
+            "pvalue": 8.200000000000001e-21,
+            "padj": 8.21e-19
+          },
+          {
+            "gene_name": "KRIT1",
+            "baseMean": 649.2371225,
+            "log2FoldChange": -0.178247844,
+            "lfcSE": 0.212510757,
+            "stat": -0.838770922,
+            "pvalue": 0.401597871,
+            "padj": 0.637506813
+          },
+          {
+            "gene_name": "RAD52",
+            "baseMean": 206.9050255,
+            "log2FoldChange": -0.296840667,
+            "lfcSE": 0.267852584,
+            "stat": -1.108224019,
+            "pvalue": 0.26776508,
+            "padj": 0.50356787
+          },
+          {
+            "gene_name": "BAD",
+            "baseMean": 768.1784791,
+            "log2FoldChange": -0.12239176,
+            "lfcSE": 0.109572767,
+            "stat": -1.116990689,
+            "pvalue": 0.263998306,
+            "padj": 0.498814698
+          },
+          {
+            "gene_name": "LAP3",
+            "baseMean": 457.9033992,
+            "log2FoldChange": -0.312349523,
+            "lfcSE": 0.111493324,
+            "stat": -2.801508743,
+            "pvalue": 0.005086426,
+            "padj": 0.030256397
+          }
+        ],
+        "total_rows": 15561
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": "Error: ToolException(\"Input validation error: 'conditions' is a required property\")\n Please fix your mistakes."
+    },
+    {
+      "tool": "csv_read",
+      "payload": {
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh.csv",
+        "columns": [
+          "gene_name",
+          "baseMean",
+          "log2FoldChange",
+          "lfcSE",
+          "stat",
+          "pvalue",
+          "padj"
+        ],
+        "rows": [
+          {
+            "gene_name": "TSPAN6",
+            "baseMean": 70.10815446,
+            "log2FoldChange": -0.005043532,
+            "lfcSE": 0.385148448,
+            "stat": -0.013095033,
+            "pvalue": 0.989551974,
+            "padj": 0.995703739
+          },
+          {
+            "gene_name": "DPM1",
+            "baseMean": 517.0022098,
+            "log2FoldChange": 0.237716729,
+            "lfcSE": 0.115587761,
+            "stat": 2.056590833,
+            "pvalue": 0.039725601,
+            "padj": 0.09882631
+          },
+          {
+            "gene_name": "SCYL3",
+            "baseMean": 430.4702834,
+            "log2FoldChange": 0.947581478,
+            "lfcSE": 0.12026873,
+            "stat": 7.878868213,
+            "pvalue": 3.3e-15,
+            "padj": 5.48e-14
+          },
+          {
+            "gene_name": "C1orf112",
+            "baseMean": 147.1104584,
+            "log2FoldChange": -0.983897351,
+            "lfcSE": 0.186013493,
+            "stat": -5.289387,
+            "pvalue": 1.23e-07,
+            "padj": 9.21e-07
+          },
+          {
+            "gene_name": "CFH",
+            "baseMean": 5.588546461,
+            "log2FoldChange": 0.484704123,
+            "lfcSE": 1.310904052,
+            "stat": 0.369747978,
+            "pvalue": 0.71157028,
+            "padj": 0.836679335
+          },
+          {
+            "gene_name": "FUCA2",
+            "baseMean": 644.0895573,
+            "log2FoldChange": 0.536366867,
+            "lfcSE": 0.087418762,
+            "stat": 6.135603587,
+            "pvalue": 8.48e-10,
+            "padj": 8.36e-09
+          },
+          {
+            "gene_name": "GCLC",
+            "baseMean": 1266.160793,
+            "log2FoldChange": -0.593556263,
+            "lfcSE": 0.101206909,
+            "stat": -5.864780061,
+            "pvalue": 4.5e-09,
+            "padj": 4.04e-08
+          },
+          {
+            "gene_name": "NFYA",
+            "baseMean": 1413.467355,
+            "log2FoldChange": -0.03515508,
+            "lfcSE": 0.062432632,
+            "stat": -0.56308823,
+            "pvalue": 0.573374806,
+            "padj": 0.74061193
+          },
+          {
+            "gene_name": "STPG1",
+            "baseMean": 103.4483859,
+            "log2FoldChange": 0.026670821,
+            "lfcSE": 0.234831956,
+            "stat": 0.11357407,
+            "pvalue": 0.909575444,
+            "padj": 0.952901604
+          },
+          {
+            "gene_name": "NIPAL3",
+            "baseMean": 1293.252693,
+            "log2FoldChange": -0.098500662,
+            "lfcSE": 0.083994665,
+            "stat": -1.172701419,
+            "pvalue": 0.240915562,
+            "padj": 0.410363048
+          },
+          {
+            "gene_name": "LAS1L",
+            "baseMean": 849.7596727,
+            "log2FoldChange": -0.292565515,
+            "lfcSE": 0.085081089,
+            "stat": -3.438666805,
+            "pvalue": 0.000584586,
+            "padj": 0.002399505
+          },
+          {
+            "gene_name": "ENPP4",
+            "baseMean": 224.0606678,
+            "log2FoldChange": 0.466721092,
+            "lfcSE": 0.166730585,
+            "stat": 2.799253005,
+            "pvalue": 0.005122099,
+            "padj": 0.016798938
+          },
+          {
+            "gene_name": "SEMA3F",
+            "baseMean": 20.76244783,
+            "log2FoldChange": -1.256061437,
+            "lfcSE": 0.671100966,
+            "stat": -1.871643018,
+            "pvalue": 0.061256008,
+            "padj": 0.1417445
+          },
+          {
+            "gene_name": "CFTR",
+            "baseMean": 4.160034821,
+            "log2FoldChange": 0.160404607,
+            "lfcSE": 1.257965117,
+            "stat": 0.127511173,
+            "pvalue": 0.898535831,
+            "padj": 0.947461503
+          },
+          {
+            "gene_name": "ANKIB1",
+            "baseMean": 1971.187795,
+            "log2FoldChange": 0.479151639,
+            "lfcSE": 0.118207973,
+            "stat": 4.053462947,
+            "pvalue": 5.05e-05,
+            "padj": 0.000256528
+          },
+          {
+            "gene_name": "CYP51A1",
+            "baseMean": 4145.959301,
+            "log2FoldChange": -0.201032454,
+            "lfcSE": 0.05838444,
+            "stat": -3.443253977,
+            "pvalue": 0.000574759,
+            "padj": 0.002364284
+          },
+          {
+            "gene_name": "KRIT1",
+            "baseMean": 649.2371225,
+            "log2FoldChange": 0.25509663,
+            "lfcSE": 0.213286946,
+            "stat": 1.196025518,
+            "pvalue": 0.231686601,
+            "padj": 0.398924496
+          },
+          {
+            "gene_name": "RAD52",
+            "baseMean": 206.9050255,
+            "log2FoldChange": 0.20830917,
+            "lfcSE": 0.269639134,
+            "stat": 0.772547987,
+            "pvalue": 0.439789937,
+            "padj": 0.626187747
+          },
+          {
+            "gene_name": "BAD",
+            "baseMean": 768.1784791,
+            "log2FoldChange": 1.108748997,
+            "lfcSE": 0.107600462,
+            "stat": 10.30431451,
+            "pvalue": 6.74e-25,
+            "padj": 2.1499999999999997e-23
+          },
+          {
+            "gene_name": "LAP3",
+            "baseMean": 457.9033992,
+            "log2FoldChange": -0.229090393,
+            "lfcSE": 0.115269136,
+            "stat": -1.987439144,
+            "pvalue": 0.046873754,
+            "padj": 0.113272079
+          }
+        ],
+        "total_rows": 14687
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "rows": "[{\"gene_name\":\"PGK1\",\"log2FoldChange\":2.394370796,\"padj\":6.37e-250},{\"gene_name\":\"VEGFA\",\"log2FoldChange\":1.064387124,\"padj\":3.04e-44},{\"gene_name\":\"SLC2A1\",\"log2FoldChange\":1.516683248,\"padj\":2.91e-26},{\"gene_name\":\"LDHA\",\"log2FoldChange\":2.461801109,\"padj\":6.93e-255}]",
+        "total_rows": 4,
+        "storage_entry": {
+          "id": "1763269149_24722694",
+          "name": "candidate_genes_in_Hyp_vs_Norm_0bb8c7c636.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/candidate_genes_in_Hyp_vs_Norm_0bb8c7c636.csv"
+        }
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "rows": "[{\"gene_name\":\"ZMYND10\",\"log2FoldChange\":1.005270592,\"padj\":0.022989265},{\"gene_name\":\"THSD7A\",\"log2FoldChange\":3.546592459,\"padj\":0.006173633},{\"gene_name\":\"WDR54\",\"log2FoldChange\":1.290169329,\"padj\":1.03e-23},{\"gene_name\":\"ABCC8\",\"log2FoldChange\":1.385858862,\"padj\":0.022986314},{\"gene_name\":\"TNFRSF12A\",\"log2FoldChange\":1.114971853,\"padj\":0.026247064},{\"gene_name\":\"KDM7A\",\"log2FoldChange\":1.34803951,\"padj\":1.27e-38},{\"gene_name\":\"DNAH9\",\"log2FoldChange\":5.60751574,\"padj\":0.007559333},{\"gene_name\":\"GAS7\",\"log2FoldChange\":4.948826752,\"padj\":0.02542397},{\"gene_name\":\"BAIAP3\",\"log2FoldChange\":1.089208933,\"padj\":0.0000246},{\"gene_name\":\"GIPR\",\"log2FoldChange\":2.085396415,\"padj\":0.015887342},{\"gene_name\":\"CD22\",\"log2FoldChange\":6.010163457,\"padj\":0.004369602},{\"gene_name\":\"GPRC5A\",\"log2FoldChange\":1.116328496,\"padj\":0.00000639},{\"gene_name\":\"STMN4\",\"log2FoldChange\":2.736992542,\"padj\":3.44e-48},{\"gene_name\":\"ADGRA2\",\"log2FoldChange\":2.790778762,\"padj\":0.047109365},{\"gene_name\":\"CPS1\",\"log2FoldChange\":1.357865495,\"padj\":0.001908818},{\"gene_name\":\"NLRP2\",\"log2FoldChange\":5.24563159,\"padj\":0.029294264},{\"gene_name\":\"GRAMD1B\",\"log2FoldChange\":3.525522129,\"padj\":0.046920795},{\"gene_name\":\"VIM\",\"log2FoldChange\":1.737825635,\"padj\":1.76e-20},{\"gene_name\":\"CD44\",\"log2FoldChange\":1.104918137,\"padj\":2.9e-18},{\"gene_name\":\"AGPAT4\",\"log2FoldChange\":1.56265302,\"padj\":0.033596823}]",
+        "total_rows": 608,
+        "storage_entry": {
+          "id": "1763269183_cff17eb2",
+          "name": "Hyp_vs_Norm_up_fde595ce21.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Hyp_vs_Norm_up_fde595ce21.csv"
+        }
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "rows": "[{\"gene_name\":\"C1orf112\",\"log2FoldChange\":-0.983897351,\"padj\":0.000000921},{\"gene_name\":\"GCLC\",\"log2FoldChange\":-0.593556263,\"padj\":0.0000000404},{\"gene_name\":\"LAS1L\",\"log2FoldChange\":-0.292565515,\"padj\":0.002399505},{\"gene_name\":\"CYP51A1\",\"log2FoldChange\":-0.201032454,\"padj\":0.002364284},{\"gene_name\":\"TFPI\",\"log2FoldChange\":-0.257010236,\"padj\":0.047455622},{\"gene_name\":\"POLDIP2\",\"log2FoldChange\":-0.212788645,\"padj\":0.015684855},{\"gene_name\":\"PLXND1\",\"log2FoldChange\":-0.892593693,\"padj\":0.00000264},{\"gene_name\":\"AK2\",\"log2FoldChange\":-0.759056436,\"padj\":3.87e-26},{\"gene_name\":\"FKBP4\",\"log2FoldChange\":-0.454082736,\"padj\":3.52e-17},{\"gene_name\":\"KDM1A\",\"log2FoldChange\":-0.354136361,\"padj\":0.0000352},{\"gene_name\":\"CAMKK1\",\"log2FoldChange\":-0.95767192,\"padj\":0.000450156},{\"gene_name\":\"HSPB6\",\"log2FoldChange\":-1.255629438,\"padj\":9.67e-49},{\"gene_name\":\"ARHGAP33\",\"log2FoldChange\":-0.920366402,\"padj\":0.007734727},{\"gene_name\":\"NDUFAB1\",\"log2FoldChange\":-0.687210125,\"padj\":0.0000000244},{\"gene_name\":\"ZMYND10\",\"log2FoldChange\":-2.131634794,\"padj\":0.000000171},{\"gene_name\":\"DVL2\",\"log2FoldChange\":-0.272758744,\"padj\":0.018346307},{\"gene_name\":\"UPF1\",\"log2FoldChange\":-0.31353518,\"padj\":0.018961833},{\"gene_name\":\"SLC25A5\",\"log2FoldChange\":-0.536646624,\"padj\":0.0},{\"gene_name\":\"RPAP3\",\"log2FoldChange\":-0.653533976,\"padj\":0.0001028},{\"gene_name\":\"ACSM3\",\"log2FoldChange\":-1.307953938,\"padj\":0.0}]",
+        "total_rows": 3304,
+        "storage_entry": {
+          "id": "1763269196_11ccc054",
+          "name": "HypZot_vs_HypVeh_down_1d5b0b597c.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/HypZot_vs_HypVeh_down_1d5b0b597c.csv"
+        }
+      }
+    },
+    {
+      "tool": "gsea_pipe",
+      "payload": {
+        "counts_by_database": {
+          "MSigDB_Hallmark_2020": {
+            "up": 11,
+            "down": 16,
+            "total": 27
+          },
+          "KEGG_2016": {
+            "up": 55,
+            "down": 31,
+            "total": 86
+          },
+          "GO_Biological_Process_2023": {
+            "up": 250,
+            "down": 298,
+            "total": 548
+          },
+          "Reactome_Pathways_2024": {
+            "up": 103,
+            "down": 263,
+            "total": 366
+          }
+        },
+        "top_high_nes": {
+          "MSigDB_Hallmark_2020": [
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "E2F Targets",
+              "NES": -4.51343042138407,
+              "Size": 198,
+              "ES": -0.5491403834761774,
+              "NOS p-val": 6.378738253376426e-06,
+              "FDR q-val": 0.0003189369126688213,
+              "Lead_genes": [
+                "CBX5",
+                "GINS1",
+                "SUV39H1",
+                "HELLS",
+                "RRM2",
+                "CDKN3",
+                "BIRC5",
+                "CCP110",
+                "RNASEH2A",
+                "SPC24",
+                "SMC6",
+                "MCM5",
+                "ANP32E",
+                "RPA2",
+                "LYAR",
+                "TIMELESS",
+                "RAD51C",
+                "MSH2",
+                "DCK",
+                "KIF18B",
+                "DNMT1",
+                "DEPDC1",
+                "RANBP1",
+                "MMS22L",
+                "NUP205",
+                "ASF1B",
+                "PPP1R8",
+                "MCM6",
+                "DEK",
+                "NAA38",
+                "SPC25",
+                "POLE4",
+                "MCM2",
+                "CENPM",
+                "TUBG1",
+                "TIPIN",
+                "CHEK1",
+                "HMGB2",
+                "MLH1",
+                "SMC4",
+                "TRIP13",
+                "SPAG5",
+                "PSIP1",
+                "MRE11",
+                "CDCA8",
+                "DIAPH3",
+                "HMMR",
+                "ORC2",
+                "ZW10",
+                "RFC3",
+                "MCM3",
+                "POLD1",
+                "RAD21",
+                "CDC25A",
+                "GINS4",
+                "TMPO",
+                "NUP107",
+                "LBR",
+                "NME1",
+                "LIG1",
+                "ING3",
+                "NOP56",
+                "BUB1B",
+                "CDK4",
+                "UBR7",
+                "NASP",
+                "POLA2",
+                "ILF3",
+                "STAG1",
+                "ATAD2",
+                "NOLC1",
+                "CTCF",
+                "CSE1L",
+                "XRCC6",
+                "EED",
+                "EIF2S1",
+                "UBE2T",
+                "TRA2B",
+                "PRIM2",
+                "SNRPB",
+                "KIF2C",
+                "NBN",
+                "KIF22",
+                "DSCC1",
+                "RFC2",
+                "MXD3",
+                "USP1",
+                "TK1",
+                "CDKN1B",
+                "SMC3",
+                "CDC20",
+                "TP53",
+                "UNG",
+                "ORC6",
+                "GINS3",
+                "AURKA",
+                "PLK4",
+                "RAD51AP1",
+                "NUDT21",
+                "POLE",
+                "PTTG1",
+                "DONSON",
+                "PLK1",
+                "ASF1A",
+                "KIF4A",
+                "CNOT9",
+                "SSRP1",
+                "MCM4",
+                "RACGAP1",
+                "POP7",
+                "PRKDC",
+                "PSMC3IP",
+                "PPM1D",
+                "CDC25B",
+                "TCF19",
+                "MAD2L1",
+                "SMC1A",
+                "DCLRE1B",
+                "POLD3",
+                "BRCA2",
+                "EZH2",
+                "AURKB",
+                "BARD1",
+                "MELK",
+                "DDX39A",
+                "MYBL2",
+                "HNRNPD",
+                "DCTPP1",
+                "RBBP7",
+                "RPA3",
+                "CCNB2",
+                "PMS2",
+                "EXOSC8",
+                "CKS1B",
+                "MCM7",
+                "BRCA1",
+                "RAD1",
+                "PHF5A",
+                "LMNB1",
+                "MTHFD2",
+                "TACC3",
+                "E2F8",
+                "PRPS1",
+                "PCNA",
+                "SHMT1",
+                "SRSF2",
+                "CIT",
+                "RFC1",
+                "PA2G4",
+                "POLD2",
+                "CTPS1"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "Hypoxia",
+              "NES": 3.878981954005505,
+              "Size": 184,
+              "ES": 0.5777283053280127,
+              "NOS p-val": 0.00010489453527462445,
+              "FDR q-val": 0.002622363381865611,
+              "Lead_genes": [
+                "TMEM45A",
+                "PGM1",
+                "BHLHE40",
+                "KDM3A",
+                "ALDOC",
+                "TNFAIP3",
+                "ALDOA",
+                "SLC2A1",
+                "VEGFA",
+                "TGFBI",
+                "LARGE1",
+                "RORA",
+                "WSB1",
+                "KLHL24",
+                "LOX",
+                "CXCR4",
+                "P4HA1",
+                "AK4",
+                "MXI1",
+                "DPYSL4",
+                "B4GALNT2",
+                "ENO1",
+                "TPST2",
+                "PCK1",
+                "PNRC1",
+                "CAVIN1",
+                "AMPD3",
+                "PFKP",
+                "ANXA2",
+                "ANKZF1",
+                "PDK3",
+                "ERO1A",
+                "ADM",
+                "GBE1",
+                "FAM162A",
+                "MAFF",
+                "TGM2",
+                "CA12",
+                "NDRG1",
+                "SLC2A3",
+                "ADORA2B",
+                "P4HA2",
+                "MT2A",
+                "LDHA",
+                "GCNT2",
+                "ZNF292",
+                "BNIP3L",
+                "VLDLR",
+                "PFKFB3",
+                "AKAP12",
+                "PGF",
+                "SLC2A5",
+                "ENO2",
+                "SULT2B1",
+                "STC1",
+                "PYGM",
+                "FOSL2",
+                "PDK1",
+                "MT1E",
+                "COL5A1",
+                "BGN",
+                "GAPDH",
+                "CAV1",
+                "ETS1",
+                "GPI",
+                "INHA",
+                "CCN5",
+                "PGK1",
+                "TPI1",
+                "HK2",
+                "STBD1",
+                "DCN",
+                "EFNA3",
+                "LXN",
+                "TKTL1"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "Epithelial Mesenchymal Transition",
+              "NES": 3.5712247987150665,
+              "Size": 180,
+              "ES": 0.5563542099354868,
+              "NOS p-val": 0.00035531576221004,
+              "FDR q-val": 0.005921929370167334,
+              "Lead_genes": [
+                "ABI3BP",
+                "ITGB3",
+                "MFAP5",
+                "GLIPR1",
+                "DAB2",
+                "FN1",
+                "APLP1",
+                "TNFAIP3",
+                "COL1A2",
+                "FBLN2",
+                "VEGFA",
+                "TGFBI",
+                "SFRP1",
+                "ELN",
+                "NTM",
+                "COL12A1",
+                "LOX",
+                "ADAM12",
+                "IL32",
+                "PLOD1",
+                "MYL9",
+                "LAMC2",
+                "THBS2",
+                "LOXL2",
+                "NNMT",
+                "CTHRC1",
+                "COL6A3",
+                "COL7A1",
+                "MXRA5",
+                "CXCL8",
+                "LAMA2",
+                "LRRC15",
+                "LGALS1",
+                "MATN3",
+                "TGM2",
+                "COL16A1",
+                "FBN1",
+                "PLOD2",
+                "TNFRSF12A",
+                "NID2",
+                "FBLN5",
+                "LRP1",
+                "PDGFRB",
+                "COL4A1",
+                "FBN2",
+                "MMP14",
+                "QSOX1",
+                "MMP1",
+                "CD44",
+                "SLIT3",
+                "ENO2",
+                "BGN",
+                "EFEMP2",
+                "FMOD",
+                "VIM",
+                "GREM1",
+                "DCN",
+                "LAMA1",
+                "PMP22"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "Oxidative Phosphorylation",
+              "NES": -3.4771380458831627,
+              "Size": 199,
+              "ES": -0.44207783205625345,
+              "NOS p-val": 0.0005067968110943344,
+              "FDR q-val": 0.00633496013867918,
+              "Lead_genes": [
+                "ATP5ME",
+                "GOT2",
+                "HTRA2",
+                "MRPL15",
+                "SLC25A11",
+                "COX5B",
+                "AFG3L2",
+                "ATP5PO",
+                "HADHA",
+                "TIMM8B",
+                "TCIRG1",
+                "MRPS15",
+                "TIMM10",
+                "FDX1",
+                "ATP5F1D",
+                "ETFDH",
+                "GPX4",
+                "MTRR",
+                "PRDX3",
+                "NDUFB7",
+                "ETFA",
+                "TIMM50",
+                "CPT1A",
+                "ATP5PB",
+                "ATP5F1E",
+                "NQO2",
+                "ATP5PD",
+                "COX7C",
+                "PDHX",
+                "NDUFB6",
+                "MDH2",
+                "CYC1",
+                "OGDH",
+                "SUCLA2",
+                "SDHD",
+                "ETFB",
+                "AIFM1",
+                "SLC25A3",
+                "SDHB",
+                "DECR1",
+                "MDH1",
+                "ECH1",
+                "COX6C",
+                "COX7A2",
+                "CASP7",
+                "SLC25A20",
+                "NDUFA6",
+                "TOMM70",
+                "MRPS22",
+                "FXN",
+                "NDUFB5",
+                "MTRF1",
+                "ECHS1",
+                "CYB5A",
+                "COX8A",
+                "ISCU",
+                "IDH1",
+                "UQCR11",
+                "SUPV3L1",
+                "IDH3B",
+                "NDUFS7",
+                "NDUFA9",
+                "NDUFV2",
+                "PDHA1",
+                "MRPL11",
+                "NDUFB1",
+                "SUCLG1",
+                "ATP6V1E1",
+                "ATP5F1C",
+                "NDUFS3",
+                "ATP5MC3",
+                "ATP5MC1",
+                "FH",
+                "SURF1",
+                "TIMM13",
+                "UQCRC1",
+                "PDHB",
+                "GLUD1",
+                "SLC25A12",
+                "SLC25A5",
+                "MPC1",
+                "IDH3A",
+                "OXA1L",
+                "MRPL34",
+                "NDUFAB1",
+                "NDUFS6",
+                "ACADM",
+                "DLST",
+                "NDUFS8",
+                "COX7B",
+                "NDUFB2",
+                "MRPS12",
+                "ATP5MG",
+                "SDHA",
+                "NDUFA1",
+                "MFN2",
+                "PHB2",
+                "ECI1",
+                "HSPA9",
+                "ATP5F1A",
+                "ATP5F1B",
+                "ACO2",
+                "HSD17B10",
+                "UQCR10",
+                "ALAS1",
+                "ATP5PF",
+                "ACADSB",
+                "UQCRFS1",
+                "NDUFS4",
+                "DLD",
+                "ATP6V0B",
+                "ATP6V1F",
+                "ATP6V1G1",
+                "NDUFS1",
+                "NDUFV1",
+                "CS",
+                "DLAT",
+                "NDUFS2",
+                "NDUFA7",
+                "COX6A1",
+                "MRPS11",
+                "TOMM22",
+                "POR",
+                "UQCRQ",
+                "CYCS"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "G2-M Checkpoint",
+              "NES": -3.403574560210343,
+              "Size": 192,
+              "ES": -0.44299412179128983,
+              "NOS p-val": 0.0006651025823469769,
+              "FDR q-val": 0.0066510258234697694,
+              "Lead_genes": [
+                "RBL1",
+                "SUV39H1",
+                "BIRC5",
+                "NUP50",
+                "CDC6",
+                "RPS6KA5",
+                "HOXC10",
+                "MCM5",
+                "SLC38A1",
+                "HMGN2",
+                "SMC2",
+                "RPA2",
+                "SLC7A5",
+                "STIL",
+                "UCK2",
+                "ODC1",
+                "HIRA",
+                "DBF4",
+                "G3BP1",
+                "KIF15",
+                "MCM2",
+                "SMC4",
+                "CHEK1",
+                "UPF1",
+                "PBK",
+                "KPNB1",
+                "TROAP",
+                "HMMR",
+                "MCM3",
+                "DTYMK",
+                "CDC25A",
+                "RAD21",
+                "NCL",
+                "E2F4",
+                "TMPO",
+                "LBR",
+                "GINS2",
+                "CCNA2",
+                "SQLE",
+                "NUP98",
+                "MAP3K20",
+                "CDK4",
+                "DKC1",
+                "MARCKS",
+                "POLQ",
+                "NASP",
+                "WRN",
+                "POLA2",
+                "BUB1",
+                "ILF3",
+                "NOLC1",
+                "CTCF",
+                "KNL1",
+                "TRA2B",
+                "PRIM2",
+                "KIF2C",
+                "NEK2",
+                "KIF22",
+                "PRC1",
+                "TPX2",
+                "SLC12A2",
+                "CDKN1B",
+                "CDC20",
+                "E2F2",
+                "CUL5",
+                "TFDP1",
+                "TTK",
+                "PRMT5",
+                "ORC6",
+                "SNRPD1",
+                "AURKA",
+                "PLK4",
+                "EXO1",
+                "POLE",
+                "CDC7",
+                "KIF11",
+                "PTTG1",
+                "PLK1",
+                "PAFAH1B1",
+                "KIF4A",
+                "RACGAP1",
+                "CDC25B",
+                "MEIS2",
+                "RAD54L",
+                "RAD23B",
+                "ORC5",
+                "MAD2L1",
+                "SMC1A",
+                "BRCA2",
+                "EZH2",
+                "AURKB",
+                "NDC80",
+                "E2F1",
+                "BARD1",
+                "CHAF1A",
+                "SLC7A1",
+                "DDX39A",
+                "MYBL2",
+                "HNRNPD",
+                "MNAT1",
+                "CCND1",
+                "RBM14",
+                "CCNB2",
+                "CDC45",
+                "CKS1B",
+                "LMNB1",
+                "TACC3",
+                "TRAIP",
+                "FBXO5",
+                "KMT5A",
+                "NSD2",
+                "BUB3"
+              ]
+            }
+          ],
+          "KEGG_2016": [
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Neuroactive ligand-receptor interaction Homo sapiens hsa04080",
+              "NES": 4.07637690130358,
+              "Size": 169,
+              "ES": 0.6238195377602259,
+              "NOS p-val": 4.5742853663099936e-05,
+              "FDR q-val": 0.008917242594115748,
+              "Lead_genes": [
+                "CHRNA4",
+                "S1PR1",
+                "HTR5A",
+                "HTR2C",
+                "OPRM1",
+                "GPR83",
+                "NPFFR1",
+                "LHB",
+                "F2R",
+                "GIPR",
+                "GRM7",
+                "LPAR3",
+                "GRM6",
+                "LEPR",
+                "CNR2",
+                "KISS1R",
+                "GRIN2B",
+                "HTR1A",
+                "P2RY4",
+                "MCHR1",
+                "GABBR1",
+                "GABRA2",
+                "OPRL1",
+                "PTH1R",
+                "GRM4",
+                "P2RY6",
+                "GRIN3B",
+                "PRSS3",
+                "HRH1",
+                "PLG",
+                "P2RY11",
+                "SSTR2",
+                "AGTR1",
+                "GHRHR",
+                "LPAR2",
+                "DRD2",
+                "MAS1",
+                "GRIN2A",
+                "GRIN2C",
+                "CHRM2",
+                "CNR1",
+                "ADRA2C",
+                "GALR3",
+                "CHRNG",
+                "GRID1",
+                "ADORA2B",
+                "GABRR2",
+                "CYSLTR1",
+                "DRD5",
+                "EDNRA",
+                "CHRM4",
+                "LPAR1",
+                "TSHR",
+                "AVPR1B",
+                "BDKRB2",
+                "VIPR2",
+                "CGA",
+                "OPRD1",
+                "GABRA6",
+                "ADCYAP1R1",
+                "GRIA2",
+                "HTR4",
+                "HTR1D",
+                "NMBR",
+                "OPRK1",
+                "P2RX6",
+                "GABRR3",
+                "GRIK3",
+                "CHRNA2",
+                "PRSS1",
+                "GABRG3",
+                "GABRP",
+                "HRH3",
+                "CHRNA10"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Olfactory transduction Homo sapiens hsa04740",
+              "NES": 4.002044502781042,
+              "Size": 90,
+              "ES": 0.722613556163323,
+              "NOS p-val": 6.279748305715316e-05,
+              "FDR q-val": 0.008917242594115748,
+              "Lead_genes": [
+                "OR7C1",
+                "OR6Y1",
+                "OR2G6",
+                "OR1I1",
+                "OR14J1",
+                "OR4D9",
+                "OR52A1",
+                "OR2AT4",
+                "OR2M3",
+                "OR1D2",
+                "OR5AU1",
+                "PDE2A",
+                "OR6C75",
+                "OR3A3",
+                "CNGB1",
+                "OR2T2",
+                "OR10Z1",
+                "OR7A17",
+                "SLC8A3",
+                "OR5H14",
+                "OR2A42",
+                "SLC8A2",
+                "CAMK2A",
+                "OR1A1",
+                "OR52I2",
+                "OR6B1",
+                "SLC24A4",
+                "OR2T33",
+                "OR5A2",
+                "OR2A12",
+                "OR56A1",
+                "OR10H5",
+                "OR2T12",
+                "OR51B4",
+                "OR56A4",
+                "OR10A2",
+                "OR2T29",
+                "PDE1C",
+                "OR52N1",
+                "OR5H1",
+                "OR5AS1",
+                "OR7G2",
+                "OR2J3",
+                "OR2A5",
+                "OR9K2"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Homologous recombination Homo sapiens hsa03440",
+              "NES": -3.7490409701054945,
+              "Size": 27,
+              "ES": -0.6229581096585082,
+              "NOS p-val": 0.00017751208746608071,
+              "FDR q-val": 0.015273850218559426,
+              "Lead_genes": [
+                "POLD3",
+                "BRCA2",
+                "NBN",
+                "BLM",
+                "RAD51",
+                "RPA4",
+                "RAD54B",
+                "RAD51B",
+                "RPA3",
+                "POLD1",
+                "EME1",
+                "RPA2",
+                "MUS81",
+                "RAD51C",
+                "XRCC3",
+                "SSBP1",
+                "XRCC2",
+                "RAD52",
+                "RAD54L"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Porphyrin and chlorophyll metabolism Homo sapiens hsa00860",
+              "NES": -3.7005594747030166,
+              "Size": 30,
+              "ES": -0.574991478708051,
+              "NOS p-val": 0.00021512465096562572,
+              "FDR q-val": 0.015273850218559426,
+              "Lead_genes": [
+                "BLVRA",
+                "UGT2B17",
+                "HMBS",
+                "HMOX1",
+                "UGT2B4",
+                "ALAS1",
+                "UGT2B15",
+                "UGT2B7",
+                "EARS2",
+                "UGT1A4",
+                "FECH",
+                "UGT2B10",
+                "MMAB",
+                "UGT2B11",
+                "BLVRB",
+                "FXN"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "DNA replication Homo sapiens hsa03030",
+              "NES": -3.578023863189289,
+              "Size": 36,
+              "ES": -0.668018119810069,
+              "NOS p-val": 0.0003462018497866204,
+              "FDR q-val": 0.016611949419405764,
+              "Lead_genes": [
+                "POLD3",
+                "MCM2",
+                "RFC2",
+                "RPA4",
+                "RNASEH1",
+                "POLE3",
+                "RNASEH2A",
+                "RFC3",
+                "MCM3",
+                "RPA3",
+                "POLD1",
+                "MCM5",
+                "RNASEH2B",
+                "RPA2",
+                "MCM7",
+                "POLE2",
+                "RNASEH2C",
+                "FEN1",
+                "LIG1",
+                "PCNA",
+                "SSBP1",
+                "POLA2",
+                "MCM4",
+                "PRIM1",
+                "RFC4",
+                "POLE4",
+                "DNA2",
+                "PRIM2"
+              ]
+            }
+          ],
+          "GO_Biological_Process_2023": [
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Intrinsic Apoptotic Signaling Pathway In Response To Endoplasmic Reticulum Stress (GO:0070059)",
+              "NES": -4.155516660218566,
+              "Size": 27,
+              "ES": -0.6803463713883867,
+              "NOS p-val": 3.245532928897177e-05,
+              "FDR q-val": 0.15880392621093886,
+              "Lead_genes": [
+                "DDIT3",
+                "PPP1R15A",
+                "CHAC1",
+                "ERN1",
+                "ATP2A3",
+                "ATF4",
+                "TMEM117",
+                "TRAF2",
+                "CEBPB",
+                "TRIB3"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Sterol Biosynthetic Process (GO:0016126)",
+              "NES": -3.887558607465576,
+              "Size": 27,
+              "ES": -0.6422461408813527,
+              "NOS p-val": 0.00010125754373091489,
+              "FDR q-val": 0.19359045860895188,
+              "Lead_genes": [
+                "HMGCR",
+                "G6PD",
+                "INSIG1",
+                "ARV1",
+                "DHCR24",
+                "DHCR7",
+                "NSDHL",
+                "LBR",
+                "PMVK",
+                "CYP51A1",
+                "SQLE",
+                "MVD",
+                "LSS",
+                "FDFT1",
+                "PLPP6",
+                "HSD17B7",
+                "TM7SF2",
+                "HMGCS1",
+                "MSMO1",
+                "MVK",
+                "ACLY"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Metal Ion Transport (GO:0030001)",
+              "NES": 3.7540876020831133,
+              "Size": 137,
+              "ES": 0.6188849341503646,
+              "NOS p-val": 0.0001739740167263637,
+              "FDR q-val": 0.19359045860895188,
+              "Lead_genes": [
+                "CHRNA4",
+                "KCNJ15",
+                "SCN5A",
+                "KCNJ5",
+                "KCNIP2",
+                "SCNN1D",
+                "KCNA1",
+                "SCN4A",
+                "SLC5A2",
+                "CACNG8",
+                "SLC12A3",
+                "CCR5",
+                "KCNJ10",
+                "KCND3",
+                "KCNC1",
+                "ATP1A2",
+                "ATP2B2",
+                "KCNK6",
+                "KCNN1",
+                "KCNH1",
+                "KCNA2",
+                "ITPR1",
+                "TRPV6",
+                "KCNMB1",
+                "SCN1A",
+                "KCNB2",
+                "SLC5A12",
+                "RYR3",
+                "CAMK2A",
+                "KCNH3",
+                "KCNJ6",
+                "KCNK3",
+                "SLC5A8",
+                "KCNF1",
+                "CAV1",
+                "KCNS2",
+                "SCN11A",
+                "SCNN1B",
+                "ATP1A4",
+                "CLDN16",
+                "SCN3B"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Potassium Ion Transmembrane Transport (GO:0071805)",
+              "NES": 3.736919846325346,
+              "Size": 111,
+              "ES": 0.6458897327003928,
+              "NOS p-val": 0.00018628827504629797,
+              "FDR q-val": 0.19359045860895188,
+              "Lead_genes": [
+                "KCNJ15",
+                "KCNN4",
+                "KCND1",
+                "KCNJ5",
+                "KCNIP2",
+                "KCNA1",
+                "KCNA7",
+                "SLC12A3",
+                "KCNH7",
+                "KCNJ10",
+                "KCND3",
+                "ABCC8",
+                "KCNC1",
+                "KCNK10",
+                "SLC24A2",
+                "ATP1A2",
+                "KCNK6",
+                "KCNN1",
+                "KCNH1",
+                "KCNJ9",
+                "KCNA2",
+                "SLC12A1",
+                "ATP4A",
+                "KCNB2",
+                "KCNJ12",
+                "NALCN",
+                "ATP1B2",
+                "KCNN3",
+                "KCNK13",
+                "KCNH3",
+                "KCNJ6",
+                "KCNK3",
+                "SLC24A4",
+                "LRRC55",
+                "KCNF1",
+                "KCNS2",
+                "KCNQ3",
+                "KCNH8",
+                "ATP1A4"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Cholesterol Biosynthetic Process (GO:0006695)",
+              "NES": -3.718736775940004,
+              "Size": 25,
+              "ES": -0.6521363628622131,
+              "NOS p-val": 0.00020022156010157666,
+              "FDR q-val": 0.19359045860895188,
+              "Lead_genes": [
+                "HMGCR",
+                "G6PD",
+                "INSIG1",
+                "ARV1",
+                "DHCR24",
+                "DHCR7",
+                "NSDHL",
+                "LBR",
+                "PMVK",
+                "CYP51A1",
+                "MVD",
+                "LSS",
+                "FDFT1",
+                "PLPP6",
+                "HSD17B7",
+                "TM7SF2",
+                "HMGCS1",
+                "MSMO1",
+                "SC5D",
+                "MVK",
+                "ACLY"
+              ]
+            }
+          ],
+          "Reactome_Pathways_2024": [
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Cholesterol Biosynthesis",
+              "NES": -4.757472899613299,
+              "Size": 27,
+              "ES": -0.7698886892419708,
+              "NOS p-val": 1.960315641369448e-06,
+              "FDR q-val": 0.003724599718601951,
+              "Lead_genes": [
+                "HMGCR",
+                "ACAT2",
+                "EBP",
+                "ARV1",
+                "DHCR24",
+                "FDPS",
+                "DHCR7",
+                "NSDHL",
+                "LBR",
+                "PMVK",
+                "CYP51A1",
+                "SQLE",
+                "MVD",
+                "LSS",
+                "FDFT1",
+                "PLPP6",
+                "HSD17B7",
+                "TM7SF2",
+                "HMGCS1",
+                "MSMO1",
+                "SC5D",
+                "IDI1",
+                "MVK"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "DNA Strand Elongation",
+              "NES": -4.092821177082132,
+              "Size": 32,
+              "ES": -0.6747724167481159,
+              "NOS p-val": 4.2615636834275605e-05,
+              "FDR q-val": 0.01645377860485612,
+              "Lead_genes": [
+                "POLD3",
+                "MCM2",
+                "GINS1",
+                "RFC2",
+                "MCM8",
+                "RFC3",
+                "MCM3",
+                "RPA3",
+                "POLD1",
+                "MCM5",
+                "GINS4",
+                "GINS3",
+                "CDC45",
+                "RPA2",
+                "MCM7",
+                "GINS2",
+                "FEN1",
+                "LIG1",
+                "PCNA",
+                "POLA2",
+                "MCM4",
+                "PRIM1",
+                "RFC4",
+                "DNA2",
+                "PRIM2"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Expression and Translocation of Olfactory Receptors",
+              "NES": 4.070775640488979,
+              "Size": 64,
+              "ES": 0.7548231622369848,
+              "NOS p-val": 4.685686153971247e-05,
+              "FDR q-val": 0.01645377860485612,
+              "Lead_genes": [
+                "OR7C1",
+                "OR6Y1",
+                "OR2G6",
+                "OR1I1",
+                "OR14J1",
+                "OR4D9",
+                "OR52A1",
+                "OR2AT4",
+                "OR5AU1",
+                "OR2M3",
+                "OR1D2",
+                "OR6C75",
+                "OR3A3",
+                "OR2T2",
+                "OR10Z1",
+                "OR7A17",
+                "OR5H14",
+                "OR1A1",
+                "OR52I2",
+                "OR6B1",
+                "OR5A2",
+                "OR2T33",
+                "OR2A12",
+                "OR10H5",
+                "OR56A1",
+                "OR6J1",
+                "OR2T12",
+                "OR51B4",
+                "OR56A4",
+                "OR10A2",
+                "OR2T29",
+                "OR5H1",
+                "OR52N1",
+                "OR5AS1",
+                "OR7G2",
+                "OR2J3",
+                "OR2A5",
+                "OR9K2"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Olfactory Signaling Pathway",
+              "NES": 4.064243781062168,
+              "Size": 70,
+              "ES": 0.7449281004230398,
+              "NOS p-val": 4.8188440718854864e-05,
+              "FDR q-val": 0.01645377860485612,
+              "Lead_genes": [
+                "OR7C1",
+                "OR6Y1",
+                "OR2G6",
+                "OR1I1",
+                "OR14J1",
+                "OR4D9",
+                "OR52A1",
+                "OR2AT4",
+                "OR5AU1",
+                "OR2M3",
+                "OR1D2",
+                "OR6C75",
+                "OR3A3",
+                "CNGB1",
+                "OR2T2",
+                "OR10Z1",
+                "OR7A17",
+                "OR5H14",
+                "OR1A1",
+                "OR52I2",
+                "OR6B1",
+                "OR5A2",
+                "OR2T33",
+                "OR2A12",
+                "OR10H5",
+                "OR56A1",
+                "OR6J1",
+                "OR2T12",
+                "OR51B4",
+                "OR56A4",
+                "OR10A2",
+                "OR2T29",
+                "OR5H1",
+                "OR52N1",
+                "OR5AS1",
+                "OR7G2",
+                "OR2J3",
+                "OR2A5",
+                "OR9K2"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Resolution of D-loop Structures Through Synthesis-Dependent Strand Annealing (SDSA)",
+              "NES": -4.051071850425266,
+              "Size": 27,
+              "ES": -0.6653702824160435,
+              "NOS p-val": 5.098354759014434e-05,
+              "FDR q-val": 0.01645377860485612,
+              "Lead_genes": [
+                "EXO1",
+                "BRCA2",
+                "RAD51B",
+                "KAT5",
+                "NBN",
+                "RAD51C",
+                "BLM",
+                "BRIP1",
+                "XRCC2",
+                "RAD51",
+                "XRCC3",
+                "MRE11",
+                "BARD1",
+                "RTEL1",
+                "RMI1",
+                "RBBP8",
+                "DNA2",
+                "BRCA1"
+              ]
+            }
+          ]
+        },
+        "top_low_nes": {
+          "MSigDB_Hallmark_2020": [
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "UV Response Up",
+              "NES": -1.7348081108046056,
+              "Size": 149,
+              "ES": -0.2619466664352356,
+              "NOS p-val": 0.08277479909707108,
+              "FDR q-val": 0.17994521542841538,
+              "Lead_genes": [
+                "BTG1",
+                "MRPL23",
+                "ATF3",
+                "GAL",
+                "PPIF",
+                "PDAP1",
+                "EPHX1",
+                "POLE3",
+                "ALAS1",
+                "STARD3",
+                "CDC34",
+                "LHX2",
+                "WIZ",
+                "PARP2",
+                "TYRO3",
+                "OLFM1",
+                "SLC6A12",
+                "IRF1",
+                "DGAT1",
+                "RASGRP1",
+                "HSPA13",
+                "FEN1",
+                "CCND3",
+                "SIGMAR1",
+                "BMP2",
+                "GCH1",
+                "CA2",
+                "ASNS",
+                "DDX21",
+                "PSMC3",
+                "FGF18",
+                "CYB5B",
+                "PPT1",
+                "TST",
+                "CASP3",
+                "CHRNA5",
+                "CLTB",
+                "AP2S1",
+                "HMOX1",
+                "STIP1",
+                "EIF5",
+                "YKT6",
+                "NKX2-5",
+                "RFC4",
+                "PPP1R2",
+                "CEBPG",
+                "MSX1",
+                "CDK2",
+                "BTG3",
+                "CDKN2B",
+                "RAB27A"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "Fatty Acid Metabolism",
+              "NES": -1.5874353565920782,
+              "Size": 142,
+              "ES": -0.20796960124158514,
+              "NOS p-val": 0.1124140768751849,
+              "FDR q-val": 0.22183895272866716,
+              "Lead_genes": [
+                "BMPR1B",
+                "SUCLG1",
+                "BLVRA",
+                "FASN",
+                "NBN",
+                "GSTZ1",
+                "REEP6",
+                "SDHD",
+                "PTS",
+                "ACAT2",
+                "NTHL1",
+                "CRAT",
+                "MCEE",
+                "UROS",
+                "ACSL5",
+                "DHCR24",
+                "HADH",
+                "ECI1",
+                "FH",
+                "CRYZ",
+                "ACO2",
+                "NSDHL",
+                "METAP1",
+                "HSDL2",
+                "DECR1",
+                "MDH1",
+                "ECH1",
+                "EPHX1",
+                "PDHB",
+                "HSD17B10",
+                "ACOT2",
+                "ADSL",
+                "AUH",
+                "YWHAH",
+                "DLD",
+                "ETFDH",
+                "ERP29",
+                "ECHS1",
+                "CPT2",
+                "CA2",
+                "GCDH",
+                "ODC1",
+                "HSD17B7",
+                "CPT1A",
+                "ALDH1A1",
+                "ACADM",
+                "ACSL4",
+                "IDH1",
+                "RDH11",
+                "HMGCS1",
+                "DLST",
+                "HPGD",
+                "IDH3B",
+                "PDHA1",
+                "ACSM3",
+                "D2HGDH",
+                "HMGCS2",
+                "ADIPOR2",
+                "CBR1",
+                "GPD2",
+                "ACADS",
+                "HAO2",
+                "IDI1",
+                "HIBCH",
+                "KMT5A",
+                "MDH2",
+                "SUCLA2",
+                "SDHA",
+                "NCAPH2"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "IL-2/STAT5 Signaling",
+              "NES": 1.5848153358984567,
+              "Size": 171,
+              "ES": 0.40390034125613217,
+              "NOS p-val": 0.11300829696300663,
+              "FDR q-val": 0.22183895272866716,
+              "Lead_genes": [
+                "CDKN1C",
+                "S100A1",
+                "PLAGL1",
+                "BHLHE40",
+                "IRF4",
+                "GPR83",
+                "APLP1",
+                "TIAM1",
+                "MAP3K8",
+                "IL2RB",
+                "RORA",
+                "LIF",
+                "P4HA1",
+                "CD83",
+                "CCR4",
+                "CAPN3",
+                "ITIH5",
+                "ABCB1",
+                "CCND2",
+                "EMP1",
+                "PTH1R",
+                "GBP4",
+                "SELL",
+                "TLR7",
+                "IRF8",
+                "FGL2",
+                "AHNAK",
+                "GLIPR2",
+                "MAFF",
+                "CISH",
+                "TGM2",
+                "COCH",
+                "NDRG1",
+                "SLC2A3",
+                "CD44",
+                "MAP6",
+                "SHE",
+                "IFITM3",
+                "PTCH1",
+                "CD48",
+                "HK2",
+                "IL4R",
+                "SYT11"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "Myogenesis",
+              "NES": 1.574567734269351,
+              "Size": 151,
+              "ES": 0.4161285523669026,
+              "NOS p-val": 0.11535625541890693,
+              "FDR q-val": 0.22183895272866716,
+              "Lead_genes": [
+                "BHLHE40",
+                "HRC",
+                "LDB3",
+                "ADAM12",
+                "EFS",
+                "KCNH1",
+                "FXYD1",
+                "COL6A3",
+                "MYOM1",
+                "LAMA2",
+                "NCAM1",
+                "CDH13",
+                "APOD",
+                "TNNI1",
+                "CHRNG",
+                "GNAO1",
+                "CACNA1H",
+                "DMD",
+                "BDKRB2",
+                "CD36",
+                "MYH11",
+                "TNNT2",
+                "SCHIP1",
+                "CRYAB"
+              ]
+            },
+            {
+              "Data Base": "MSigDB_Hallmark_2020",
+              "Pathway": "Interferon Alpha Response",
+              "NES": 1.505597418200769,
+              "Size": 90,
+              "ES": 0.4366084670413649,
+              "NOS p-val": 0.13217055165839842,
+              "FDR q-val": 0.24476028084888593,
+              "Lead_genes": [
+                "SP110",
+                "LGALS3BP",
+                "IFIT2",
+                "C1S",
+                "GBP4",
+                "SELL",
+                "UBA7",
+                "EPSTI1",
+                "HERC6",
+                "CD74",
+                "IFI44L",
+                "DDX60",
+                "BST2",
+                "IRF9",
+                "HLA-C",
+                "SAMD9L",
+                "OASL",
+                "IFI27",
+                "IFITM3",
+                "PSMB8",
+                "IL4R",
+                "IFI44",
+                "OAS1",
+                "UBE2L6"
+              ]
+            }
+          ],
+          "KEGG_2016": [
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Long-term potentiation Homo sapiens hsa04720",
+              "NES": 1.7991876324534983,
+              "Size": 61,
+              "ES": 0.4694863179102367,
+              "NOS p-val": 0.07198900513465412,
+              "FDR q-val": 0.24641224901950046,
+              "Lead_genes": [
+                "GRIN2A",
+                "GRIA2",
+                "GRIN2C",
+                "CAMK2A",
+                "ITPR1",
+                "PRKCB",
+                "CACNA1C",
+                "PRKCG",
+                "ADCY8",
+                "GRIN2B"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Dopaminergic synapse Homo sapiens hsa04728",
+              "NES": 1.7950419710647134,
+              "Size": 113,
+              "ES": 0.44131878787880024,
+              "NOS p-val": 0.0726470131130812,
+              "FDR q-val": 0.24641224901950046,
+              "Lead_genes": [
+                "GRIN2A",
+                "CACNA1A",
+                "KCNJ9",
+                "CAMK2A",
+                "ITPR1",
+                "KCNJ6",
+                "KCNJ5",
+                "SLC6A3",
+                "MAOB",
+                "SCN1A",
+                "CACNA1C",
+                "GNAO1",
+                "DRD5",
+                "GNG2",
+                "GNGT1",
+                "GRIN2B",
+                "DRD2"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Salivary secretion Homo sapiens hsa04970",
+              "NES": 1.7935658198755156,
+              "Size": 64,
+              "ES": 0.46703110763472827,
+              "NOS p-val": 0.07288249618886633,
+              "FDR q-val": 0.24641224901950046,
+              "Lead_genes": [
+                "LPO",
+                "HTN1",
+                "KCNN4",
+                "ADCY2",
+                "ITPR1",
+                "TRPV6",
+                "ATP1A2",
+                "RYR3",
+                "ATP1A4",
+                "ATP1B2",
+                "PRKCG",
+                "ADCY8",
+                "ATP2B2"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "Basal transcription factors Homo sapiens hsa03022",
+              "NES": -1.781277654496177,
+              "Size": 41,
+              "ES": -0.4589474731198201,
+              "NOS p-val": 0.0748671030866912,
+              "FDR q-val": 0.24738510020786628,
+              "Lead_genes": [
+                "GTF2H3",
+                "TAF9B",
+                "MNAT1",
+                "TAF2",
+                "TAF1L",
+                "CCNH",
+                "TAF9",
+                "GTF2H1",
+                "GTF2H4",
+                "TAF4",
+                "TBP",
+                "GTF2H2C",
+                "TAF3",
+                "TAF6",
+                "TAF6L",
+                "GTF2A2",
+                "GTF2H2",
+                "ERCC2"
+              ]
+            },
+            {
+              "Data Base": "KEGG_2016",
+              "Pathway": "cGMP-PKG signaling pathway Homo sapiens hsa04022",
+              "NES": 1.781000374866215,
+              "Size": 145,
+              "ES": 0.4347866250286588,
+              "NOS p-val": 0.07491238949956514,
+              "FDR q-val": 0.24738510020786628,
+              "Lead_genes": [
+                "CACNA1C",
+                "MEF2B",
+                "NPR1",
+                "PIK3R5",
+                "ADCY8",
+                "ATP1A2",
+                "ATP2B2",
+                "MYL9",
+                "NPR2",
+                "PDE2A",
+                "ADCY2",
+                "NFATC2",
+                "ITPR1",
+                "KCNMB1",
+                "CNGB1",
+                "NFATC4",
+                "TRPC6",
+                "SLC8A3",
+                "ATP1B2",
+                "AGTR1",
+                "SLC8A2",
+                "PDE3A",
+                "ADRA2C",
+                "GATA4",
+                "EDNRA",
+                "BDKRB2",
+                "PIK3CD",
+                "ATP1A4"
+              ]
+            }
+          ],
+          "GO_Biological_Process_2023": [
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Regulation Of Oxidative Stress-Induced Neuron Intrinsic Apoptotic Signaling Pathway (GO:1903376)",
+              "NES": -1.970687165878608,
+              "Size": 5,
+              "ES": -0.6602406327851565,
+              "NOS p-val": 0.04875966943125887,
+              "FDR q-val": 0.43856812964549563,
+              "Lead_genes": [
+                "PRKN"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Lytic Vacuole Organization (GO:0080171)",
+              "NES": -1.964596188247579,
+              "Size": 30,
+              "ES": -0.36743649763278485,
+              "NOS p-val": 0.04946099350347555,
+              "FDR q-val": 0.4432848578400045,
+              "Lead_genes": [
+                "HOOK1",
+                "TPCN2",
+                "LRRK2",
+                "ZFYVE26",
+                "CLN3",
+                "AKTIP",
+                "HPS4",
+                "NAGPA",
+                "ARSB"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Defense Response To Symbiont (GO:0140546)",
+              "NES": 1.9644959792104284,
+              "Size": 112,
+              "ES": 0.45854243018833774,
+              "NOS p-val": 0.04947260210537907,
+              "FDR q-val": 0.4432848578400045,
+              "Lead_genes": [
+                "IFIT1",
+                "OAS2",
+                "NLRP6",
+                "IFI16",
+                "BNIP3",
+                "OAS1",
+                "PTPRC",
+                "AGBL4",
+                "IFI44L",
+                "LILRB1",
+                "DDX60",
+                "BST2",
+                "BNIP3L",
+                "OASL",
+                "TRIM31",
+                "IFI27",
+                "OPRK1",
+                "MX2",
+                "PYCARD",
+                "IFIT2"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Regulation Of T Cell Proliferation (GO:0042129)",
+              "NES": 1.9637778589343258,
+              "Size": 43,
+              "ES": 0.5442078939979582,
+              "NOS p-val": 0.04955585882658542,
+              "FDR q-val": 0.4432848578400045,
+              "Lead_genes": [
+                "IDO1",
+                "CD274",
+                "SPN",
+                "PTPRC",
+                "LILRB1",
+                "NCKAP1L",
+                "TNFSF18",
+                "CD1D",
+                "CR1"
+              ]
+            },
+            {
+              "Data Base": "GO_Biological_Process_2023",
+              "Pathway": "Lamellipodium Assembly (GO:0030032)",
+              "NES": 1.9607034874391056,
+              "Size": 24,
+              "ES": 0.6055503665991573,
+              "NOS p-val": 0.04991362202396332,
+              "FDR q-val": 0.44567035139279665,
+              "Lead_genes": [
+                "PTPRO",
+                "S1PR1"
+              ]
+            }
+          ],
+          "Reactome_Pathways_2024": [
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Signaling by CSF1 (M-CSF) in Myeloid Cells",
+              "NES": 1.9729663764815655,
+              "Size": 29,
+              "ES": 0.570944701203836,
+              "NOS p-val": 0.04849939325075869,
+              "FDR q-val": 0.25455482645425836,
+              "Lead_genes": [
+                "INPP5D",
+                "GAB3",
+                "PLCG2",
+                "PIK3CD"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "NIK-->noncanonical NF-kB Signaling",
+              "NES": -1.97144387861824,
+              "Size": 46,
+              "ES": -0.47424714997849304,
+              "NOS p-val": 0.04867312631193488,
+              "FDR q-val": 0.2547629200900173,
+              "Lead_genes": [
+                "CHUK",
+                "UBE2M",
+                "PSMD7",
+                "PSMB3",
+                "PSMC1",
+                "PSMC5",
+                "PSMB7",
+                "PSMD2",
+                "PSMC2",
+                "PSMD11",
+                "PSMD3",
+                "PSMA6",
+                "PSMB6",
+                "FBXW11",
+                "PSMA5",
+                "PSMC3",
+                "PSMD13",
+                "PSMB2",
+                "PSMB5",
+                "PSMA7",
+                "PSMC4",
+                "PSMB1",
+                "MAP3K14",
+                "PSMD14",
+                "PSMD1",
+                "ADRM1",
+                "PSMD12",
+                "PSMD8",
+                "PSMA3",
+                "UBB",
+                "PSMA4"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Synthesis of Epoxy (EET) and Dihydroxyeicosatrienoic Acids (DHET)",
+              "NES": -1.966071832756878,
+              "Size": 8,
+              "ES": -0.6835099121663541,
+              "NOS p-val": 0.04929031355619351,
+              "FDR q-val": 0.2553714328228929,
+              "Lead_genes": [
+                "CYP2C8",
+                "CYP2C9",
+                "CYP2C19"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Glucagon-like Peptide-1 (GLP1) Regulates Insulin Secretion",
+              "NES": 1.9608455422645317,
+              "Size": 36,
+              "ES": 0.5531131497527217,
+              "NOS p-val": 0.04989704357861968,
+              "FDR q-val": 0.2553714328228929,
+              "Lead_genes": [
+                "KCNB1",
+                "ITPR1",
+                "GCG",
+                "GNG2",
+                "GNG13",
+                "GNGT1",
+                "RAPGEF4",
+                "ADCY8"
+              ]
+            },
+            {
+              "Data Base": "Reactome_Pathways_2024",
+              "Pathway": "Inflammasomes",
+              "NES": 1.9599649304226403,
+              "Size": 17,
+              "ES": 0.6880975407026211,
+              "NOS p-val": 0.04999988943575495,
+              "FDR q-val": 0.2553714328228929,
+              "Lead_genes": [
+                "NLRP3",
+                "PYCARD"
+              ]
+            }
+          ]
+        },
+        "gsea_result_metadata": {
+          "id": "1763269235_af99c022",
+          "name": "gsea_results_20251116_000024.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/gsea_results_20251116_000024.csv",
+          "s3_presigned_url": "https://discovera.s3.us-east-2.amazonaws.com/outputs/2025-11-16/gsea_results_20251116_000024.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T050037Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6ecb2114d8630aa8f43ebca1d41d01c18f9cd68c21734e7e4358eb6cae232e9f"
+        },
+        "gsea_plot_metadata": {
+          "id": "1763269236_a9f6e4ca",
+          "name": "gsea_results_20251116_000024.png",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/gsea_results_20251116_000024.png",
+          "s3_presigned_url": "https://discovera.s3.us-east-2.amazonaws.com/outputs/2025-11-16/gsea_results_20251116_000024.png?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T050037Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=91baca38810fa5183e9f648f3ec2d328c1e7dfdf86de9162f3e19d5ac4e5be62"
+        }
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "rows": "[{\"gene_name\":\"HIF1A\",\"log2FoldChange\":0.22146427,\"padj\":0.069943064},{\"gene_name\":\"PGK1\",\"log2FoldChange\":2.394370796,\"padj\":6.37e-250},{\"gene_name\":\"VEGFA\",\"log2FoldChange\":1.064387124,\"padj\":3.04e-44},{\"gene_name\":\"SLC2A1\",\"log2FoldChange\":1.516683248,\"padj\":2.91e-26},{\"gene_name\":\"LDHA\",\"log2FoldChange\":2.461801109,\"padj\":6.93e-255},{\"gene_name\":\"PDK1\",\"log2FoldChange\":1.749457051,\"padj\":1.1e-16}]",
+        "total_rows": 6,
+        "storage_entry": {
+          "id": "1763269294_e3f3035e",
+          "name": "Hyp_vs_Norm_HIF_targets_4c8cac83ee.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Hyp_vs_Norm_HIF_targets_4c8cac83ee.csv"
+        }
+      }
+    },
+    {
+      "tool": "csv_join",
+      "payload": {
+        "columns": [
+          "log2FoldChange_left",
+          "padj_left",
+          "gene_name",
+          "log2FoldChange_right",
+          "padj_right"
+        ],
+        "rows": "[{\"log2FoldChange_left\":1.005270592,\"padj_left\":0.022989265,\"gene_name\":\"ZMYND10\",\"log2FoldChange_right\":-2.131634794,\"padj_right\":0.000000171},{\"log2FoldChange_left\":1.290169329,\"padj_left\":1.03e-23,\"gene_name\":\"WDR54\",\"log2FoldChange_right\":-0.339537663,\"padj_right\":0.014532127},{\"log2FoldChange_left\":1.089208933,\"padj_left\":0.0000246,\"gene_name\":\"BAIAP3\",\"log2FoldChange_right\":-1.093303876,\"padj_right\":0.00000773},{\"log2FoldChange_left\":1.001478965,\"padj_left\":0.0000445,\"gene_name\":\"FAM160A2\",\"log2FoldChange_right\":-0.542567653,\"padj_right\":0.031692708},{\"log2FoldChange_left\":1.368267494,\"padj_left\":5.5e-22,\"gene_name\":\"PFKP\",\"log2FoldChange_right\":-0.353753097,\"padj_right\":0.020970959},{\"log2FoldChange_left\":1.355143131,\"padj_left\":6.61e-231,\"gene_name\":\"PKM\",\"log2FoldChange_right\":-0.7724247,\"padj_right\":1.4e-75},{\"log2FoldChange_left\":3.381796628,\"padj_left\":3.42e-20,\"gene_name\":\"SNCB\",\"log2FoldChange_right\":-1.632531636,\"padj_right\":0.00000169},{\"log2FoldChange_left\":1.667917811,\"padj_left\":1.59e-257,\"gene_name\":\"ENO1\",\"log2FoldChange_right\":-0.430440034,\"padj_right\":6.78e-18},{\"log2FoldChange_left\":1.915958994,\"padj_left\":1.14e-40,\"gene_name\":\"FSCN1\",\"log2FoldChange_right\":-0.525459951,\"padj_right\":0.000209604},{\"log2FoldChange_left\":1.527652532,\"padj_left\":1.3e-35,\"gene_name\":\"PGM1\",\"log2FoldChange_right\":-0.344649937,\"padj_right\":0.008657162},{\"log2FoldChange_left\":1.669672955,\"padj_left\":1.18e-105,\"gene_name\":\"PLOD1\",\"log2FoldChange_right\":-0.746150678,\"padj_right\":1.01e-22},{\"log2FoldChange_left\":1.395438992,\"padj_left\":4.41e-18,\"gene_name\":\"CEACAM6\",\"log2FoldChange_right\":-0.686923879,\"padj_right\":0.0000224},{\"log2FoldChange_left\":6.931412528,\"padj_left\":0.00000175,\"gene_name\":\"MYBPC2\",\"log2FoldChange_right\":-1.417302536,\"padj_right\":0.032994206},{\"log2FoldChange_left\":5.415435578,\"padj_left\":0.0000000001,\"gene_name\":\"MT3\",\"log2FoldChange_right\":-2.336429283,\"padj_right\":0.00000532},{\"log2FoldChange_left\":2.12115028,\"padj_left\":0.0,\"gene_name\":\"SMIM24\",\"log2FoldChange_right\":-1.222446059,\"padj_right\":0.00000782},{\"log2FoldChange_left\":1.216574526,\"padj_left\":0.002216905,\"gene_name\":\"PGC\",\"log2FoldChange_right\":-3.032120805,\"padj_right\":0.0},{\"log2FoldChange_left\":1.004234371,\"padj_left\":0.018760349,\"gene_name\":\"CECR2\",\"log2FoldChange_right\":-0.870196983,\"padj_right\":0.030225086},{\"log2FoldChange_left\":10.30162774,\"padj_left\":0.0,\"gene_name\":\"CHRNA4\",\"log2FoldChange_right\":-2.83780332,\"padj_right\":6.53e-18},{\"log2FoldChange_left\":1.232565739,\"padj_left\":0.0,\"gene_name\":\"RNF24\",\"log2FoldChange_right\":-0.353978616,\"padj_right\":0.046850427},{\"log2FoldChange_left\":2.394370796,\"padj_left\":6.37e-250,\"gene_name\":\"PGK1\",\"log2FoldChange_right\":-0.997167795,\"padj_right\":5.2e-45}]",
+        "total_rows": 105,
+        "storage_entry": {
+          "id": "1763269313_079bde8b",
+          "name": "Hyp_up_and_Zot_down_intersection_3981700441.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Hyp_up_and_Zot_down_intersection_3981700441.csv"
+        }
+      }
+    },
+    {
+      "tool": "query_table_rumma",
+      "payload": {
+        "results": [
+          {
+            "id": "0047249e-195f-4b21-a795-bf2bd2184d10",
+            "term": "pone.0269462.s007.xlsx-S4_Table-S4_Table_Univariate_cox_analysis_result_for_190_Hypoxia-related_genes_covered_in_TCGA-CESC_cohort",
+            "nGeneIds": 190,
+            "pmcid": "PMC9165826"
+          },
+          {
+            "id": "01273a19-ef6d-43f3-8eaf-ee087845f17a",
+            "term": "Table1.xlsx-Table_E7_Hypoxia_genes_in_AEC-Gene_Symbol",
+            "nGeneIds": 50,
+            "pmcid": "PMC12134073"
+          },
+          {
+            "id": "01cbdcd8-0190-418d-b946-828ba042e326",
+            "term": "media-4.xlsx-D_Full_melanoma_cell_states-Stress_hypoxia_response",
+            "nGeneIds": 152,
+            "pmcid": "PMC11956947"
+          },
+          {
+            "id": "021ae048-803e-46c9-ba73-33c074427dd5",
+            "term": "TCA-14-3433-s002.xlsx-Sheet1-Hypoxia",
+            "nGeneIds": 15,
+            "pmcid": "PMC10719660"
+          },
+          {
+            "id": "02702c4b-bb63-42ca-ae6b-25a33245b72d",
+            "term": "42003_2022_4169_MOESM7_ESM.xlsx-ECs_-_Hypoxia_vs_Normoxia-SYMBOL",
+            "nGeneIds": 539,
+            "pmcid": "PMC9640600"
+          },
+          {
+            "id": "02f60a5b-0f36-4dfd-b3a9-9b4ec94de832",
+            "term": "Table2.docx-0-Hypoxia_related_genes_2",
+            "nGeneIds": 121,
+            "pmcid": "PMC12358289"
+          },
+          {
+            "id": "036db8d9-832a-4ea2-b85f-64be08d40c70",
+            "term": "FEB4-11-2174-s005.xlsx-A-Differential_expression_genes_DEGs_in_hypoxia",
+            "nGeneIds": 292,
+            "pmcid": "PMC8329784"
+          },
+          {
+            "id": "03a11c85-6b20-409f-80ac-71e1e639847f",
+            "term": "koni-09-01-1750750-s001.docx-0-MCF-7_Chronic_v_s_Normoxia_Hallmark_hypoxia_genes_3",
+            "nGeneIds": 47,
+            "pmcid": "PMC7185205"
+          },
+          {
+            "id": "03abd528-0b22-469a-a146-f1e9bb3a4c6d",
+            "term": "pwad027_suppl_supplementary_table_s1.xlsx-hVEC_HIF1KO_vs_WT_in_hypoxia-Symbol",
+            "nGeneIds": 480,
+            "pmcid": "PMC10762672"
+          },
+          {
+            "id": "0493e9d7-6fa9-4340-a267-58b7bc3582da",
+            "term": "Table_1.xlsx-OVCAR3_Hypoxia_Phosphopeptides-Gene",
+            "nGeneIds": 1008,
+            "pmcid": "PMC8896345"
+          },
+          {
+            "id": "04e3c2d2-1122-4035-8906-f7cab58867ad",
+            "term": "NIHMS1517594-supplement-4.xlsx-Supp_Table_3I_Hypoxia_Signature-Hypoxia_Signature_Eustace_et_al_2013",
+            "nGeneIds": 26,
+            "pmcid": "PMC6405289"
+          },
+          {
+            "id": "060eac5e-9c08-49f0-b996-2473e60c9515",
+            "term": "pbio.3003444.s013.xlsx-List_of_genes_for_GO_analysis-List_of_genes_undergoing_significant_MXE_upon_PRMT5_KD_under_hypoxia",
+            "nGeneIds": 1462,
+            "pmcid": "PMC12585103"
+          },
+          {
+            "id": "066d41fa-647a-4cf4-a0b3-4d7cd632e6be",
+            "term": "koni-09-01-1750750-s001.docx-2-MDA-MB-231_Chronic_v_s_Normoxia_Hallmark_hypoxia_genes_3",
+            "nGeneIds": 60,
+            "pmcid": "PMC7185205"
+          },
+          {
+            "id": "07a0ecdc-700f-4965-b987-e8b0bc3fce72",
+            "term": "CTM2-14-e70023-s002.docx-1-Cellular_response_to_hypoxia",
+            "nGeneIds": 107,
+            "pmcid": "PMC11416080"
+          },
+          {
+            "id": "07add646-2964-4ce1-b3ac-4231c402c0ae",
+            "term": "mmc5.xlsx-HYPOXIA_RNASEQ_14304-PROBE",
+            "nGeneIds": 104,
+            "pmcid": "PMC6581744"
+          },
+          {
+            "id": "08510e33-f733-42c5-8b1d-14e8ab4fbdca",
+            "term": "41418_2025_1466_MOESM5_ESM.docx-0-Hypoxia",
+            "nGeneIds": 35,
+            "pmcid": "PMC12284152"
+          },
+          {
+            "id": "09fa23dd-9256-41c2-9015-8c57c382b5f8",
+            "term": "12964_2025_2459_MOESM4_ESM.xlsx-HIF1_HIF2_miRNA_targets_DMOG-HIF1_-related_miRNA_targets_expression_during_hypoxia_based_on_micorarray_FC",
+            "nGeneIds": 123,
+            "pmcid": "PMC12542114"
+          },
+          {
+            "id": "0a36dd4d-d810-4e11-ad54-3dd44abae78f",
+            "term": "13048_2021_881_MOESM3_ESM.xlsx-Sheet1-Table_S3_Differential_hypoxia-related_genes",
+            "nGeneIds": 76,
+            "pmcid": "PMC8464158"
+          },
+          {
+            "id": "0abc07cf-6634-42f8-b62b-2fb539fe45db",
+            "term": "Table_3.xlsx-Supplementary_Table_3-Hypoxia_H-I",
+            "nGeneIds": 331,
+            "pmcid": "PMC9358019"
+          },
+          {
+            "id": "0b8e4413-3c54-4792-abd8-59bac496d9e8",
+            "term": "41598_2022_15246_MOESM1_ESM.xlsx-ST_21-Supplementary_Table_21_Frequency_of_genetic_alterations_in_the_hypoxia-related_genes_of_2029_individuals_with_Tumor_Stage_III_across_17_cancer_types",
+            "nGeneIds": 233,
+            "pmcid": "PMC9246854"
+          },
+          {
+            "id": "0b9c8626-4edb-450c-b431-b098d4782cf4",
+            "term": "Table2.XLSX-uCaco-2_CoCl2-Differential_expression_of_the_core_gene_set_reacting_to_chemical_hypoxia_stimulation_in_undifferentiated_Caco-2_cells_upon_cobalt_II_chlolide_treatment",
+            "nGeneIds": 181,
+            "pmcid": "PMC8632048"
+          },
+          {
+            "id": "0c76029e-5c44-4b6e-b454-5068ec79ffd6",
+            "term": "41598_2023_37753_MOESM1_ESM.xlsx-Sheet1-Supplemental_Table_1_Hypoxia_related_genes_in_Genecards_and_MsigDB_databases",
+            "nGeneIds": 41,
+            "pmcid": "PMC10310769"
+          },
+          {
+            "id": "0ce00463-6a24-4966-b0b3-0e1c1f2f538c",
+            "term": "Table2.docx-0-Hypoxia_related_genes_1",
+            "nGeneIds": 120,
+            "pmcid": "PMC12358289"
+          },
+          {
+            "id": "0d565ab1-2f62-4a8f-8a0f-7f4a2f61cf06",
+            "term": "41598_2025_7572_MOESM1_ESM.xlsx-Table_S4-Enrichr_Pathways_MSigDM_Hallmark_2020___Enriched_pathways_in_KO_cells_versus_WT_cells_under_hypoxia_analysing_downregulated_DEGs_with_log2FC_0_3",
+            "nGeneIds": 597,
+            "pmcid": "PMC12217331"
+          },
+          {
+            "id": "0f798478-b03a-482c-9035-41fa82f152b1",
+            "term": "ncomms7881-s2.xls-Hypoxia_treatment-GeneName",
+            "nGeneIds": 706,
+            "pmcid": "PMC4411297"
+          },
+          {
+            "id": "106921ea-ee92-4dcb-ba77-fc8e327bfb00",
+            "term": "41388_2021_1680_MOESM2_ESM.xlsx-MSCV-significant-Genes_significantly_differentially_expressed_under_hypoxia_vs_normoxia_in_HEK293_cells_stably_expressing_the_empty_vector_MSCV",
+            "nGeneIds": 301,
+            "pmcid": "PMC7979542"
+          },
+          {
+            "id": "11e115cd-46da-40bc-a085-d42610382605",
+            "term": "pone.0236928.s002.xlsx-Sheet1-HALLMARK_HYPOXIA",
+            "nGeneIds": 135,
+            "pmcid": "PMC7394371"
+          },
+          {
+            "id": "1303f741-c8a0-4ad8-b1f5-1cb4e83da301",
+            "term": "Table2.xlsx-Sheet1-Supplementary_Table_2_Genes_of_Hypoxia",
+            "nGeneIds": 199,
+            "pmcid": "PMC12284369"
+          },
+          {
+            "id": "14b1a29d-4fa9-4ffd-8b64-3aea91ba7fc6",
+            "term": "13058_2022_1532_MOESM1_ESM.docx-3-Hypoxia-linked_DEGs",
+            "nGeneIds": 6,
+            "pmcid": "PMC9164406"
+          },
+          {
+            "id": "16f5db45-024e-4c9f-bb21-ab4067bdfef2",
+            "term": "Table5.xlsx-Merge-Hypoxia_related_genes",
+            "nGeneIds": 689,
+            "pmcid": "PMC12341000"
+          },
+          {
+            "id": "18ffb2cf-2e04-438b-9b81-37da5c929426",
+            "term": "41467_2023_39287_MOESM13_ESM.xlsx-ValidationHypoxia_peptides-Mapped_Genes",
+            "nGeneIds": 993,
+            "pmcid": "PMC10287711"
+          },
+          {
+            "id": "19aafd04-520e-4f47-b485-934396e25edd",
+            "term": "oncotarget-07-12102-s004.xlsx-HYPOXIA-CORRESPONDING_HUMAN_GENES",
+            "nGeneIds": 224,
+            "pmcid": "PMC4914272"
+          },
+          {
+            "id": "1c3a9797-9a12-4738-8b47-8ee574f05fb3",
+            "term": "Table_3.xlsx-Table_S2_The_coefficients_of_16-The_coefficients_of_16_optimal_candidate_genes_included_into_the_hypoxia_risk_score_algorithm",
+            "nGeneIds": 16,
+            "pmcid": "PMC8415032"
+          },
+          {
+            "id": "1ca1af3c-ad31-4538-a08d-2113c3e3252d",
+            "term": "Table_1.xlsx-OVCAR_Hypoxia-T_Gene_names",
+            "nGeneIds": 6,
+            "pmcid": "PMC8896345"
+          },
+          {
+            "id": "1d89cbb8-c601-4508-b897-7fe61d6e8001",
+            "term": "onc2016184x3.xlsx-Supplementary_Table_1-Hypoxia_Signature",
+            "nGeneIds": 49,
+            "pmcid": "PMC5061082"
+          },
+          {
+            "id": "1f39e572-cea3-406a-8746-ba210168121d",
+            "term": "mmc6.xlsx-A_H3K4me3_subsets_ESFnor-hyp-ESF_RNAseq_hypoxiaUP",
+            "nGeneIds": 1148,
+            "pmcid": "PMC9051620"
+          },
+          {
+            "id": "1f3b3ad6-e6d1-4871-91ca-768a47180187",
+            "term": "Table_3.xlsx-Supplementary_Table_3-Hypoxia_Immune_H-I",
+            "nGeneIds": 41,
+            "pmcid": "PMC9358019"
+          },
+          {
+            "id": "1f4391b4-3c90-4e73-9f64-acf4f443ed95",
+            "term": "elife-55578-supp1.xlsx-Hypoxia_only-Transcripts_present_in_hypoxia_treated_cells",
+            "nGeneIds": 88,
+            "pmcid": "PMC7671683"
+          },
+          {
+            "id": "1fb1bd0e-3df0-4fc7-a153-4ab15dadeefd",
+            "term": "12964_2025_2459_MOESM5_ESM.xlsx-Figure_6A-The_targets_of_CoCl2-induced_miRNA_that_were_HIF-1_dependent_and_significatly_reduced_upon_hypoxia_P_0_05",
+            "nGeneIds": 31,
+            "pmcid": "PMC12542114"
+          },
+          {
+            "id": "1fba7124-97a3-46a7-8b24-2093c74c9902",
+            "term": "Table_1.xls-Hypoxia-related_gene-Hypoxia-related_gene",
+            "nGeneIds": 482,
+            "pmcid": "PMC10667439"
+          },
+          {
+            "id": "20734661-e819-484e-8225-023bb70d529c",
+            "term": "Table_1.xlsx-SKOV_Hypoxia-T_Gene_names",
+            "nGeneIds": 6,
+            "pmcid": "PMC8896345"
+          },
+          {
+            "id": "2099a8b3-283c-4316-a794-fd07e4c4142e",
+            "term": "Table3.XLS-tcga_hypoxiaExp-id",
+            "nGeneIds": 200,
+            "pmcid": "PMC8634728"
+          },
+          {
+            "id": "20af363c-daee-4a27-9adc-14f139aa19e0",
+            "term": "41598_2023_Article_29718.nxml--Hypoxia-related_genes",
+            "nGeneIds": 6,
+            "pmcid": "PMC9925779"
+          },
+          {
+            "id": "20fc89ae-fe69-4775-b6bb-072d1e2c2e9c",
+            "term": "oncotarget-05-10198-s002.xlsx-Sheet1-Hypoxia-induced_EMT_in_cancer_and_fibrosis_3",
+            "nGeneIds": 9,
+            "pmcid": "PMC4259415"
+          },
+          {
+            "id": "21f775e6-6b24-460a-9cb2-fe7880592516",
+            "term": "41598_2024_68109_MOESM3_ESM.xlsx-Sheet1-Hypoxia",
+            "nGeneIds": 8,
+            "pmcid": "PMC11286765"
+          },
+          {
+            "id": "223d3865-ff1c-43a0-8e40-403bad8589db",
+            "term": "12964_2025_2459_MOESM5_ESM.xlsx-Figure_6B-The_targets_of_Hypoxia-induced_miRNA_that_were_HIF-2_dependent_and_significatly_reduced_upon_hypoxia_P_0_05",
+            "nGeneIds": 27,
+            "pmcid": "PMC12542114"
+          },
+          {
+            "id": "2321c9fd-81df-40b2-91f3-43261d6bc9ce",
+            "term": "CTS-11-412.nxml--Hypoxia_sensitive_gene",
+            "nGeneIds": 6,
+            "pmcid": "PMC6039202"
+          },
+          {
+            "id": "25515cc1-d1c6-4647-bb71-42ab4f39c562",
+            "term": "mmc2.xlsx-hypoxia-Gene",
+            "nGeneIds": 16,
+            "pmcid": "PMC12277876"
+          },
+          {
+            "id": "25d41656-e8a2-49db-a065-7be350b29a85",
+            "term": "media-3.xlsx-hallmark_GOBP-hallmark_hypoxia",
+            "nGeneIds": 200,
+            "pmcid": "PMC11071458"
+          },
+          {
+            "id": "26c18fd3-3d2e-4912-bbaf-03443325a8f9",
+            "term": "Table_1.xlsx-Nr_16_Hypoxia_genes_in_colono-gene_id",
+            "nGeneIds": 366,
+            "pmcid": "PMC9922616"
+          },
+          {
+            "id": "26cfe43d-8efb-42f8-b03a-3d59c5fde0a8",
+            "term": "ADVS-11-2306268-s001.xlsx-HYPOXIA-V2",
+            "nGeneIds": 200,
+            "pmcid": "PMC10916575"
+          },
+          {
+            "id": "26e98679-b779-4e0b-a181-f9b16326786a",
+            "term": "Table1.xlsx-hypoxia_markers-Gene",
+            "nGeneIds": 200,
+            "pmcid": "PMC11769819"
+          },
+          {
+            "id": "26f7cb1e-c508-4225-8f82-97aa90ead8bd",
+            "term": "Table_1.xlsx-Sheet1-HALLMARK_HYPOXIA_Genes_up-regulated_in_response_to_low_oxygen_levels_hypoxia",
+            "nGeneIds": 200,
+            "pmcid": "PMC10946248"
+          },
+          {
+            "id": "27cfe2f6-c81d-4bce-91a4-5c40e6420da9",
+            "term": "Table_3.xlsx-Supplementary_Table_3-Hypoxia_Immune",
+            "nGeneIds": 15,
+            "pmcid": "PMC9358019"
+          },
+          {
+            "id": "299045c8-63a7-475e-946f-ecce317f434a",
+            "term": "Data_Sheet_4.xls-TCGA-hypoxia-PROBE",
+            "nGeneIds": 197,
+            "pmcid": "PMC8548828"
+          },
+          {
+            "id": "2a41dd1e-0575-46d2-8744-2cf36fcac420",
+            "term": "Table2.docx-0-Hypoxia_related_genes",
+            "nGeneIds": 122,
+            "pmcid": "PMC12358289"
+          },
+          {
+            "id": "2c1d93e2-9636-4420-9dd5-d17bdf18e32c",
+            "term": "Table1.xlsx-Table_S1-Supplementary_Table_1_493_hypoxia-related_genes_and_284_lactate-related_genes",
+            "nGeneIds": 737,
+            "pmcid": "PMC11576178"
+          },
+          {
+            "id": "2c6a6fe5-f982-488f-a98c-d516bd47f246",
+            "term": "41467_2023_39287_MOESM13_ESM.xlsx-DiscoveryHypoxia_peptides-Gene_names",
+            "nGeneIds": 1860,
+            "pmcid": "PMC10287711"
+          },
+          {
+            "id": "2e1fcd7b-4caa-4c7e-b821-66792c3e5107",
+            "term": "pone.0105104.s011.xls-Chronic_genes-Genes_significantly_FDR_adjusted_p_0_05_random_variance_F-test_changed_in_all_three_cell_lines_subjected_to_chronic_hypoxia_vs_controls_FC_2",
+            "nGeneIds": 168,
+            "pmcid": "PMC4133353"
+          },
+          {
+            "id": "2e2f7fcb-a8d5-4f30-9e36-9f13209637d4",
+            "term": "41467_2025_59805_MOESM3_ESM.xlsx-Supplementary_Data6-Hypoxia",
+            "nGeneIds": 6,
+            "pmcid": "PMC12166086"
+          },
+          {
+            "id": "2f8effd2-3286-4ec5-92cf-62e9d8d549de",
+            "term": "mmc2.xlsx-Hypoxia_genes-Gene_Symbol",
+            "nGeneIds": 51,
+            "pmcid": "PMC6411608"
+          },
+          {
+            "id": "3000185b-1963-4035-8663-1e3d9875fc0f",
+            "term": "41388_2018_400_MOESM8_ESM.xlsx-Notch_Genes_Nor_and_Hyp-Genes_upregulated_2-fold_by_TMX-Notch_induction_in_Normoxia_and_Hypoxia",
+            "nGeneIds": 483,
+            "pmcid": "PMC6237764"
+          },
+          {
+            "id": "310d09e8-9d59-43af-805c-4b1148fb1a73",
+            "term": "13287_2023_3253_MOESM6_ESM.xlsx-Sheet1-Hypoxia-inducible_genes_conserved_across_16_cell_lines",
+            "nGeneIds": 257,
+            "pmcid": "PMC9940377"
+          },
+          {
+            "id": "31c9fedb-7eca-4082-a5a1-6b6dd97eab79",
+            "term": "13044_2024_193_MOESM4_ESM.xlsx-Hypoxia-Supplementary_Table_1_Detailed_gene_list_of_hypoxia",
+            "nGeneIds": 75,
+            "pmcid": "PMC10983671"
+          },
+          {
+            "id": "32249990-73ba-41fb-bf47-e60d325e2299",
+            "term": "12672_2022_524_MOESM7_ESM.xlsx-Top2000DEG-Supplemental_Table_1_-_Top_2000_differentially_expressed_genes_in_BC-K562_cells_under_hypoxia",
+            "nGeneIds": 1944,
+            "pmcid": "PMC9270554"
+          },
+          {
+            "id": "3378b719-1e84-4a68-9954-704af3bf1e4e",
+            "term": "NIHMS808256-supplement-supp_table1.xlsx-LG1_Pathways_Down_-_Genes-Hypoxia",
+            "nGeneIds": 58,
+            "pmcid": "PMC5364060"
+          },
+          {
+            "id": "34379100-0392-4272-8d62-8fcf3cb06e60",
+            "term": "41467_2025_61560_MOESM3_ESM.xlsx-Supplementary_data_1-Hypoxia_AND_YY1_IP-MS_NOT_TK",
+            "nGeneIds": 95,
+            "pmcid": "PMC12234789"
+          },
+          {
+            "id": "344ebaf4-7143-4f13-9ecc-28f2ae8b64b5",
+            "term": "13073_2025_1462_MOESM5_ESM.xlsx-Recurrent_ITH_programs-Glycolysis_Hypoxia",
+            "nGeneIds": 49,
+            "pmcid": "PMC11992879"
+          },
+          {
+            "id": "34cc79c9-8226-4df5-923c-3050c431d4d3",
+            "term": "Data_Sheet_1.docx-0-75_hypoxia-related_genes_2",
+            "nGeneIds": 15,
+            "pmcid": "PMC9148996"
+          },
+          {
+            "id": "35f42eb4-5e61-40b3-909d-205297c571d8",
+            "term": "NIHMS1525420-supplement-Supplementary_Table_3.xlsx-24H_Hypoxia_DEX_genes_minus_con-GeneID",
+            "nGeneIds": 851,
+            "pmcid": "PMC7020938"
+          },
+          {
+            "id": "361e2cd1-9bf7-4f62-8820-5c4d76096565",
+            "term": "NIHMS1517594-supplement-4.xlsx-Supp_Table_3G_Hypoxia_Signature-Hypoxia_Signature_Winter_et_al_2007_All_genes",
+            "nGeneIds": 145,
+            "pmcid": "PMC6405289"
+          },
+          {
+            "id": "36f5b79d-f2be-4971-89d9-919ceedf8d54",
+            "term": "peerj-10-13201-s005.xlsx-hypoxia_and_S100B-gene",
+            "nGeneIds": 53,
+            "pmcid": "PMC8973469"
+          },
+          {
+            "id": "3742ae99-a579-4f69-bf02-e8d930747d23",
+            "term": "elife-25217-fig1-data2.xlsx-HALLMARK_HYPOXIA-GENE",
+            "nGeneIds": 166,
+            "pmcid": "PMC5495571"
+          },
+          {
+            "id": "375e5b7d-36ee-4b6b-b0bc-4020546abb6a",
+            "term": "Table2.XLSX-Sheet1-Hypoxia_Gene",
+            "nGeneIds": 200,
+            "pmcid": "PMC9853159"
+          },
+          {
+            "id": "3802427f-cf50-44fa-9213-b6cf3c070e88",
+            "term": "DataSheet1.CSV--Hypoxia",
+            "nGeneIds": 200,
+            "pmcid": "PMC8685547"
+          },
+          {
+            "id": "390eb102-3153-4908-a92b-07566a06b987",
+            "term": "41467_2025_61560_MOESM3_ESM.xlsx-Supplementary_data_1-Only_Hypoxia",
+            "nGeneIds": 972,
+            "pmcid": "PMC12234789"
+          },
+          {
+            "id": "39258606-de41-48b9-ada4-871abbb9f504",
+            "term": "koni-09-01-1750750-s001.docx-1-MCF-7_Intermittent_v_s_Normoxia_Hallmark_hypoxia_genes_3",
+            "nGeneIds": 66,
+            "pmcid": "PMC7185205"
+          },
+          {
+            "id": "3a0bdfd8-1479-443b-8f59-e77569afe388",
+            "term": "NIHMS1517594-supplement-4.xlsx-SuppTable_3H_Hypoxia_Signature-Hypoxia_Signature_Winter_et_al_2007_-_Hypoxia_asssociated_genes_from_literature_as_stated_in_Winter_et_al_manuscript",
+            "nGeneIds": 235,
+            "pmcid": "PMC6405289"
+          },
+          {
+            "id": "3c1ebfa5-2a95-4166-b58f-ea6a43699269",
+            "term": "supp_29.10.1018_Supplemental_Table_S3.xlsx-Winter_Hypoxia_Downregulated-WINTER_HYPOXIA_DOWN",
+            "nGeneIds": 50,
+            "pmcid": "PMC4441050"
+          },
+          {
+            "id": "3dd5e41a-4c89-4f3a-84fe-41fe39d4575e",
+            "term": "NIHMS1525420-supplement-Supplementary_Table_3.xlsx-48H_Hypoxia_DEX_genes_minus_con-GeneAnnotation",
+            "nGeneIds": 1351,
+            "pmcid": "PMC7020938"
+          },
+          {
+            "id": "3e1e47a1-94e1-433d-bf35-19b859db6429",
+            "term": "41598_2025_97604_MOESM5_ESM.xlsx-Table_S1-Table_S1_Hypoxia_and_Senescence_related_genes",
+            "nGeneIds": 1317,
+            "pmcid": "PMC11992139"
+          },
+          {
+            "id": "3e9af6ad-133b-4e59-ab32-852ff3e7f343",
+            "term": "41467_2021_26505_MOESM4_ESM.txt--HypoxiaHIFregulatedRudensky",
+            "nGeneIds": 42,
+            "pmcid": "PMC8566602"
+          },
+          {
+            "id": "401ff9e4-6390-4332-926d-505490ece1b9",
+            "term": "12672_2022_524_MOESM10_ESM.xlsx-Hypoxia-SYMBOL",
+            "nGeneIds": 55,
+            "pmcid": "PMC9270554"
+          },
+          {
+            "id": "41551c17-c54c-42fa-a370-77b8e4f07e97",
+            "term": "41467_2021_27944_MOESM4_ESM.xlsx-HIF-Dependent-Hypoxia-upregulat-HIF-dependent_hypoxia-induced_genes_1307_genes",
+            "nGeneIds": 1717,
+            "pmcid": "PMC8760265"
+          },
+          {
+            "id": "44af21dc-2d51-4ed4-83d4-6b57a3ec3636",
+            "term": "41588_2022_1100_MOESM3_ESM.xlsx-Supplementary_Table_2-HALLMARK_HYPOXIA",
+            "nGeneIds": 82,
+            "pmcid": "PMC9279158"
+          },
+          {
+            "id": "46898684-de3e-4436-8312-ebaf17185c5d",
+            "term": "medi-104-e42665-s001.xlsx-479_hypoxia-related_genes-479_hypoxia-related_genes",
+            "nGeneIds": 473,
+            "pmcid": "PMC12173340"
+          },
+          {
+            "id": "489756dc-4f20-4652-bdd8-9db97c3761c4",
+            "term": "Table4.XLSX-Sheet1-Table_S2_200_hypoxia-related_genes",
+            "nGeneIds": 200,
+            "pmcid": "PMC8505699"
+          },
+          {
+            "id": "48e3a56c-d8bd-4a0a-bb98-bf56e880f36b",
+            "term": "Data_Sheet_1.docx-0-75_hypoxia-related_genes_1",
+            "nGeneIds": 15,
+            "pmcid": "PMC9148996"
+          },
+          {
+            "id": "4a4af011-4e26-455d-acbd-17f1959769b8",
+            "term": "13059_2021_2382_MOESM7_ESM.xlsx-Table_S12-Table_S12_List_of_candidate_adaptive_genes_and_their_traits_related_to_hypoxia",
+            "nGeneIds": 80,
+            "pmcid": "PMC8146648"
+          },
+          {
+            "id": "4c7b61c1-f113-4296-b963-4c8fd6a70f22",
+            "term": "12903_2021_1587_MOESM1_ESM.docx-0-Hypoxia-related_gene",
+            "nGeneIds": 25,
+            "pmcid": "PMC8094530"
+          },
+          {
+            "id": "4ce5039f-492d-4e33-882c-8f857e204c2f",
+            "term": "Table_1.xlsx-Supplementary_Table_S1-Supplementary_Table_S1_200_Hypoxia-related_genes",
+            "nGeneIds": 200,
+            "pmcid": "PMC11333257"
+          },
+          {
+            "id": "4d02f5c2-4910-4098-818c-ce0c5369b331",
+            "term": "41598_2018_19627_MOESM2_ESM.xls-60_Hypoxia_Signaling_Pathway-ProbeID",
+            "nGeneIds": 19,
+            "pmcid": "PMC5799303"
+          },
+          {
+            "id": "4e820602-2161-404d-b200-8a55a2d8ac63",
+            "term": "Table_1.xlsx-Nr_16_Hypoxia_genes_in_colono-gene_name",
+            "nGeneIds": 368,
+            "pmcid": "PMC9922616"
+          },
+          {
+            "id": "4fa1ecdd-5747-490f-a0cd-205f15e91e6e",
+            "term": "Table_3.XLSX-Supplementary_Table_S3-Hypoxia-related_genes",
+            "nGeneIds": 341,
+            "pmcid": "PMC9081503"
+          },
+          {
+            "id": "50cab2fe-f711-4744-b15f-bfe2042e9ba4",
+            "term": "Table7.XLSX-143_hypoxia_related-genes-Unnamed_1",
+            "nGeneIds": 136,
+            "pmcid": "PMC9792869"
+          },
+          {
+            "id": "51bfc076-aaa3-4c13-8ae3-1738470d9e1b",
+            "term": "41598_2025_20307_MOESM1_ESM.xlsx-Table_S6-Hu_hypoxia_signature",
+            "nGeneIds": 9,
+            "pmcid": "PMC12534490"
+          },
+          {
+            "id": "51c1de6a-18fb-44e6-add5-d69cbe264c82",
+            "term": "12964_2025_2459_MOESM5_ESM.xlsx-Figure_6A-The_targets_of_Hypoxia-induced_miRNA_that_were_HIF-1_dependent_and_significatly_reduced_upon_hypoxia_P_0_05",
+            "nGeneIds": 25,
+            "pmcid": "PMC12542114"
+          },
+          {
+            "id": "527c631a-4fd4-4e30-8668-34b3b19805b3",
+            "term": "41388_2021_1680_MOESM2_ESM.xlsx-Hace1-significant-Genes_significantly_differentially_expressed_under_hypoxia_vs_normoxia_in_HEK293_cells_stably_expressing_HACE1",
+            "nGeneIds": 24,
+            "pmcid": "PMC7979542"
+          },
+          {
+            "id": "532d9b99-920b-48fc-b1a8-856b6c2ed7ad",
+            "term": "DataSheet_2.xlsx-Hypoxia_genes-ADM",
+            "nGeneIds": 199,
+            "pmcid": "PMC8818738"
+          },
+          {
+            "id": "53501aa4-df51-42e0-9477-2f291530110e",
+            "term": "Table1.CSV--Supplementary_Table_1_Description_of_315_Hypoxia-related_genes",
+            "nGeneIds": 315,
+            "pmcid": "PMC8578022"
+          },
+          {
+            "id": "54243494-5276-4ad2-99c4-d45cf198be80",
+            "term": "HEM3-8-e45-s002.xlsx-Additional_Hypoxia_Signatures-Unnamed_3",
+            "nGeneIds": 172,
+            "pmcid": "PMC10895904"
+          },
+          {
+            "id": "54355a00-befb-4f0a-a479-2c75567bc4b1",
+            "term": "13148_2025_1812_MOESM2_ESM.xlsx-STable3-Supplementary_Table_3_Differentially_expressed_genes_following_DAC_treatment_in_hypoxia_1_O2",
+            "nGeneIds": 1869,
+            "pmcid": "PMC11748578"
+          },
+          {
+            "id": "5437ef19-357f-4b8a-9318-fba66f54cfc1",
+            "term": "41598_2017_18462_MOESM2_ESM.xlsx-Sheet1-Table_S1_Winter_et_al_hypoxia_signature_used_to_classify_tumors_into_hypoxic_and_non-hypoxic_groups",
+            "nGeneIds": 141,
+            "pmcid": "PMC5760628"
+          },
+          {
+            "id": "543997c3-1a81-4443-870e-9f82c68a2071",
+            "term": "mmc3.xlsx-Sheet1-Hypoxia_geneset",
+            "nGeneIds": 200,
+            "pmcid": "PMC11414708"
+          },
+          {
+            "id": "547a4aeb-670f-4e2b-9c6f-642890faa48c",
+            "term": "12032_2025_3058_MOESM3_ESM.xlsx-Hypoxia_Vs_Nor-Hyp-Gene_Symbol",
+            "nGeneIds": 23,
+            "pmcid": "PMC12479581"
+          },
+          {
+            "id": "54d7b1e0-6d91-42c5-a949-9b289fab1742",
+            "term": "41467_2021_24232_MOESM14_ESM.xlsx-human_hypoxia-gene",
+            "nGeneIds": 9,
+            "pmcid": "PMC8233314"
+          },
+          {
+            "id": "5624fcdf-b014-4dd0-9c67-0c90d033965d",
+            "term": "41392_2024_2052_MOESM5_ESM.xlsx-3_Other_genesets-HALLMARK_HYPOXIA",
+            "nGeneIds": 55,
+            "pmcid": "PMC11638339"
+          },
+          {
+            "id": "5688be00-c51c-450b-9b07-a0063ab6e17a",
+            "term": "Table1.xlsx-Table_S2-Table_S2_Marker_genes_for_Hypoxia_angiogenic_stemness_EMT_and_tumorigenic_cytokines",
+            "nGeneIds": 9,
+            "pmcid": "PMC12127166"
+          },
+          {
+            "id": "584b90bd-cd59-494d-820d-9520e21ac986",
+            "term": "mmc13.xlsx-Response_to_hypoxia-Unnamed_0",
+            "nGeneIds": 62,
+            "pmcid": "PMC8957021"
+          },
+          {
+            "id": "584efc62-112d-420f-ba4e-67496a53386a",
+            "term": "NIHMS1517594-supplement-4.xlsx-Supp_Table_3E_Hypoxia_Signature-Hypoxia_Signature_Winter_et_al_2007_-_Upregulated_genes",
+            "nGeneIds": 93,
+            "pmcid": "PMC6405289"
+          },
+          {
+            "id": "58b0b942-aeec-40c6-8c56-49f27414287b",
+            "term": "NIHMS1517594-supplement-4.xlsx-Supp_Table_3D_Hypoxia_Signature-Hypoxia_Signature_Buffa_et_al_2010",
+            "nGeneIds": 51,
+            "pmcid": "PMC6405289"
+          },
+          {
+            "id": "59975164-82c7-4fc6-bc8b-81655588bd5e",
+            "term": "Table_2.xlsx-Table_S1_The_differentially_exp-The_differentially_expressed_hypoxia_genes_between_BLCA_and_normal_tissues",
+            "nGeneIds": 94,
+            "pmcid": "PMC8415032"
+          },
+          {
+            "id": "59bb69fc-6c34-4045-aea7-cf4d88824715",
+            "term": "Table_1.xlsx-Nr_11_Curated_list_Hypoxiagenes-ID",
+            "nGeneIds": 44,
+            "pmcid": "PMC9922616"
+          },
+          {
+            "id": "59e645f0-f0b6-4a72-8347-ee1a1904d724",
+            "term": "41598_2024_56102_MOESM2_ESM.xlsx-Table_S2_Hypoxia_DEGs-gene_symbol",
+            "nGeneIds": 513,
+            "pmcid": "PMC10973515"
+          },
+          {
+            "id": "5a339496-c211-4d94-9aa0-4ba9a78f4f2a",
+            "term": "supp_073353.119_Supplemental_Tab_S7.xlsx-siMBNL2_Hypoxia_DEGs-gene_name",
+            "nGeneIds": 315,
+            "pmcid": "PMC7161353"
+          },
+          {
+            "id": "5b135c72-32f9-4296-8384-c70f46e48ea8",
+            "term": "41467_2022_33137_MOESM11_ESM.xlsx-SF4A_Combo_vs_Ro_Hypoxia_GSEA-RANK_IN_GENE_LIST",
+            "nGeneIds": 72,
+            "pmcid": "PMC9515221"
+          },
+          {
+            "id": "5b833d8d-317a-4a94-a59c-b34488602054",
+            "term": "41388_2018_400_MOESM8_ESM.xlsx-Notch_Genes_hyp-Genes_upregulated_2-fold_by_TMX-Notch_induction_in_Hypoxia",
+            "nGeneIds": 715,
+            "pmcid": "PMC6237764"
+          },
+          {
+            "id": "5bf73ccd-7070-4687-9f36-25671d4f9e3e",
+            "term": "12964_2025_2459_MOESM4_ESM.xlsx-HIF1_HIF2_miRNA_targets_CoCl2-HIF2_-related_miRNA_targets_expression_during_hypoxia_based_on_micorarray_FC",
+            "nGeneIds": 68,
+            "pmcid": "PMC12542114"
+          },
+          {
+            "id": "5c5c7dab-c501-470a-8112-3593acaa2233",
+            "term": "Table_1.xlsx-Nr_11_Curated_list_Hypoxiagenes-Gene_name",
+            "nGeneIds": 44,
+            "pmcid": "PMC9922616"
+          },
+          {
+            "id": "5c8c316e-e73f-4eb9-8bb8-7756ef5ba227",
+            "term": "13058_2022_1532_MOESM1_ESM.docx-2-Hypoxia-linked_DEGs",
+            "nGeneIds": 6,
+            "pmcid": "PMC9164406"
+          },
+          {
+            "id": "5e8df81a-e2c3-4cb0-80e7-c6622ccbf606",
+            "term": "Table_3.xlsx-Supplementary_Table_3-Hypoxia",
+            "nGeneIds": 113,
+            "pmcid": "PMC9358019"
+          },
+          {
+            "id": "5ece449f-8165-4825-9ead-6c49d69d362f",
+            "term": "ccr-21-3329_supplementary_tables_1-3_supp1-3.docx-1-Hypoxia",
+            "nGeneIds": 20,
+            "pmcid": "PMC9762333"
+          },
+          {
+            "id": "5ed65a26-76c1-45ef-b02c-cb866fd8886b",
+            "term": "41467_2024_54791_MOESM3_ESM.xlsx-Signalling_Pathways-HALLMARK_HYPOXIA",
+            "nGeneIds": 200,
+            "pmcid": "PMC11696141"
+          },
+          {
+            "id": "60ce80a8-729d-4772-b354-e093f0066199",
+            "term": "JEX2-3-e162-s001.docx-0-HYPOXIA_Genes_Fig_5F",
+            "nGeneIds": 12,
+            "pmcid": "PMC11386333"
+          },
+          {
+            "id": "60ddc2b8-39da-49f0-a2c5-51200a5282e7",
+            "term": "mmc2.xlsx-Hypoxia-Hypoxia",
+            "nGeneIds": 200,
+            "pmcid": "PMC9841165"
+          },
+          {
+            "id": "60df183e-504f-4cad-88d5-320d232d521b",
+            "term": "12964_2025_2459_MOESM4_ESM.xlsx-HIF1_HIF2_miRNA_targets_hyp-HIF2_-related_miRNA_targets_expression_during_hypoxia_based_on_micorarray_FC",
+            "nGeneIds": 89,
+            "pmcid": "PMC12542114"
+          },
+          {
+            "id": "614b7d93-c329-4b35-b1fb-86bb5e9bbdc4",
+            "term": "41467_2022_33137_MOESM12_ESM.xlsx-SF4A_Combo_over_Ro_HYPOXIA_GSEA-RANK_IN_GENE_LIST",
+            "nGeneIds": 72,
+            "pmcid": "PMC9515221"
+          },
+          {
+            "id": "6198fe56-de6f-4cd7-b1e6-80e1c18b95d8",
+            "term": "Table2.xlsx-Hypoxia_DEGs-gene",
+            "nGeneIds": 26,
+            "pmcid": "PMC11769819"
+          },
+          {
+            "id": "61bf5c01-b062-4560-83c8-13da9cf3590a",
+            "term": "12943_2023_1773_MOESM3_ESM.xlsx-HCT8_hypoxia_vs_normoxia-GeneName",
+            "nGeneIds": 1974,
+            "pmcid": "PMC10122405"
+          },
+          {
+            "id": "6228617b-6aa2-429f-9a41-acaca750c7ef",
+            "term": "crc-23-0236.nxml--Top_10_DEGs_from_DARs_in_Promoter_Regions_Upregulated_in_EA_under_Hypoxia",
+            "nGeneIds": 18,
+            "pmcid": "PMC10552704"
+          },
+          {
+            "id": "632c05aa-23dd-461a-b40e-4c7ec054bd9e",
+            "term": "Table2.XLSX-Sheet1-hypoxia_related_genes",
+            "nGeneIds": 200,
+            "pmcid": "PMC9573950"
+          },
+          {
+            "id": "6409122d-f575-4aab-b23c-3fbc77bf1b54",
+            "term": "ADVS-11-2307858-s002.xlsx-Sheet1-Supplementary_Table_1_Hypoxia-related_genes",
+            "nGeneIds": 201,
+            "pmcid": "PMC10870073"
+          },
+          {
+            "id": "6550fc74-0af8-497f-bf90-9d595f146ebb",
+            "term": "FEB4-11-2174-s005.xlsx-B-The_list_of_25_HIF-1_target_genes_upregulated_in_hypoxia",
+            "nGeneIds": 25,
+            "pmcid": "PMC8329784"
+          },
+          {
+            "id": "65b333a7-d80a-41a6-87b9-20742b82e3d5",
+            "term": "12967_2025_6861_MOESM2_ESM.xlsx-Sheet1-Hypoxia_Genes",
+            "nGeneIds": 15,
+            "pmcid": "PMC12406350"
+          },
+          {
+            "id": "65f2a4e7-a589-42ae-a697-15387ded102b",
+            "term": "NIHMS966841-supplement-Sup_Table_2.xlsx-HALLMARK_HYPOXIA_xls-PROBE",
+            "nGeneIds": 133,
+            "pmcid": "PMC6042247"
+          },
+          {
+            "id": "66157e43-2159-4626-95e1-cb6689c86b57",
+            "term": "41598_2025_20307_MOESM1_ESM.xlsx-Table_S6-Winter_hypoxia_signature",
+            "nGeneIds": 6,
+            "pmcid": "PMC12534490"
+          },
+          {
+            "id": "66a75742-61cc-4460-aa37-01396f0da812",
+            "term": "41598_2024_56102_MOESM2_ESM.xlsx-Table_S2_Hypoxia_DEGs-gene_symbol_2",
+            "nGeneIds": 154,
+            "pmcid": "PMC10973515"
+          },
+          {
+            "id": "66aa3db8-26f9-4ee8-97e0-e8a5527f1b21",
+            "term": "ncomms11371-s4.xlsx-Data-Hypoxia_regulates_global_membrane_protein_endocytosis_through_caveolin-1_in_cancer_cells",
+            "nGeneIds": 54,
+            "pmcid": "PMC4842985"
+          },
+          {
+            "id": "66c613a0-8239-469c-9886-36fb8992eca4",
+            "term": "Table_1.xlsx-Hypoxia_vs_Normoxia-Gene_SYMBOL",
+            "nGeneIds": 1843,
+            "pmcid": "PMC9909558"
+          },
+          {
+            "id": "66cadf7f-1512-4cef-80b5-fafab89782e5",
+            "term": "mmc12.xlsx-Table_S12-Table_S12_List_of_candidate_high-altitude_hypoxia_adaptive_genes_Related_to_Figures_5_and_6",
+            "nGeneIds": 12,
+            "pmcid": "PMC9958381"
+          },
+          {
+            "id": "670e879d-1789-4029-8722-60bbddb99725",
+            "term": "pwad027_suppl_supplementary_table_s1.xlsx-hVSMC_WT_hypoxia_vs_normoxia-GeneID",
+            "nGeneIds": 321,
+            "pmcid": "PMC10762672"
+          },
+          {
+            "id": "67e9bbc9-c3fe-4d42-95c8-b29d6dc337a0",
+            "term": "crc-22-0443-s03.xlsx-Supplemental_Table_3-Supplemental_Table_3_49-gene_hypoxia-immune_signature",
+            "nGeneIds": 49,
+            "pmcid": "PMC10202124"
+          },
+          {
+            "id": "68350133-677c-4215-8c69-2420dc976c62",
+            "term": "HEM3-8-e45-s002.xlsx-Additional_Hypoxia_Signatures-Unnamed_2",
+            "nGeneIds": 95,
+            "pmcid": "PMC10895904"
+          },
+          {
+            "id": "692e923d-eea3-46b6-8892-54a7c5e79ea8",
+            "term": "pone.0156259.s003.xlsx-Sheet1-S1_Table_List_of_422_candidate_reference_genes_selected_from_the_literature_and_their_association_to_hypoxia_and_clinical_parameters",
+            "nGeneIds": 405,
+            "pmcid": "PMC4887009"
+          },
+          {
+            "id": "69f39a66-e410-4abb-a653-3c8211181efc",
+            "term": "12920_2015_141_MOESM2_ESM.xlsx-Supp11_Hypoxia_Signalling-Hypoxia_Signalling_in_the_Cardiovascular_System_6",
+            "nGeneIds": 30,
+            "pmcid": "PMC4608219"
+          },
+          {
+            "id": "6a37f9ad-29f7-4c79-8f6f-1098c8dc2df2",
+            "term": "Table_1.xlsx-Hypoxia_SLC-0111_vs_DMSO-Gene_SYMBOL",
+            "nGeneIds": 290,
+            "pmcid": "PMC9909558"
+          },
+          {
+            "id": "6a9889ce-2186-4731-9d9d-d3c3ebc4f06c",
+            "term": "Table_1.xlsx-Hypoxia_and_CAF_signature-Nurmik_CAF_signature_8_genes",
+            "nGeneIds": 6,
+            "pmcid": "PMC8562720"
+          },
+          {
+            "id": "6e08e5f2-7ed6-4878-8cab-a9a1c5e44069",
+            "term": "HEM3-8-e45-s002.xlsx-Hypoxia_Signature-List_of_the_119_HIF1A-target_genes_used_to_defined_the_Hypoxia_signature_Percio_et_al_2014",
+            "nGeneIds": 124,
+            "pmcid": "PMC10895904"
+          },
+          {
+            "id": "6e890f8a-640d-4311-90ea-11f863302086",
+            "term": "41598_2022_15246_MOESM1_ESM.xlsx-ST_19-Supplementary_Table_19_Frequency_of_genetic_alterations_in_the_hypoxia-related_genes_of_1396_individuals_with_Tumor_Stage_I_across_17_cancer_types",
+            "nGeneIds": 233,
+            "pmcid": "PMC9246854"
+          },
+          {
+            "id": "6faf406c-8dcc-402a-86f6-c4ed6dbac739",
+            "term": "41467_2021_24232_MOESM13_ESM.xlsx-Hypoxia_human-gene",
+            "nGeneIds": 365,
+            "pmcid": "PMC8233314"
+          },
+          {
+            "id": "734d4ec0-c6a9-474b-9e87-898438b523fa",
+            "term": "pone.0322618.s005.xlsx-S1_Table-The_coefficient_of_each_gene_in_the_hypoxia_model",
+            "nGeneIds": 13,
+            "pmcid": "PMC12047781"
+          },
+          {
+            "id": "738de7f6-d73d-413c-b3f6-178d4fc6b1a1",
+            "term": "mr-31-27-s001.xlsx-Table_S2-HALLMARK_HYPOXIA",
+            "nGeneIds": 200,
+            "pmcid": "PMC7755667"
+          },
+          {
+            "id": "73a0822b-c1fe-42bc-af64-9f357fc32158",
+            "term": "MOL2-17-1041-s007.xlsx-Pathways_geneset-HALLMARK_HYPOXIA",
+            "nGeneIds": 200,
+            "pmcid": "PMC10257426"
+          },
+          {
+            "id": "74bbb894-7141-4fcb-8b4f-747915a52753",
+            "term": "Data_Sheet_1.docx-0-75_hypoxia-related_genes",
+            "nGeneIds": 15,
+            "pmcid": "PMC9148996"
+          },
+          {
+            "id": "757227fc-77a3-4647-a3a2-536b8eba01c6",
+            "term": "LSA-2019-00565_TableS5.xlsx-Sheet1-Supplemental_Table_S5_Hallmark_gene_set_analysis_for_up-regulated_proteins_in_hypoxia_compared_to_hypoxia_cystamine_condition",
+            "nGeneIds": 134,
+            "pmcid": "PMC7032569"
+          },
+          {
+            "id": "76a4b304-f85d-4f9b-886b-e6c074b73ae5",
+            "term": "MOL2-17-82-s005.xlsx-prog_matrix_hypoxia_t_stat-Supplementary_table_S6_List_of_hypoxia-related_genes_used_in_PROGENy_analysis",
+            "nGeneIds": 77,
+            "pmcid": "PMC9812841"
+          },
+          {
+            "id": "76ad4561-f2b0-4a34-8d7b-83843a1280a7",
+            "term": "Table_2.xlsx-Hypoxia-Gene_symbol",
+            "nGeneIds": 18,
+            "pmcid": "PMC10233025"
+          },
+          {
+            "id": "778e37db-e1d0-4c65-9ee9-0b8ca7c0b567",
+            "term": "41598_2022_15246_MOESM1_ESM.xlsx-ST_23-Supplementary_Table_23_Frequency_of_genetic_alterations_of_hypoxia-related_genes_per_metastasis_status",
+            "nGeneIds": 233,
+            "pmcid": "PMC9246854"
+          },
+          {
+            "id": "797ae8d9-f2ed-4117-9a63-507850a6e33d",
+            "term": "41419_2022_5053_MOESM7_ESM.xlsx-Group_M3-con-Hypoxia-VS-M3-CYB5-GeneID",
+            "nGeneIds": 1092,
+            "pmcid": "PMC9293983"
+          },
+          {
+            "id": "7aca856b-a6c0-4f6b-9e30-3352a72af845",
+            "term": "13059_2019_1651_MOESM7_ESM.xlsx-Hypoxia-gene",
+            "nGeneIds": 23,
+            "pmcid": "PMC6383285"
+          },
+          {
+            "id": "7b522501-10cf-4d80-a318-a1487fdac80c",
+            "term": "13073_2022_1109_MOESM1_ESM.xlsx-Table_S3-HYPOXIA",
+            "nGeneIds": 33,
+            "pmcid": "PMC9484143"
+          },
+          {
+            "id": "7bf0dd93-543d-47b0-a5c0-f614a63673ac",
+            "term": "41467_2025_63912_MOESM4_ESM.xlsx-Supplementary_Data_7-GM8_Hypoxia",
+            "nGeneIds": 35,
+            "pmcid": "PMC12501071"
+          },
+          {
+            "id": "7cba72c4-edd7-464b-b11f-b46a6a46ea56",
+            "term": "41467_2025_63315_MOESM5_ESM.xlsx-Supplementary_Data_3-Supplementary_Data_3_Hypoxia_gene_sets_Buffa_Winter",
+            "nGeneIds": 51,
+            "pmcid": "PMC12391393"
+          },
+          {
+            "id": "7db92149-0130-41dc-a3aa-06ed000633f2",
+            "term": "12964_2025_2459_MOESM5_ESM.xlsx-Figure_6B-The_targets_of_DMOG-induced_miRNA_that_were_HIF-2_dependent_and_significatly_reduced_upon_hypoxia_P_0_05",
+            "nGeneIds": 25,
+            "pmcid": "PMC12542114"
+          },
+          {
+            "id": "7e0ae0df-cbe5-40d8-bebe-cb0a1d043f8e",
+            "term": "43018_2025_963_MOESM14_ESM.xlsx-ED_Fig_3i_ref_markergenesetl-Karras_Stress_like_hypoxia",
+            "nGeneIds": 21,
+            "pmcid": "PMC12202500"
+          },
+          {
+            "id": "7e432a25-88e9-4f9f-a449-6799da9f69d3",
+            "term": "HEM3-8-e45-s002.xlsx-Additional_Hypoxia_Signatures-Additional_Hypoxia_Signatures",
+            "nGeneIds": 81,
+            "pmcid": "PMC10895904"
+          },
+          {
+            "id": "7ec017c8-fcf7-49fc-ae44-0774c718168f",
+            "term": "Table_3.xlsx-Sheet1-Network_Analyst_pathway_analysis_of_genes_targeted_by_miRs_differentially_regulated_in_hypoxia_in_all_three_canine_glioma_cell_lines_in_hypoxia",
+            "nGeneIds": 379,
+            "pmcid": "PMC7093022"
+          },
+          {
+            "id": "7ede90e8-a188-4762-a381-963e9501e644",
+            "term": "41598_2017_13905_MOESM8_ESM.xls-hypoxia_related_genes-Comparison_of_FPKM_values_from_liver_transcriptomic_data_of_BMR_R_and_NMR",
+            "nGeneIds": 33,
+            "pmcid": "PMC5662568"
+          },
+          {
+            "id": "7f891f03-b6f7-4337-b2b2-f9ea7db84ea1",
+            "term": "pwad027_suppl_supplementary_table_s1.xlsx-hVSMC_HIF1KO_vs_WT_in_hypoxia-GeneID",
+            "nGeneIds": 718,
+            "pmcid": "PMC10762672"
+          },
+          {
+            "id": "80b5f285-6966-46d8-8317-fe6dfcd90811",
+            "term": "41598_2025_20307_MOESM1_ESM.xlsx-Table_S6-Nature_metabolism_Hypoxia",
+            "nGeneIds": 15,
+            "pmcid": "PMC12534490"
+          },
+          {
+            "id": "81bac4a4-0427-42a5-9229-725d60066ea9",
+            "term": "pone.0011712.s008.xls-Gene_names-hypoxia",
+            "nGeneIds": 7,
+            "pmcid": "PMC2908611"
+          },
+          {
+            "id": "82039162-aea4-4d7a-a800-5d26828da8d1",
+            "term": "mmc5.xlsx-HYPOXIA_LC-MSMS_5468-PROBE",
+            "nGeneIds": 42,
+            "pmcid": "PMC6581744"
+          },
+          {
+            "id": "8278995a-24dc-4cdd-992f-601b978e5bb7",
+            "term": "1471-2105-11-43-S4.XLS-Hypoxia-Unnamed_0",
+            "nGeneIds": 19,
+            "pmcid": "PMC3224649"
+          },
+          {
+            "id": "83e2a8f8-d832-429f-8da6-83465f838da0",
+            "term": "aging-12-103626-s001..xlsx-Supplementary_Table_1-Supplementary_Table_2_The_list_of_259_GBM_specific_hypoxia-related_genes_HRGs",
+            "nGeneIds": 258,
+            "pmcid": "PMC7521504"
+          },
+          {
+            "id": "86d5c56c-5fd7-4e7d-87da-c474ce9058bd",
+            "term": "ANIE-64-e202416082-s001.pdf-24-Hypoxia",
+            "nGeneIds": 42,
+            "pmcid": "PMC11753601"
+          },
+          {
+            "id": "8715cc13-b8cc-4366-81de-c0b62583ce10",
+            "term": "CAM4-11-2329-s004.xlsx-Sheet1-Table_S5_174_hypoxia-associated_differentially_expressed_genes_in_TCGA-GEO_cohort",
+            "nGeneIds": 174,
+            "pmcid": "PMC9160815"
+          },
+          {
+            "id": "877c650b-caef-4626-9862-57b4a3587551",
+            "term": "pwad027_suppl_supplementary_table_s1.xlsx-hVEC_WT_hypoxia_vs_normoxia-Symbol",
+            "nGeneIds": 512,
+            "pmcid": "PMC10762672"
+          },
+          {
+            "id": "879403de-e4e0-4119-9163-99867fe57068",
+            "term": "41467_2023_42093_MOESM7_ESM.xlsx-Sheet1-HM_Hypoxia_200_PGK1",
+            "nGeneIds": 200,
+            "pmcid": "PMC10564744"
+          },
+          {
+            "id": "87ce9aa4-a63d-489a-b8a4-cdfc6410b1c9",
+            "term": "sxad088_suppl_supplementary_tables.pdf-28-cellular_response_to_hypoxia",
+            "nGeneIds": 11,
+            "pmcid": "PMC10852026"
+          },
+          {
+            "id": "89577040-f535-4b93-914d-6d3c8b7aaad7",
+            "term": "Table2.docx-0-Hypoxia_related_genes_5",
+            "nGeneIds": 102,
+            "pmcid": "PMC12358289"
+          },
+          {
+            "id": "8a3fc975-51a5-4b73-b2bd-8c2c0f3dae51",
+            "term": "12943_2023_1773_MOESM3_ESM.xlsx-DLD1_hypoxia_vs_normoxia-GeneName",
+            "nGeneIds": 2137,
+            "pmcid": "PMC10122405"
+          },
+          {
+            "id": "8abc9928-78a6-4d2b-b3d9-f836d30d309a",
+            "term": "elife-101299-supp11.xlsx-hypoxia_and_3D_selective_in_DEG-GTF2H5",
+            "nGeneIds": 26,
+            "pmcid": "PMC12055005"
+          },
+          {
+            "id": "8ae481bb-cbaa-4ee9-88b9-956263ed79f2",
+            "term": "mmc5.xlsx-Hypoxia-Significant_Regulator",
+            "nGeneIds": 7,
+            "pmcid": "PMC7468341"
+          },
+          {
+            "id": "8b0aeba7-3fac-4091-888a-23b7b99a820e",
+            "term": "Table_1.xlsx-Hypoxia-Gene_symbol",
+            "nGeneIds": 20,
+            "pmcid": "PMC10233025"
+          },
+          {
+            "id": "8c2e0f83-e92c-4be6-87e1-12f0d141cbe1",
+            "term": "42003_2022_4169_MOESM7_ESM.xlsx-SMCs_-_Hypoxia_vs_Normoxia-SYMBOL",
+            "nGeneIds": 1605,
+            "pmcid": "PMC9640600"
+          },
+          {
+            "id": "8c4502e1-62df-4884-8222-ba6a3e519250",
+            "term": "CTM2-14-e70023-s002.docx-1-Response_to_hypoxia",
+            "nGeneIds": 213,
+            "pmcid": "PMC11416080"
+          },
+          {
+            "id": "8c7cbbe7-f5fd-4e6d-ba99-5eab611bede6",
+            "term": "41467_2021_24631_MOESM5_ESM.xlsx-NormoxiaxHypoxia-Supplementary_Data_2",
+            "nGeneIds": 261,
+            "pmcid": "PMC8280233"
+          },
+          {
+            "id": "8caa6c7c-87e3-47ae-abd1-ff2d0c4d25c4",
+            "term": "Table_5.XLS-Table_S5_1-Table_S5_1_The_relationship_between_differentially_expressed_genes_involved_in_hypoxia_in_R_vs_S",
+            "nGeneIds": 16,
+            "pmcid": "PMC6883948"
+          },
+          {
+            "id": "8d6ca52e-f9c4-4768-a541-8f9a83875c65",
+            "term": "LSA-2019-00565_TableS6.xlsx-Sheet1-Supplemental_Table_S6_Hallmark_gene_set_analysis_for_up-regulated_proteins_in_hypoxia_cystamine_condition_compared_to_hypoxia",
+            "nGeneIds": 56,
+            "pmcid": "PMC7032569"
+          },
+          {
+            "id": "8da6d2ca-8cf5-4b2d-af25-6ba3ffb1d61d",
+            "term": "pwad027_suppl_supplementary_table_s1.xlsx-hVEC_HIF1KO_vs_WT_in_hypoxia-GeneID",
+            "nGeneIds": 477,
+            "pmcid": "PMC10762672"
+          },
+          {
+            "id": "8f3c30d5-1eb3-4979-9993-a4c642f7a3a5",
+            "term": "pcbi.1008338.s002.xlsx-Normaxia_vs_Hypoxia-geneName",
+            "nGeneIds": 43,
+            "pmcid": "PMC7598922"
+          },
+          {
+            "id": "8fc01ba8-f916-45c9-b805-1b413c8d6004",
+            "term": "Table1.xlsx-Table_S2-Table_S2_Fifteen_clinically_relevant_hypoxia-related_metagenes",
+            "nGeneIds": 15,
+            "pmcid": "PMC11479907"
+          },
+          {
+            "id": "90783308-69c2-439d-8018-cbd545b2901d",
+            "term": "MOL2-18-2111-s001.pdf-30-COAD_Hypoxia",
+            "nGeneIds": 6,
+            "pmcid": "PMC11467793"
+          },
+          {
+            "id": "91923853-a183-4b6a-ba22-436fd89e2405",
+            "term": "mmc1.xlsx-Table_S1-Hypoxia_Score",
+            "nGeneIds": 14,
+            "pmcid": "PMC11907465"
+          },
+          {
+            "id": "92eeab8d-109f-4ddc-a67b-aeb184a493ff",
+            "term": "HEM3-8-e45-s002.xlsx-Additional_Hypoxia_Signatures-Unnamed_1",
+            "nGeneIds": 36,
+            "pmcid": "PMC10895904"
+          },
+          {
+            "id": "92f407fd-6792-42ef-b9fb-67c4124c7761",
+            "term": "medi-100-e28237-s001.xlsx-Sheet1-Table_S1_26_Hypoxia-related_genes",
+            "nGeneIds": 25,
+            "pmcid": "PMC8677978"
+          },
+          {
+            "id": "9342d323-7ee7-4ea7-97ac-8ab23fd1b18c",
+            "term": "40425_2019_563_MOESM2_ESM.xlsx-IO_Signature-Hypoxia",
+            "nGeneIds": 11,
+            "pmcid": "PMC6457012"
+          },
+          {
+            "id": "94aba785-24f0-4bef-b6e2-498a556cbf58",
+            "term": "NIHMS808256-supplement-supp_table1.xlsx-EG1_Pathways_Down_-_Genes-Hypoxia",
+            "nGeneIds": 38,
+            "pmcid": "PMC5364060"
+          },
+          {
+            "id": "95ce45bd-28e8-483b-b127-2eec6deb429b",
+            "term": "12915_2021_1025_MOESM3_ESM.xlsx-Hypoxia_MCF7-Unnamed_1",
+            "nGeneIds": 12,
+            "pmcid": "PMC8142638"
+          },
+          {
+            "id": "985b001c-8068-43e3-83cc-e2730182e46a",
+            "term": "mmc1.xlsx-hypoxia-related_genes_info-Supplemental_table_1_Top_100_dysregulated_genes_between_hypoxic_and_normoxic_UM_tumours",
+            "nGeneIds": 96,
+            "pmcid": "PMC9232399"
+          }
+        ]
+      }
+    },
+    {
+      "tool": "query_string_rumma",
+      "payload": {
+        "results": [
+          {
+            "pmcid": "PMC7725834",
+            "title": "HIF1A signaling selectively supports proliferation of breast cancer in the brain",
+            "yr": 2020,
+            "doi": "10.1038/s41467-020-20144-w",
+            "id": "1c7c4695-7aa3-4023-93fd-a5cf0af6e13f",
+            "term": "PMC7725834-41467_2020_20144_MOESM5_ESM.xlsx-Sheet1-Gene",
+            "count": 12
+          }
+        ]
+      }
+    },
+    {
+      "tool": "gene_info",
+      "payload": {
+        "results": [
+          {
+            "symbol": "PGK1",
+            "name": "phosphoglycerate kinase 1",
+            "summary": "The protein encoded by this gene is a glycolytic enzyme that catalyzes the conversion of 1,3-diphosphoglycerate to 3-phosphoglycerate. The encoded protein may also act as a cofactor for polymerase alpha. Additionally, this protein is secre…",
+            "aliases": "HEL-S-68p; MIG10; PGKA",
+            "entrezgene": "5230",
+            "ensembl_gene": "ENSG00000102144",
+            "HGNC": "8896"
+          },
+          {
+            "symbol": "VEGFA",
+            "name": "vascular endothelial growth factor A",
+            "summary": "This gene is a member of the PDGF/VEGF growth factor family. It encodes a heparin-binding protein, which exists as a disulfide-linked homodimer. This growth factor induces proliferation and migration of vascular endothelial cells, and is e…",
+            "aliases": "L-VEGF; MVCD1; VEGF; VPF",
+            "entrezgene": "7422",
+            "ensembl_gene": "ENSG00000112715",
+            "HGNC": "12680"
+          },
+          {
+            "symbol": "SLC2A1",
+            "name": "solute carrier family 2 member 1",
+            "summary": "This gene encodes a major glucose transporter in the mammalian blood-brain barrier. The encoded protein is found primarily in the cell membrane and on the cell surface, where it can also function as a receptor for human T-cell leukemia vir…",
+            "aliases": "CSE; DYT17; DYT18; DYT9; EIG12; GLUT; GLUT-1; GLUT1; GLUT1DS; HTLVR; PED; SDCHCN",
+            "entrezgene": "6513",
+            "ensembl_gene": "ENSG00000117394",
+            "HGNC": "11005"
+          },
+          {
+            "symbol": "LDHA",
+            "name": "lactate dehydrogenase A",
+            "summary": "This gene encodes the A subunit of lactate dehydrogenase enzyme which catalyzes the reversible conversion of pyruvate to lactate with the concomitant oxidation of NADH to NAD in anaerobic glycolysis. The protein is found predominantly in s…",
+            "aliases": "GSD11; HEL-S-133P; LDHM; PIG19",
+            "entrezgene": "3939",
+            "ensembl_gene": "",
+            "HGNC": "6535"
+          },
+          {
+            "symbol": "PDK1",
+            "name": "pyruvate dehydrogenase kinase 1",
+            "summary": "Pyruvate dehydrogenase (PDH) is a mitochondrial multienzyme complex that catalyzes the oxidative decarboxylation of pyruvate and is one of the major enzymes responsible for the regulation of homeostasis of carbohydrate fuels in mammals. Th…",
+            "aliases": "",
+            "entrezgene": "5163",
+            "ensembl_gene": "ENSG00000152256",
+            "HGNC": "8809"
+          },
+          {
+            "symbol": "CA9",
+            "name": "carbonic anhydrase 9",
+            "summary": "Carbonic anhydrases (CAs) are a large family of zinc metalloenzymes that catalyze the reversible hydration of carbon dioxide. They participate in a variety of biological processes, including respiration, calcification, acid-base balance, b…",
+            "aliases": "CAIX; MN",
+            "entrezgene": "768",
+            "ensembl_gene": "ENSG00000107159",
+            "HGNC": "1383"
+          }
+        ]
+      }
+    },
+    {
+      "tool": "query_string_rumma",
+      "payload": {
+        "results": []
+      }
+    },
+    {
+      "tool": "sets_info_rumm",
+      "payload": {
+        "results": [
+          {
+            "symbol": "ACAA2",
+            "ncbiGeneId": 10449,
+            "description": "acetyl-CoA acyltransferase 2",
+            "summary": "The encoded protein catalyzes the last step of the mitochondrial fatty acid beta-oxidation spiral. Unlike most mitochondrial matrix proteins, it contains a non-cleavable amino-terminal targeting signal. [provided by RefSeq, Jul 2008]"
+          },
+          {
+            "symbol": "ADAM8",
+            "ncbiGeneId": 101,
+            "description": "ADAM metallopeptidase domain 8",
+            "summary": "This gene encodes a member of the ADAM (a disintegrin and metalloprotease domain) family. Members of this family are membrane-anchored proteins structurally related to snake venom disintegrins, and have been implicated in a variety of biol…"
+          },
+          {
+            "symbol": "ADO",
+            "ncbiGeneId": 84890,
+            "description": "2-aminoethanethiol dioxygenase",
+            "summary": "Human thiol dioxygenases include cysteine dioxygenase (CDO; MIM 603943) and cysteamine (2-aminoethanethiol) dioxygenase (ADO; EC 1.13.11.19). CDO adds 2 oxygen atoms to free cysteine, whereas ADO adds 2 oxygen atoms to free cysteamine to f…"
+          },
+          {
+            "symbol": "ADRB2",
+            "ncbiGeneId": 154,
+            "description": "adrenoceptor beta 2",
+            "summary": "This gene encodes beta-2-adrenergic receptor which is a member of the G protein-coupled receptor superfamily. This receptor is directly associated with one of its ultimate effectors, the class C L-type calcium channel Ca(V)1.2. This recept…"
+          },
+          {
+            "symbol": "AJUBA",
+            "ncbiGeneId": 84962,
+            "description": "ajuba LIM protein",
+            "summary": "Enables alpha-catenin binding activity and transcription corepressor activity. Involved in several processes, including negative regulation of hippo signaling; positive regulation of gene silencing by miRNA; and regulation of cellular resp…"
+          },
+          {
+            "symbol": "AK4",
+            "ncbiGeneId": 205,
+            "description": "adenylate kinase 4",
+            "summary": "This gene encodes a member of the adenylate kinase family of enzymes. The encoded protein is localized to the mitochondrial matrix. Adenylate kinases regulate the adenine and guanine nucleotide compositions within a cell by catalyzing the …"
+          },
+          {
+            "symbol": "AKT1",
+            "ncbiGeneId": 207,
+            "description": "AKT serine/threonine kinase 1",
+            "summary": "This gene encodes one of the three members of the human AKT serine-threonine protein kinase family which are often referred to as protein kinase B alpha, beta, and gamma. These highly similar AKT proteins all have an N-terminal pleckstrin …"
+          },
+          {
+            "symbol": "AQP1",
+            "ncbiGeneId": 358,
+            "description": "aquaporin 1 (Colton blood group)",
+            "summary": "This gene encodes a small integral membrane protein with six bilayer spanning domains that functions as a water channel protein. This protein permits passive transport of water along an osmotic gradient. This gene is a possible candidate f…"
+          },
+          {
+            "symbol": "AQP3",
+            "ncbiGeneId": 360,
+            "description": "aquaporin 3 (Gill blood group)",
+            "summary": "This gene encodes the water channel protein aquaporin 3. Aquaporins are a family of small integral membrane proteins related to the major intrinsic protein, also known as aquaporin 0. Aquaporin 3 is localized at the basal lateral membranes…"
+          },
+          {
+            "symbol": "ATF2",
+            "ncbiGeneId": 1386,
+            "description": "activating transcription factor 2",
+            "summary": "This gene encodes a transcription factor that is a member of the leucine zipper family of DNA binding proteins. The encoded protein has been identified as a moonlighting protein based on its ability to perform mechanistically distinct func…"
+          },
+          {
+            "symbol": "BAD",
+            "ncbiGeneId": 572,
+            "description": "BCL2 associated agonist of cell death",
+            "summary": "The protein encoded by this gene is a member of the BCL-2 family. BCL-2 family members are known to be regulators of programmed cell death. This protein positively regulates cell apoptosis by forming heterodimers with BCL-xL (B-cell lympho…"
+          },
+          {
+            "symbol": "BCL2",
+            "ncbiGeneId": 596,
+            "description": "BCL2 apoptosis regulator",
+            "summary": "This gene encodes an integral outer mitochondrial membrane protein that blocks the apoptotic death of some cells such as lymphocytes. Constitutive expression of BCL2, such as in the case of translocation of BCL2 to Ig heavy chain locus, is…"
+          },
+          {
+            "symbol": "BNIP3",
+            "ncbiGeneId": 664,
+            "description": "BCL2 interacting protein 3",
+            "summary": "This gene is encodes a mitochondrial protein that contains a BH3 domain and acts as a pro-apoptotic factor. The encoded protein interacts with anti-apoptotic proteins, including the E1B 19 kDa protein and Bcl2. This gene is silenced in tum…"
+          },
+          {
+            "symbol": "BNIP3L",
+            "ncbiGeneId": 665,
+            "description": "BCL2 interacting protein 3 like",
+            "summary": "This gene encodes a protein that belongs to the pro-apoptotic subfamily within the Bcl-2 family of proteins. The encoded protein binds to Bcl-2 and possesses the BH3 domain. The protein directly targets mitochondria and causes apoptotic ch…"
+          },
+          {
+            "symbol": "CBS",
+            "ncbiGeneId": 875,
+            "description": "cystathionine beta-synthase",
+            "summary": "The protein encoded by this gene acts as a homotetramer to catalyze the conversion of homocysteine to cystathionine, the first step in the transsulfuration pathway. The encoded protein is allosterically activated by adenosyl-methionine and…"
+          },
+          {
+            "symbol": "CD34",
+            "ncbiGeneId": 947,
+            "description": "CD34 molecule",
+            "summary": "The protein encoded by this gene may play a role in the attachment of stem cells to the bone marrow extracellular matrix or to stromal cells. This single-pass membrane protein is highly glycosylated and phosphorylated by protein kinase C. …"
+          },
+          {
+            "symbol": "CITED2",
+            "ncbiGeneId": 10370,
+            "description": "Cbp/p300 interacting transactivator with Glu/Asp rich carboxy-terminal domain 2",
+            "summary": "The protein encoded by this gene inhibits transactivation of HIF1A-induced genes by competing with binding of hypoxia-inducible factor 1-alpha to p300-CH1. Mutations in this gene are a cause of cardiac septal defects. Alternatively spliced…"
+          },
+          {
+            "symbol": "COMMD1",
+            "ncbiGeneId": 150684,
+            "description": "copper metabolism domain containing 1",
+            "summary": "Enables several functions, including phosphatidylinositol-3,4-bisphosphate binding activity; phospholipid binding activity; and protein homodimerization activity. Involved in several processes, including Golgi to plasma membrane transport;…"
+          },
+          {
+            "symbol": "CPEB1",
+            "ncbiGeneId": 64506,
+            "description": "cytoplasmic polyadenylation element binding protein 1",
+            "summary": "This gene encodes a member of the cytoplasmic polyadenylation element binding protein family. This highly conserved protein binds to a specific RNA sequence, called the cytoplasmic polyadenylation element, found in the 3' untranslated regi…"
+          },
+          {
+            "symbol": "CPEB2",
+            "ncbiGeneId": 132864,
+            "description": "cytoplasmic polyadenylation element binding protein 2",
+            "summary": "The protein encoded by this gene is highly similar to cytoplasmic polyadenylation element binding protein (CPEB), an mRNA-binding protein that regulates cytoplasmic polyadenylation of mRNA as a trans factor in oogenesis and spermatogenesis…"
+          },
+          {
+            "symbol": "CR1L",
+            "ncbiGeneId": 1379,
+            "description": "complement C3b/C4b receptor 1 like",
+            "summary": "Acts upstream of or within regulation of complement activation and regulation of complement-dependent cytotoxicity. Part of receptor complex. [provided by Alliance of Genome Resources, Apr 2022]"
+          },
+          {
+            "symbol": "CYBB",
+            "ncbiGeneId": 1536,
+            "description": "cytochrome b-245 beta chain",
+            "summary": "Cytochrome b (-245) is composed of cytochrome b alpha (CYBA) and beta (CYBB) chain. It has been proposed as a primary component of the microbicidal oxidase system of phagocytes. CYBB deficiency is one of five described biochemical defects …"
+          },
+          {
+            "symbol": "DDAH1",
+            "ncbiGeneId": 23576,
+            "description": "dimethylarginine dimethylaminohydrolase 1",
+            "summary": "This gene belongs to the dimethylarginine dimethylaminohydrolase (DDAH) gene family. The encoded enzyme plays a role in nitric oxide generation by regulating cellular concentrations of methylarginines, which in turn inhibit nitric oxide sy…"
+          },
+          {
+            "symbol": "EGLN1",
+            "ncbiGeneId": 54583,
+            "description": "egl-9 family hypoxia inducible factor 1",
+            "summary": "The protein encoded by this gene catalyzes the post-translational formation of 4-hydroxyproline in hypoxia-inducible factor (HIF) alpha proteins. HIF is a transcriptional complex that plays a central role in mammalian oxygen homeostasis. T…"
+          },
+          {
+            "symbol": "EGLN2",
+            "ncbiGeneId": 112398,
+            "description": "egl-9 family hypoxia inducible factor 2",
+            "summary": "The hypoxia inducible factor (HIF) is a transcriptional complex that is involved in oxygen homeostasis. At normal oxygen levels, the alpha subunit of HIF is targeted for degration by prolyl hydroxylation. This gene encodes an enzyme respon…"
+          },
+          {
+            "symbol": "EGLN3",
+            "ncbiGeneId": 112399,
+            "description": "egl-9 family hypoxia inducible factor 3",
+            "summary": "Enables peptidyl-proline 4-dioxygenase activity. Involved in several processes, including activation of cysteine-type endopeptidase activity involved in apoptotic process; peptidyl-proline hydroxylation to 4-hydroxy-L-proline; and response…"
+          },
+          {
+            "symbol": "EGR1",
+            "ncbiGeneId": 1958,
+            "description": "early growth response 1",
+            "summary": "The protein encoded by this gene belongs to the EGR family of C2H2-type zinc-finger proteins. It is a nuclear protein and functions as a transcriptional regulator. The products of target genes it activates are required for differentitation…"
+          },
+          {
+            "symbol": "EIF4EBP1",
+            "ncbiGeneId": 1978,
+            "description": "eukaryotic translation initiation factor 4E binding protein 1",
+            "summary": "This gene encodes one member of a family of translation repressor proteins. The protein directly interacts with eukaryotic translation initiation factor 4E (eIF4E), which is a limiting component of the multisubunit complex that recruits 40…"
+          },
+          {
+            "symbol": "ENO1",
+            "ncbiGeneId": 2023,
+            "description": "enolase 1",
+            "summary": "This gene encodes alpha-enolase, one of three enolase isoenzymes found in mammals. Each isoenzyme is a homodimer composed of 2 alpha, 2 gamma, or 2 beta subunits, and functions as a glycolytic enzyme. Alpha-enolase in addition, functions a…"
+          },
+          {
+            "symbol": "EP300",
+            "ncbiGeneId": 2033,
+            "description": "E1A binding protein p300",
+            "summary": "This gene encodes the adenovirus E1A-associated cellular p300 transcriptional co-activator protein. It functions as histone acetyltransferase that regulates transcription via chromatin remodeling and is important in the processes of cell p…"
+          },
+          {
+            "symbol": "EPAS1",
+            "ncbiGeneId": 2034,
+            "description": "endothelial PAS domain protein 1",
+            "summary": "This gene encodes a transcription factor involved in the induction of genes regulated by oxygen, which is induced as oxygen levels fall. The encoded protein contains a basic-helix-loop-helix domain protein dimerization domain as well as a …"
+          },
+          {
+            "symbol": "EPHA4",
+            "ncbiGeneId": 2043,
+            "description": "EPH receptor A4",
+            "summary": "This gene belongs to the ephrin receptor subfamily of the protein-tyrosine kinase family. EPH and EPH-related receptors have been implicated in mediating developmental events, particularly in the nervous system. Receptors in the EPH subfam…"
+          },
+          {
+            "symbol": "FABP1",
+            "ncbiGeneId": 2168,
+            "description": "fatty acid binding protein 1",
+            "summary": "This gene encodes the fatty acid binding protein found in liver. Fatty acid binding proteins are a family of small, highly conserved, cytoplasmic proteins that bind long-chain fatty acids and other hydrophobic ligands. This protein and FAB…"
+          },
+          {
+            "symbol": "FAM162A",
+            "ncbiGeneId": 26355,
+            "description": "family with sequence similarity 162 member A",
+            "summary": "Involved in several processes, including activation of cysteine-type endopeptidase activity involved in apoptotic process; cellular response to hypoxia; and positive regulation of release of cytochrome c from mitochondria. Located in cytos…"
+          },
+          {
+            "symbol": "FMN2",
+            "ncbiGeneId": 56776,
+            "description": "formin 2",
+            "summary": "This gene is a member of the formin homology protein family. The encoded protein is thought to have essential roles in organization of the actin cytoskeleton and in cell polarity. This protein mediates the formation of an actin mesh that p…"
+          },
+          {
+            "symbol": "FNDC1",
+            "ncbiGeneId": 84624,
+            "description": "fibronectin type III domain containing 1",
+            "summary": "Predicted to act upstream of or within several processes, including cellular response to hypoxia; positive regulation of cardiac muscle cell apoptotic process; and positive regulation of protein phosphorylation. Located in nuclear speck. […"
+          },
+          {
+            "symbol": "GATA6",
+            "ncbiGeneId": 2627,
+            "description": "GATA binding protein 6",
+            "summary": "This gene is a member of a small family of zinc finger transcription factors that play an important role in the regulation of cellular differentiation and organogenesis during vertebrate development. This gene is expressed during early emb…"
+          },
+          {
+            "symbol": "GNB1",
+            "ncbiGeneId": 2782,
+            "description": "G protein subunit beta 1",
+            "summary": "Heterotrimeric guanine nucleotide-binding proteins (G proteins), which integrate signals between receptors and effector proteins, are composed of an alpha, a beta, and a gamma subunit. These subunits are encoded by families of related gene…"
+          },
+          {
+            "symbol": "GNGT1",
+            "ncbiGeneId": 2792,
+            "description": "G protein subunit gamma transducin 1",
+            "summary": "This gene encodes the gamma subunit of transducin, a guanine nucleotide-binding protein (G protein) that is found in rod outer segments. Transducin, also known as GMPase, mediates the activation of a cyclic GTP-specific (guanosine monophos…"
+          },
+          {
+            "symbol": "HIF1A",
+            "ncbiGeneId": 3091,
+            "description": "hypoxia inducible factor 1 subunit alpha",
+            "summary": "This gene encodes the alpha subunit of transcription factor hypoxia-inducible factor-1 (HIF-1), which is a heterodimer composed of an alpha and a beta subunit. HIF-1 functions as a master regulator of cellular and systemic homeostatic resp…"
+          },
+          {
+            "symbol": "HIF3A",
+            "ncbiGeneId": 64344,
+            "description": "hypoxia inducible factor 3 subunit alpha",
+            "summary": "The protein encoded by this gene is the alpha-3 subunit of one of several alpha/beta-subunit heterodimeric transcription factors that regulate many adaptive responses to low oxygen tension (hypoxia). The alpha-3 subunit lacks the transacti…"
+          },
+          {
+            "symbol": "HIGD1A",
+            "ncbiGeneId": 25994,
+            "description": "HIG1 hypoxia inducible domain family member 1A",
+            "summary": "Acts upstream of or within negative regulation of apoptotic process. Located in mitochondrion and nucleoplasm. Part of protein-containing complex. [provided by Alliance of Genome Resources, Apr 2022]"
+          },
+          {
+            "symbol": "HP1BP3",
+            "ncbiGeneId": 50809,
+            "description": "heterochromatin protein 1 binding protein 3",
+            "summary": "Enables DNA binding activity and nucleosome binding activity. Involved in several processes, including cellular response to hypoxia; heterochromatin organization; and regulation of nucleus size. Located in chromosome and nuclear speck. [pr…"
+          },
+          {
+            "symbol": "HYOU1",
+            "ncbiGeneId": 10525,
+            "description": "hypoxia up-regulated 1",
+            "summary": "The protein encoded by this gene belongs to the heat shock protein 70 family. This gene uses alternative transcription start sites. A cis-acting segment found in the 5' UTR is involved in stress-dependent induction, resulting in the accumu…"
+          },
+          {
+            "symbol": "KCND2",
+            "ncbiGeneId": 3751,
+            "description": "potassium voltage-gated channel subfamily D member 2",
+            "summary": "Voltage-gated potassium (Kv) channels represent the most complex class of voltage-gated ion channels from both functional and structural standpoints. Their diverse functions include regulating neurotransmitter release, heart rate, insulin …"
+          },
+          {
+            "symbol": "KCNK2",
+            "ncbiGeneId": 3776,
+            "description": "potassium two pore domain channel subfamily K member 2",
+            "summary": "This gene encodes one of the members of the two-pore-domain background potassium channel protein family. This type of potassium channel is formed by two homodimers that create a channel that leaks potassium out of the cell to control resti…"
+          },
+          {
+            "symbol": "KCNK3",
+            "ncbiGeneId": 3777,
+            "description": "potassium two pore domain channel subfamily K member 3",
+            "summary": "This gene encodes a member of the superfamily of potassium channel proteins that contain two pore-forming P domains. The encoded protein is an outwardly rectifying channel that is sensitive to changes in extracellular pH and is inhibited b…"
+          },
+          {
+            "symbol": "KDM6A",
+            "ncbiGeneId": 7403,
+            "description": "lysine demethylase 6A",
+            "summary": "This gene is located on the X chromosome and is the corresponding locus to a Y-linked gene which encodes a tetratricopeptide repeat (TPR) protein. The encoded protein of this gene contains a JmjC-domain and catalyzes the demethylation of t…"
+          },
+          {
+            "symbol": "MAP2K1",
+            "ncbiGeneId": 5604,
+            "description": "mitogen-activated protein kinase kinase 1",
+            "summary": "The protein encoded by this gene is a member of the dual specificity protein kinase family, which acts as a mitogen-activated protein (MAP) kinase kinase. MAP kinases, also known as extracellular signal-regulated kinases (ERKs), act as an …"
+          },
+          {
+            "symbol": "MGARP",
+            "ncbiGeneId": 84709,
+            "description": "mitochondria localized glutamic acid rich protein",
+            "summary": "Predicted to be involved in several processes, including axonal transport; cellular response to hormone stimulus; and protein targeting to mitochondrion. Located in mitochondrion. [provided by Alliance of Genome Resources, Apr 2022]"
+          },
+          {
+            "symbol": "MLST8",
+            "ncbiGeneId": 64223,
+            "description": "MTOR associated protein, LST8 homolog",
+            "summary": "Enables protein serine/threonine kinase activator activity. Involved in TORC1 signaling; positive regulation of TOR signaling; and regulation of actin cytoskeleton organization. Part of TORC1 complex and TORC2 complex. [provided by Allianc…"
+          },
+          {
+            "symbol": "MTOR",
+            "ncbiGeneId": 2475,
+            "description": "mechanistic target of rapamycin kinase",
+            "summary": "The protein encoded by this gene belongs to a family of phosphatidylinositol kinase-related kinases. These kinases mediate cellular responses to stresses such as DNA damage and nutrient deprivation. This kinase is a component of two distin…"
+          },
+          {
+            "symbol": "MYC",
+            "ncbiGeneId": 4609,
+            "description": "MYC proto-oncogene, bHLH transcription factor",
+            "summary": "This gene is a proto-oncogene and encodes a nuclear phosphoprotein that plays a role in cell cycle progression, apoptosis and cellular transformation. The encoded protein forms a heterodimer with the related transcription factor MAX. This …"
+          },
+          {
+            "symbol": "NDNF",
+            "ncbiGeneId": 79625,
+            "description": "neuron derived neurotrophic factor",
+            "summary": "Predicted to enable heparin binding activity. Involved in several processes, including cellular response to hypoxia; negative regulation of apoptotic process; and nitric oxide mediated signal transduction. Located in extracellular space. I…"
+          },
+          {
+            "symbol": "NDP",
+            "ncbiGeneId": 4693,
+            "description": "norrin cystine knot growth factor NDP",
+            "summary": "This gene encodes a secreted protein with a cystein-knot motif that activates the Wnt/beta-catenin pathway. The protein forms disulfide-linked oligomers in the extracellular matrix. Mutations in this gene result in Norrie disease and X-lin…"
+          },
+          {
+            "symbol": "NFE2L2",
+            "ncbiGeneId": 4780,
+            "description": "NFE2 like bZIP transcription factor 2",
+            "summary": "This gene encodes a transcription factor which is a member of a small family of basic leucine zipper (bZIP) proteins. The encoded transcription factor regulates genes which contain antioxidant response elements (ARE) in their promoters; ma…"
+          },
+          {
+            "symbol": "NKX3-1",
+            "ncbiGeneId": 4824,
+            "description": "NK3 homeobox 1",
+            "summary": "This gene encodes a homeobox-containing transcription factor. This transcription factor functions as a negative regulator of epithelial cell growth in prostate tissue. Aberrant expression of this gene is associated with prostate tumor prog…"
+          },
+          {
+            "symbol": "NOL3",
+            "ncbiGeneId": 8996,
+            "description": "nucleolar protein 3",
+            "summary": "This gene encodes an anti-apoptotic protein that has been shown to down-regulate the enzyme activities of caspase 2, caspase 8 and tumor protein p53. Multiple transcript variants encoding different isoforms have been found for this gene. […"
+          },
+          {
+            "symbol": "NOP53",
+            "ncbiGeneId": 29997,
+            "description": "NOP53 ribosome biogenesis factor",
+            "summary": "Enables 5S rRNA binding activity; identical protein binding activity; and p53 binding activity. Involved in several processes, including negative regulation of transcription, DNA-templated; regulation of cellular protein metabolic process;…"
+          },
+          {
+            "symbol": "NOTCH1",
+            "ncbiGeneId": 4851,
+            "description": "notch receptor 1",
+            "summary": "This gene encodes a member of the NOTCH family of proteins. Members of this Type I transmembrane protein family share structural characteristics including an extracellular domain consisting of multiple epidermal growth factor-like (EGF) re…"
+          },
+          {
+            "symbol": "NPEPPS",
+            "ncbiGeneId": 9520,
+            "description": "aminopeptidase puromycin sensitive",
+            "summary": "This gene encodes the puromycin-sensitive aminopeptidase, a zinc metallopeptidase which hydrolyzes amino acids from the N-terminus of its substrate. The protein has been localized to both the cytoplasm and to cellular membranes. This enzym…"
+          },
+          {
+            "symbol": "OGT",
+            "ncbiGeneId": 8473,
+            "description": "O-linked N-acetylglucosamine (GlcNAc) transferase",
+            "summary": "This gene encodes a glycosyltransferase that catalyzes the addition of a single N-acetylglucosamine in O-glycosidic linkage to serine or threonine residues. Since both phosphorylation and glycosylation compete for similar serine or threoni…"
+          },
+          {
+            "symbol": "OPRD1",
+            "ncbiGeneId": 4985,
+            "description": "opioid receptor delta 1",
+            "summary": "Enables G protein-coupled enkephalin receptor activity. Involved in several processes, including G protein-coupled opioid receptor signaling pathway; cellular response to hypoxia; and positive regulation of peptidyl-serine phosphorylation.…"
+          },
+          {
+            "symbol": "P4HB",
+            "ncbiGeneId": 5034,
+            "description": "prolyl 4-hydroxylase subunit beta",
+            "summary": "This gene encodes the beta subunit of prolyl 4-hydroxylase, a highly abundant multifunctional enzyme that belongs to the protein disulfide isomerase family. When present as a tetramer consisting of two alpha and two beta subunits, this enz…"
+          },
+          {
+            "symbol": "PDK1",
+            "ncbiGeneId": 5163,
+            "description": "pyruvate dehydrogenase kinase 1",
+            "summary": "Pyruvate dehydrogenase (PDH) is a mitochondrial multienzyme complex that catalyzes the oxidative decarboxylation of pyruvate and is one of the major enzymes responsible for the regulation of homeostasis of carbohydrate fuels in mammals. Th…"
+          },
+          {
+            "symbol": "PDK3",
+            "ncbiGeneId": 5165,
+            "description": "pyruvate dehydrogenase kinase 3",
+            "summary": "The pyruvate dehydrogenase (PDH) complex is a nuclear-encoded mitochondrial multienzyme complex that catalyzes the overall conversion of pyruvate to acetyl-CoA and CO(2). It provides the primary link between glycolysis and the tricarboxyli…"
+          },
+          {
+            "symbol": "PGK1",
+            "ncbiGeneId": 5230,
+            "description": "phosphoglycerate kinase 1",
+            "summary": "The protein encoded by this gene is a glycolytic enzyme that catalyzes the conversion of 1,3-diphosphoglycerate to 3-phosphoglycerate. The encoded protein may also act as a cofactor for polymerase alpha. Additionally, this protein is secre…"
+          },
+          {
+            "symbol": "PIK3CB",
+            "ncbiGeneId": 5291,
+            "description": "phosphatidylinositol-4,5-bisphosphate 3-kinase catalytic subunit beta",
+            "summary": "This gene encodes an isoform of the catalytic subunit of phosphoinositide 3-kinase (PI3K). These kinases are important in signaling pathways involving receptors on the outer membrane of eukaryotic cells and are named for their catalytic su…"
+          },
+          {
+            "symbol": "PINK1",
+            "ncbiGeneId": 65018,
+            "description": "PTEN induced kinase 1",
+            "summary": "This gene encodes a serine/threonine protein kinase that localizes to mitochondria. It is thought to protect cells from stress-induced mitochondrial dysfunction. Mutations in this gene cause one form of autosomal recessive early-onset Park…"
+          },
+          {
+            "symbol": "PLK3",
+            "ncbiGeneId": 1263,
+            "description": "polo like kinase 3",
+            "summary": "The protein encoded by this gene is a member of the highly conserved polo-like kinase family of serine/threonine kinases. Members of this family are characterized by an amino-terminal kinase domain and a carboxy-terminal bipartite polo box…"
+          },
+          {
+            "symbol": "PPARD",
+            "ncbiGeneId": 5467,
+            "description": "peroxisome proliferator activated receptor delta",
+            "summary": "This gene encodes a member of the peroxisome proliferator-activated receptor (PPAR) family. The encoded protein is thought to function as an integrator of transcriptional repression and nuclear receptor signaling. It may inhibit the ligand…"
+          },
+          {
+            "symbol": "PPARG",
+            "ncbiGeneId": 5468,
+            "description": "peroxisome proliferator activated receptor gamma",
+            "summary": "This gene encodes a member of the peroxisome proliferator-activated receptor (PPAR) subfamily of nuclear receptors. PPARs form heterodimers with retinoid X receptors (RXRs) and these heterodimers regulate transcription of various genes. Th…"
+          },
+          {
+            "symbol": "PRKCE",
+            "ncbiGeneId": 5581,
+            "description": "protein kinase C epsilon",
+            "summary": "Protein kinase C (PKC) is a family of serine- and threonine-specific protein kinases that can be activated by calcium and the second messenger diacylglycerol. PKC family members phosphorylate a wide variety of protein targets and are known…"
+          },
+          {
+            "symbol": "PTEN",
+            "ncbiGeneId": 5728,
+            "description": "phosphatase and tensin homolog",
+            "summary": "This gene was identified as a tumor suppressor that is mutated in a large number of cancers at high frequency. The protein encoded by this gene is a phosphatidylinositol-3,4,5-trisphosphate 3-phosphatase. It contains a tensin like domain a…"
+          },
+          {
+            "symbol": "PTGIS",
+            "ncbiGeneId": 5740,
+            "description": "prostaglandin I2 synthase",
+            "summary": "This gene encodes a member of the cytochrome P450 superfamily of enzymes. The cytochrome P450 proteins are monooxygenases which catalyze many reactions involved in drug metabolism and synthesis of cholesterol, steroids and other lipids. Ho…"
+          },
+          {
+            "symbol": "RBPJ",
+            "ncbiGeneId": 3516,
+            "description": "recombination signal binding protein for immunoglobulin kappa J region",
+            "summary": "The protein encoded by this gene is a transcriptional regulator important in the Notch signaling pathway. The encoded protein acts as a repressor when not bound to Notch proteins and an activator when bound to Notch proteins. It is thought…"
+          },
+          {
+            "symbol": "RGCC",
+            "ncbiGeneId": 28984,
+            "description": "regulator of cell cycle",
+            "summary": "This gene is thought to regulate cell cycle progression. It is induced by p53 in response to DNA damage, or by sublytic levels of complement system proteins that result in activation of the cell cycle. The encoded protein localizes to the …"
+          },
+          {
+            "symbol": "ROCK2",
+            "ncbiGeneId": 9475,
+            "description": "Rho associated coiled-coil containing protein kinase 2",
+            "summary": "The protein encoded by this gene is a serine/threonine kinase that regulates cytokinesis, smooth muscle contraction, the formation of actin stress fibers and focal adhesions, and the activation of the c-fos serum response element. This pro…"
+          },
+          {
+            "symbol": "RORA",
+            "ncbiGeneId": 6095,
+            "description": "RAR related orphan receptor A",
+            "summary": "The protein encoded by this gene is a member of the NR1 subfamily of nuclear hormone receptors. It can bind as a monomer or as a homodimer to hormone response elements upstream of several genes to enhance the expression of those genes. The…"
+          },
+          {
+            "symbol": "RPTOR",
+            "ncbiGeneId": 57521,
+            "description": "regulatory associated protein of MTOR complex 1",
+            "summary": "This gene encodes a component of a signaling pathway that regulates cell growth in response to nutrient and insulin levels. The encoded protein forms a stoichiometric complex with the mTOR kinase, and also associates with eukaryotic initia…"
+          },
+          {
+            "symbol": "RTN4",
+            "ncbiGeneId": 57142,
+            "description": "reticulon 4",
+            "summary": "This gene belongs to the family of reticulon encoding genes. Reticulons are associated with the endoplasmic reticulum, and are involved in neuroendocrine secretion or in membrane trafficking in neuroendocrine cells. The product of this gen…"
+          },
+          {
+            "symbol": "RWDD3",
+            "ncbiGeneId": 25950,
+            "description": "RWD domain containing 3",
+            "summary": "Involved in negative regulation of NF-kappaB transcription factor activity; positive regulation of hypoxia-inducible factor-1alpha signaling pathway; and positive regulation of protein sumoylation. Predicted to be located in cytoplasm and …"
+          },
+          {
+            "symbol": "SCN2A",
+            "ncbiGeneId": 6326,
+            "description": "sodium voltage-gated channel alpha subunit 2",
+            "summary": "Voltage-gated sodium channels are transmembrane glycoprotein complexes composed of a large alpha subunit with four repeat domains, each of which is composed of six membrane-spanning segments, and one or more regulatory beta subunits. Volta…"
+          },
+          {
+            "symbol": "SDHD",
+            "ncbiGeneId": 6392,
+            "description": "succinate dehydrogenase complex subunit D",
+            "summary": "This gene encodes a member of complex II of the respiratory chain, which is responsible for the oxidation of succinate. The encoded protein is one of two integral membrane proteins anchoring the complex to the matrix side of the mitochondr…"
+          },
+          {
+            "symbol": "SIRT1",
+            "ncbiGeneId": 23411,
+            "description": "sirtuin 1",
+            "summary": "This gene encodes a member of the sirtuin family of proteins, homologs to the yeast Sir2 protein. Members of the sirtuin family are characterized by a sirtuin core domain and grouped into four classes. The functions of human sirtuins have …"
+          },
+          {
+            "symbol": "SIRT2",
+            "ncbiGeneId": 22933,
+            "description": "sirtuin 2",
+            "summary": "This gene encodes a member of the sirtuin family of proteins, homologs to the yeast Sir2 protein. Members of the sirtuin family are characterized by a sirtuin core domain and grouped into four classes. The functions of human sirtuins have …"
+          },
+          {
+            "symbol": "SLC2A4",
+            "ncbiGeneId": 6517,
+            "description": "solute carrier family 2 member 4",
+            "summary": "This gene is a member of the solute carrier family 2 (facilitated glucose transporter) family and encodes a protein that functions as an insulin-regulated facilitative glucose transporter. In the absence of insulin, this integral membrane …"
+          },
+          {
+            "symbol": "SLC8A3",
+            "ncbiGeneId": 6547,
+            "description": "solute carrier family 8 member A3",
+            "summary": "This gene encodes a member of the sodium/calcium exchanger integral membrane protein family. Na+/Ca2+ exchange proteins are involved in maintaining Ca2+ homeostasis in a wide variety of cell types. The protein is regulated by intracellular…"
+          },
+          {
+            "symbol": "SLC9A1",
+            "ncbiGeneId": 6548,
+            "description": "solute carrier family 9 member A1",
+            "summary": "This gene encodes a Na+/H+ antiporter that is a member of the solute carrier family 9. The encoded protein is a plasma membrane transporter that is expressed in the kidney and intestine. This protein plays a central role in regulating pH h…"
+          },
+          {
+            "symbol": "STOX1",
+            "ncbiGeneId": 219736,
+            "description": "storkhead box 1",
+            "summary": "Enables RNA polymerase II transcription regulatory region sequence-specific DNA binding activity. Involved in several processes, including positive regulation of G2/M transition of mitotic cell cycle; positive regulation of protein phospho…"
+          },
+          {
+            "symbol": "STUB1",
+            "ncbiGeneId": 10273,
+            "description": "STIP1 homology and U-box containing protein 1",
+            "summary": "This gene encodes a protein containing tetratricopeptide repeat and a U-box that functions as a ubiquitin ligase/cochaperone. The encoded protein binds to and ubiquitinates shock cognate 71 kDa protein (Hspa8) and DNA polymerase beta (Polb…"
+          },
+          {
+            "symbol": "SUV39H1",
+            "ncbiGeneId": 6839,
+            "description": "SUV39H1 histone lysine methyltransferase",
+            "summary": "This gene encodes an evolutionarily-conserved protein containing an N-terminal chromodomain and a C-terminal SET domain. The encoded protein is a histone methyltransferase that trimethylates lysine 9 of histone H3, which results in transcr…"
+          },
+          {
+            "symbol": "SUV39H2",
+            "ncbiGeneId": 79723,
+            "description": "SUV39H2 histone lysine methyltransferase",
+            "summary": "Enables S-adenosyl-L-methionine binding activity; histone methyltransferase activity (H3-K9 specific); and zinc ion binding activity. Involved in chromatin assembly or disassembly and chromatin remodeling. Acts upstream of or within cellul…"
+          },
+          {
+            "symbol": "TBL2",
+            "ncbiGeneId": 26608,
+            "description": "transducin beta like 2",
+            "summary": "This gene encodes a member of the beta-transducin protein family. Most proteins of the beta-transducin family are involved in regulatory functions. This protein is possibly involved in some intracellular signaling pathway. This gene is del…"
+          },
+          {
+            "symbol": "TERT",
+            "ncbiGeneId": 7015,
+            "description": "telomerase reverse transcriptase",
+            "summary": "Telomerase is a ribonucleoprotein polymerase that maintains telomere ends by addition of the telomere repeat TTAGGG. The enzyme consists of a protein component with reverse transcriptase activity, encoded by this gene, and an RNA component…"
+          },
+          {
+            "symbol": "TIGAR",
+            "ncbiGeneId": 57103,
+            "description": "TP53 induced glycolysis regulatory phosphatase",
+            "summary": "This gene is regulated as part of the p53 tumor suppressor pathway and encodes a protein with sequence similarity to the bisphosphate domain of the glycolytic enzyme that degrades fructose-2,6-bisphosphate. The protein functions by blockin…"
+          },
+          {
+            "symbol": "TMBIM6",
+            "ncbiGeneId": 7009,
+            "description": "transmembrane BAX inhibitor motif containing 6",
+            "summary": "Enables endoribonuclease inhibitor activity and ubiquitin protein ligase binding activity. Involved in several processes, including negative regulation of RNA metabolic process; negative regulation of intrinsic apoptotic signaling pathway;…"
+          },
+          {
+            "symbol": "TREM2",
+            "ncbiGeneId": 54209,
+            "description": "triggering receptor expressed on myeloid cells 2",
+            "summary": "This gene encodes a membrane protein that forms a receptor signaling complex with the TYRO protein tyrosine kinase binding protein. The encoded protein functions in immune response and may be involved in chronic inflammation by triggering …"
+          },
+          {
+            "symbol": "TP53",
+            "ncbiGeneId": 7157,
+            "description": "tumor protein p53",
+            "summary": "This gene encodes a tumor suppressor protein containing transcriptional activation, DNA binding, and oligomerization domains. The encoded protein responds to diverse cellular stresses to regulate expression of target genes, thereby inducin…"
+          },
+          {
+            "symbol": "TWIST1",
+            "ncbiGeneId": 7291,
+            "description": "twist family bHLH transcription factor 1",
+            "summary": "This gene encodes a basic helix-loop-helix (bHLH) transcription factor that plays an important role in embryonic development. The encoded protein forms both homodimers and heterodimers that bind to DNA E box sequences and regulate the tran…"
+          },
+          {
+            "symbol": "UBQLN1",
+            "ncbiGeneId": 29979,
+            "description": "ubiquilin 1",
+            "summary": "This gene encodes an ubiquitin-like protein (ubiquilin) that shares a high degree of similarity with related products in yeast, rat and frog. Ubiquilins contain an N-terminal ubiquitin-like domain and a C-terminal ubiquitin-associated doma…"
+          },
+          {
+            "symbol": "USP19",
+            "ncbiGeneId": 10869,
+            "description": "ubiquitin specific peptidase 19",
+            "summary": "Protein ubiquitination controls many intracellular processes, including cell cycle progression, transcriptional activation, and signal transduction. This dynamic process, involving ubiquitin conjugating enzymes and deubiquitinating enzymes…"
+          },
+          {
+            "symbol": "VASN",
+            "ncbiGeneId": 114990,
+            "description": "vasorin",
+            "summary": "Enables transforming growth factor beta binding activity. Involved in negative regulation of epithelial to mesenchymal transition and negative regulation of transforming growth factor beta receptor signaling pathway. Located in cell surfac…"
+          },
+          {
+            "symbol": "VEGFA",
+            "ncbiGeneId": 7422,
+            "description": "vascular endothelial growth factor A",
+            "summary": "This gene is a member of the PDGF/VEGF growth factor family. It encodes a heparin-binding protein, which exists as a disulfide-linked homodimer. This growth factor induces proliferation and migration of vascular endothelial cells, and is e…"
+          },
+          {
+            "symbol": "VHL",
+            "ncbiGeneId": 7428,
+            "description": "von Hippel-Lindau tumor suppressor",
+            "summary": "This gene encodes a component of a ubiquitination complex. The encoded protein is involved in the ubiquitination and degradation of hypoxia-inducible-factor (HIF), which is a transcription factor that plays a central role in the regulation…"
+          },
+          {
+            "symbol": "VLDLR",
+            "ncbiGeneId": 7436,
+            "description": "very low density lipoprotein receptor",
+            "summary": "The low density lipoprotein receptor (LDLR) gene family consists of cell surface proteins involved in receptor-mediated endocytosis of specific ligands. This gene encodes a lipoprotein receptor that is a member of the LDLR family and plays…"
+          },
+          {
+            "symbol": "ZFP36L1",
+            "ncbiGeneId": 677,
+            "description": "ZFP36 ring finger protein like 1",
+            "summary": "This gene is a member of the TIS11 family of early response genes, which are induced by various agonists such as the phorbol ester TPA and the polypeptide mitogen EGF. This gene is well conserved across species and has a promoter that cont…"
+          }
+        ]
+      }
+    },
+    {
+      "tool": "query_table_rumma",
+      "payload": {
+        "results": []
+      }
+    },
+    {
+      "tool": "query_string_rumma",
+      "payload": {
+        "results": []
+      }
+    },
+    {
+      "tool": "gene_info",
+      "payload": {
+        "results": [
+          {
+            "symbol": "EIF4A1",
+            "name": "eukaryotic translation initiation factor 4A1",
+            "summary": "Enables double-stranded RNA binding activity. Predicted to be involved in cytoplasmic translational initiation. Located in cytoplasm. [provided by Alliance of Genome Resources, Apr 2022]",
+            "aliases": "DDX2A; EIF-4A; EIF4A; eIF-4A-I; eIF4A-I",
+            "entrezgene": "1973",
+            "ensembl_gene": "ENSG00000161960",
+            "HGNC": "3282"
+          },
+          {
+            "symbol": "HIF1A",
+            "name": "hypoxia inducible factor 1 subunit alpha",
+            "summary": "This gene encodes the alpha subunit of transcription factor hypoxia-inducible factor-1 (HIF-1), which is a heterodimer composed of an alpha and a beta subunit. HIF-1 functions as a master regulator of cellular and systemic homeostatic resp…",
+            "aliases": "HIF-1-alpha; HIF-1A; HIF-1alpha; HIF1; HIF1-ALPHA; MOP1; PASD8; bHLHe78",
+            "entrezgene": "3091",
+            "ensembl_gene": "ENSG00000100644",
+            "HGNC": "4910"
+          }
+        ]
+      }
+    },
+    {
+      "tool": "csv_read",
+      "payload": {
+        "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh.csv",
+        "columns": [
+          "gene_name",
+          "baseMean",
+          "log2FoldChange",
+          "lfcSE",
+          "stat",
+          "pvalue",
+          "padj"
+        ],
+        "rows": [
+          {
+            "gene_name": "TSPAN6",
+            "baseMean": 70.10815446,
+            "log2FoldChange": 0.314066702,
+            "lfcSE": 0.380210852,
+            "stat": 0.826032975,
+            "pvalue": 0.408785386,
+            "padj": 0.578338928
+          },
+          {
+            "gene_name": "DPM1",
+            "baseMean": 517.0022098,
+            "log2FoldChange": 0.193938543,
+            "lfcSE": 0.110044621,
+            "stat": 1.762362773,
+            "pvalue": 0.078008024,
+            "padj": 0.168122097
+          },
+          {
+            "gene_name": "SCYL3",
+            "baseMean": 430.4702834,
+            "log2FoldChange": 0.66112574,
+            "lfcSE": 0.114524594,
+            "stat": 5.772783971,
+            "pvalue": 7.8e-09,
+            "padj": 7.95e-08
+          },
+          {
+            "gene_name": "C1orf112",
+            "baseMean": 147.1104584,
+            "log2FoldChange": -0.903912579,
+            "lfcSE": 0.173137359,
+            "stat": -5.220782991,
+            "pvalue": 1.78e-07,
+            "padj": 1.48e-06
+          },
+          {
+            "gene_name": "CFH",
+            "baseMean": 5.588546461,
+            "log2FoldChange": -0.670335675,
+            "lfcSE": 1.31903587,
+            "stat": -0.508201248,
+            "pvalue": 0.611312216,
+            "padj": 0.751305457
+          },
+          {
+            "gene_name": "FUCA2",
+            "baseMean": 644.0895573,
+            "log2FoldChange": 0.412627045,
+            "lfcSE": 0.082297924,
+            "stat": 5.013820847,
+            "pvalue": 5.34e-07,
+            "padj": 4.09e-06
+          },
+          {
+            "gene_name": "GCLC",
+            "baseMean": 1266.160793,
+            "log2FoldChange": -0.026302454,
+            "lfcSE": 0.100988026,
+            "stat": -0.26045122,
+            "pvalue": 0.794515738,
+            "padj": 0.881196755
+          },
+          {
+            "gene_name": "NFYA",
+            "baseMean": 1413.467355,
+            "log2FoldChange": 0.136680892,
+            "lfcSE": 0.061202779,
+            "stat": 2.233246486,
+            "pvalue": 0.025532694,
+            "padj": 0.067702618
+          },
+          {
+            "gene_name": "STPG1",
+            "baseMean": 103.4483859,
+            "log2FoldChange": 0.003161804,
+            "lfcSE": 0.226296082,
+            "stat": 0.013971978,
+            "pvalue": 0.988852337,
+            "padj": 0.994691914
+          },
+          {
+            "gene_name": "NIPAL3",
+            "baseMean": 1293.252693,
+            "log2FoldChange": 0.419132038,
+            "lfcSE": 0.08182687,
+            "stat": 5.122180965,
+            "pvalue": 3.02e-07,
+            "padj": 2.4e-06
+          },
+          {
+            "gene_name": "LAS1L",
+            "baseMean": 849.7596727,
+            "log2FoldChange": -0.619001037,
+            "lfcSE": 0.081918261,
+            "stat": -7.556325434,
+            "pvalue": 4.15e-14,
+            "padj": 7.73e-13
+          },
+          {
+            "gene_name": "ENPP4",
+            "baseMean": 224.0606678,
+            "log2FoldChange": 0.476256742,
+            "lfcSE": 0.163112087,
+            "stat": 2.919812697,
+            "pvalue": 0.003502418,
+            "padj": 0.01226388
+          },
+          {
+            "gene_name": "SEMA3F",
+            "baseMean": 20.76244783,
+            "log2FoldChange": -1.020825846,
+            "lfcSE": 0.675764707,
+            "stat": -1.510623204,
+            "pvalue": 0.130884478,
+            "padj": 0.251323268
+          },
+          {
+            "gene_name": "ANKIB1",
+            "baseMean": 1971.187795,
+            "log2FoldChange": 0.87933215,
+            "lfcSE": 0.117534333,
+            "stat": 7.481491783,
+            "pvalue": 7.35e-14,
+            "padj": 1.33e-12
+          },
+          {
+            "gene_name": "CYP51A1",
+            "baseMean": 4145.959301,
+            "log2FoldChange": -0.156420757,
+            "lfcSE": 0.056568236,
+            "stat": -2.765169443,
+            "pvalue": 0.005689323,
+            "padj": 0.018677827
+          },
+          {
+            "gene_name": "KRIT1",
+            "baseMean": 649.2371225,
+            "log2FoldChange": 0.523736731,
+            "lfcSE": 0.210781712,
+            "stat": 2.484735157,
+            "pvalue": 0.012964785,
+            "padj": 0.037752826
+          },
+          {
+            "gene_name": "RAD52",
+            "baseMean": 206.9050255,
+            "log2FoldChange": 0.054162808,
+            "lfcSE": 0.264138071,
+            "stat": 0.20505491,
+            "pvalue": 0.837529224,
+            "padj": 0.908169843
+          },
+          {
+            "gene_name": "BAD",
+            "baseMean": 768.1784791,
+            "log2FoldChange": 0.486684543,
+            "lfcSE": 0.106014393,
+            "stat": 4.59074025,
+            "pvalue": 4.42e-06,
+            "padj": 2.91e-05
+          },
+          {
+            "gene_name": "LAP3",
+            "baseMean": 457.9033992,
+            "log2FoldChange": -0.184563081,
+            "lfcSE": 0.109047967,
+            "stat": -1.692494463,
+            "pvalue": 0.090551735,
+            "padj": 0.189305941
+          },
+          {
+            "gene_name": "CD99",
+            "baseMean": 274.80998,
+            "log2FoldChange": -0.179283128,
+            "lfcSE": 0.159284729,
+            "stat": -1.125551259,
+            "pvalue": 0.260355509,
+            "padj": 0.422929287
+          }
+        ],
+        "total_rows": 14175
+      }
+    },
+    {
+      "tool": "csv_filter",
+      "payload": {
+        "columns": [
+          "gene_name",
+          "log2FoldChange",
+          "padj"
+        ],
+        "rows": "[{\"gene_name\":\"PGK1\",\"log2FoldChange\":-0.997167795,\"padj\":5.2e-45},{\"gene_name\":\"VEGFA\",\"log2FoldChange\":0.98230375,\"padj\":1.85e-39},{\"gene_name\":\"SLC2A1\",\"log2FoldChange\":0.02739343,\"padj\":0.914349741},{\"gene_name\":\"LDHA\",\"log2FoldChange\":-0.305157076,\"padj\":0.0000917},{\"gene_name\":\"PDK1\",\"log2FoldChange\":-0.780839687,\"padj\":0.000350787}]",
+        "total_rows": 5,
+        "storage_entry": {
+          "id": "1763269517_b79361c3",
+          "name": "HypZot_vs_HypVeh_HIF_targets_bebfd37ad5.csv",
+          "path": "/Users/yifanwu/Desktop/VIDA/ARPA-H/discovera/output/user_csvs/HypZot_vs_HypVeh_HIF_targets_bebfd37ad5.csv"
+        }
+      }
+    }
+  ],
+  "uploaded_files": [
+    {
+      "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm.csv",
+      "type": "csv",
+      "preview": "gene_name,baseMean,log2FoldChange,lfcSE,stat,pvalue,padj\nTSPAN6,70.10815446,0.131235602,0.383601786,0.342114157,0.732264984,0.870217863\nDPM1,517.0022098,-0.339086568,0.114327911,-2.965912394,0.003017864,0.020003822",
+      "url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T045608Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=22038665a68c7c1e3f1f93e0a60d63ca26c2bdf5cf5c752abd9f432a5dd7ab9a",
+      "s3_key": "uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-Hyp_vs_Norm.csv"
+    },
+    {
+      "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh.csv",
+      "type": "csv",
+      "preview": "gene_name,baseMean,log2FoldChange,lfcSE,stat,pvalue,padj\nTSPAN6,70.10815446,-0.005043532,0.385148448,-0.013095033,0.989551974,0.995703739\nDPM1,517.0022098,0.237716729,0.115587761,2.056590833,0.039725601,0.09882631",
+      "url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T045609Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f25075443ec7236d1c68949ba264d9be42b5d4da1bb3ec15d435ae99723045fb",
+      "s3_key": "uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-HypZot_vs_HypVeh.csv"
+    },
+    {
+      "name": "Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh.csv",
+      "type": "csv",
+      "preview": "gene_name,baseMean,log2FoldChange,lfcSE,stat,pvalue,padj\nTSPAN6,70.10815446,0.314066702,0.380210852,0.826032975,0.408785386,0.578338928\nDPM1,517.0022098,0.193938543,0.110044621,1.762362773,0.078008024,0.168122097",
+      "url": "https://discovera.s3.us-east-2.amazonaws.com/uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh.csv?response-content-disposition=inline&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVRUVQPLPWRN7243O%2F20251116%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251116T045610Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=26a3ef9d434278d5ebe5377a7824a373abeea9100a7b8a5b35e675d2eccea15e",
+      "s3_key": "uploads/2025-11-15/Kuzuoglu-Ozturk_2025_Cancer_Cell_TableS6-NormZot_vs_NormVeh.csv"
+    }
+  ]
+}

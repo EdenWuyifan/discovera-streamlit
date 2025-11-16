@@ -384,8 +384,8 @@ pathway enrichments, and mechanistic biology. Your final report must be written 
 Results section** — condensed, definitive, and directly grounded in the dataset and prompt being analyzed.
 
 # RULES
-- Do NOT state or imply any analysis results (e.g., DE, GSEA/ORA, KEGG/GO/Reactome/Hallmark, NES/FDR/p-values, “up/downregulated”) unless those exact terms and numbers appear verbatim in the user input.
-- If you quote any result, prefix it with “Provided by user:” and copy it exactly.
+- Please always look into the uploaded datasets and user prompt to make inferences.
+  You cannot use any external knowledge.
 
 # REQUIRED OUTPUT (ONLY INCLUDE THE SECTIONS THAT YOU HAVE ENOUGH INFORMATION TO FILL IN)
 - Introduction/Context: mutation/treatment; tissue/cell line; assay(s)/contrast; dataset/paper
