@@ -1,18 +1,18 @@
 import argparse
 import asyncio
 import json
+import math
 import os
 import sys
 from datetime import timedelta
 from typing import Any, Dict, List, Tuple
 
-import pandas as pd
-from dotenv import load_dotenv
-import math
-import numpy as np
 import boto3
+import numpy as np
+import pandas as pd
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
+from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
@@ -20,7 +20,6 @@ from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from portkey_ai import createHeaders
-
 
 load_dotenv()
 
@@ -63,25 +62,25 @@ CRITICAL: TOOL USAGE IS MANDATORY
 - Explore datasets deeply: use csv_filter, csv_select, csv_join, csv_aggregate
   to shape and combine data before enrichment.
 
-Be concise, results-style (e.g., “led to”, “resulted in”), and evidence-grounded.
+Be concise, results-style (e.g., "led to", "resulted in"), and evidence-grounded.
 Include inline PMIDs and a references list. Elevate cross-modality/contrast overlaps;
 mark single‑modality signals as secondary.
 
 TRUST AND EVIDENCE RULES (STRICT)
 - Do not infer or invent sample sizes, replicates, fold-changes, p-values, effect sizes, or metadata.
-  Only state numbers explicitly present in the user context or tool outputs. If unknown, say “not specified”.
+  Only state numbers explicitly present in the user context or tool outputs. If unknown, say "not specified".
 - In the Introduction/Context, restate only facts present in the provided context or file metadata.
   Do not add assumptions (e.g., number of replicates) if they are not given.
 
 GRANULARITY ROUTING
 - If the user asks a gene/pathway‑specific question: closely inspect enrichment result CSVs and tables; search
-  for the query’s keywords; and perform deep follow‑up using Steps 4–6 to add mechanism and literature.
+  for the query's keywords; and perform deep follow‑up using Steps 4–6 to add mechanism and literature.
 - If the user asks a broad/open question: emphasize global patterns (pathway ratios, dominant modules, cross‑contrast
   overlaps) and avoid over‑specific claims not supported by the inputs.
 
 VERIFICATION GATE (BEFORE FINAL OUTPUT)
 - Self‑check all numeric/specific claims. For each, identify its source (context text, CSV column, or tool step).
-  Remove or rephrase any claim lacking a clear source to “not specified”.
+  Remove or rephrase any claim lacking a clear source to "not specified".
 
 IMPORTANT GUARDRAIL
 - Only output references that are directly obtained via Step 5 (Leading edge and mechanism)
@@ -195,7 +194,7 @@ IMPORTANT GUARDRAIL
 
 # REQUIRED OUTPUT
 - Introduction/Context: mutation/treatment; tissue/cell line; assay(s)/contrast; dataset/paper
-  reference. Briefly summarize definitive signals in the input. For any detail not present, state “not specified”.
+  reference. Briefly summarize definitive signals in the input. For any detail not present, state "not specified".
 - Keywords: list of keywords extracted from the Context and User Prompt.
 - Candidate Genes: short list (3–8) of plausible gene or protein symbols
   that are mechanistically tied to the extracted keywords.
@@ -232,7 +231,7 @@ IMPORTANT GUARDRAIL
   |-------|-----------|---------------|------------|
   Construction rules (STRICT):
   - COMBINE with user context/query: highlight genes/pathways explicitly mentioned by the user;
-    if a user-mentioned item is absent in Step 4 outputs, state “not observed” with rationale.
+    if a user-mentioned item is absent in Step 4 outputs, state "not observed" with rationale.
   - **Try to include all shared genes between the up and down enriched pathways.**
 - Comparisons: overlaps vs tissue‑specific; flag discordant single‑modality findings as lower confidence.
 - Implications: relevance for therapy, resistance, or progression.
@@ -267,7 +266,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 
 # REQUIRED OUTPUT (ONLY INCLUDE THE SECTIONS THAT YOU HAVE ENOUGH INFORMATION TO FILL IN)
 - Introduction/Context: mutation/treatment; tissue/cell line; assay(s)/contrast; dataset/paper
-  reference. Briefly summarize definitive signals in the input. For any detail not present, state “not specified”.
+  reference. Briefly summarize definitive signals in the input. For any detail not present, state "not specified".
 - Keywords: list of keywords extracted from the Context and User Prompt.
 - Candidate Genes: short list (3–8) of plausible gene or protein symbols
   that are mechanistically tied to the extracted keywords.
@@ -304,7 +303,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
   |-------|-----------|---------------|------------|
   Construction rules (STRICT):
   - COMBINE with user context/query: highlight genes/pathways explicitly mentioned by the user;
-    if a user-mentioned item is absent in Step 4 outputs, state “not observed” with rationale.
+    if a user-mentioned item is absent in Step 4 outputs, state "not observed" with rationale.
   - **Try to include all shared genes between the up and down enriched pathways.**
 - Comparisons: overlaps vs tissue‑specific; flag discordant single‑modality findings as lower confidence.
 - Implications: relevance for therapy, resistance, or progression.
@@ -661,12 +660,19 @@ def run_once(
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Batch-run Discovera agent over a dataframe with columns: context, user_prompt"
+        description=(
+            "Batch-run Discovera agent over a breakdown CSV format where "
+            "Task ID and Context are merged vertically across multiple keypoints. "
+            "Each keypoint gets its own query."
+        )
     )
     parser.add_argument(
         "--input",
         required=True,
-        help="Path to input CSV/TSV/Parquet file containing columns context and user_prompt",
+        help=(
+            "Path to input CSV/TSV/Parquet file with breakdown format "
+            "(Task ID, Context, Keypoints, Fine-grained Prompt)"
+        ),
     )
     parser.add_argument(
         "--output",
@@ -680,18 +686,26 @@ def main():
     )
     parser.add_argument(
         "--task-id-col",
-        default="ID",
-        help="Column name for task ID. If set, the task ID will be written to the output JSON.",
+        default="Task ID",
+        help="Column name for task ID. Defaults to 'Task ID'",
     )
     parser.add_argument(
         "--context-col",
-        default="Context/Background",
-        help="Column name for context (default: Context/Background)",
+        default="Context",
+        help="Column name for context. Defaults to 'Context'",
     )
     parser.add_argument(
         "--prompt-col",
-        default="Prompt",
-        help="Column name for user prompt (default: Prompt)",
+        default="Fine-grained Prompt",
+        help="Column name for user prompt. Defaults to 'Fine-grained Prompt'",
+    )
+    parser.add_argument(
+        "--keypoints-col",
+        default="Keypoints",
+        help=(
+            "Column name for keypoints/subtask identifier. Defaults to 'Keypoints'. "
+            "Used to create unique output filenames when multiple rows share the same Task ID."
+        ),
     )
     parser.add_argument(
         "--mode",
@@ -738,9 +752,16 @@ def main():
         print(f"ERROR: Unsupported input extension: {ext}", file=sys.stderr)
         sys.exit(3)
 
-    # Normalize task ID column to canonical string (e.g., 1.0 -> "1", 2.10 -> "2.1")
+    # Forward-fill Task ID and Context columns to handle vertically merged cells
     if args.task_id_col and args.task_id_col in df.columns:
+        # Forward-fill empty/NaN values with previous non-empty value
+        df[args.task_id_col] = df[args.task_id_col].replace("", pd.NA).ffill()
         df[args.task_id_col] = df[args.task_id_col].apply(_normalize_task_id)
+
+    if args.context_col and args.context_col in df.columns:
+        # Forward-fill empty/NaN values with previous non-empty value
+        df[args.context_col] = df[args.context_col].replace("", pd.NA).ffill()
+        df[args.context_col] = df[args.context_col].fillna("")
 
     if args.task_ids:
         raw_ids = [s.strip() for s in str(args.task_ids).split(",") if s.strip()]
@@ -752,7 +773,6 @@ def main():
             )
             sys.exit(4)
 
-        print(f"IDs: {df[args.task_id_col].values}")
         # Filter and preserve user-specified order
         order_map = {tid: i for i, tid in enumerate(normalized_targets)}
         df = df[df[args.task_id_col].astype(str).isin(normalized_targets)].copy()
@@ -776,7 +796,22 @@ def main():
         user_prompt = str(row.get(args.prompt_col, "") or "")
         task_id = str(row.get(args.task_id_col, "") or "")
 
-        print(f"Processing task {task_id}...")
+        # Get keypoints/subtask identifier for unique output filename
+        keypoints_val = ""
+        if args.keypoints_col and args.keypoints_col in df.columns:
+            keypoints_val = str(row.get(args.keypoints_col, "") or "")
+
+        # Create unique output filename: task_{task_id}_{keypoints}.json or task_{task_id}_{idx}.json
+        if keypoints_val:
+            output_suffix = f"{task_id}_{keypoints_val}"
+        else:
+            output_suffix = f"{task_id}_{idx}"
+
+        print(
+            f"Processing task {task_id}"
+            + (f" (keypoint {keypoints_val})" if keypoints_val else "")
+            + "..."
+        )
         # Upload datasets/{task_id} CSVs to S3 and append links to context
         ds_records = _dataset_records_for_task(datasets_dir, task_id)
         if not ds_records:
@@ -816,8 +851,12 @@ def main():
             "tool_events_json": res.get("tool_events") or [],
             "uploaded_files": ds_records,
         }
+        if args.keypoints_col and args.keypoints_col in df.columns:
+            output_json[args.keypoints_col] = keypoints_val
 
-        output_json_path = os.path.join(out_path, f"{args.mode}/task_{task_id}.json")
+        output_json_path = os.path.join(
+            out_path, f"{args.mode}/task_{output_suffix}.json"
+        )
         with open(output_json_path, "w") as f:
             json.dump(output_json, f, indent=2, ensure_ascii=False)
 
