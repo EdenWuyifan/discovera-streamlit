@@ -5,7 +5,7 @@ import math
 import os
 import sys
 from datetime import timedelta
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import boto3
 import numpy as np
@@ -13,6 +13,7 @@ import pandas as pd
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
+from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
@@ -362,8 +363,11 @@ def _human_message(context_text: str, user_prompt: str) -> HumanMessage:
     )
 
 
-def _build_model() -> ChatOpenAI:
-    if os.getenv("LLM_PROVIDER") == "portkey":
+def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
+    provider = llm_provider or os.getenv("LLM_PROVIDER", "openai")
+    provider = provider.lower()
+
+    if provider == "portkey":
         print("Using Portkey...")
         headers = createHeaders(
             api_key=os.getenv("PORTKEY_API_KEY"),
@@ -377,6 +381,13 @@ def _build_model() -> ChatOpenAI:
                 "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
             ),
             default_headers=headers,
+        )
+    elif provider == "claude":
+        print("Using Claude...")
+        return ChatAnthropic(
+            model="claude-3-5-haiku-latest",
+            temperature=0,
+            api_key=os.getenv("CLAUDE_API_KEY"),
         )
     else:
         print("Using OpenAI...")
@@ -408,11 +419,7 @@ async def _astream_updates(
                 continue
             for msg in messages_update:
                 if isinstance(msg, AIMessage):
-                    content_text = (
-                        msg.content
-                        if isinstance(msg.content, str)
-                        else str(msg.content)
-                    )
+                    content_text = _extract_text_from_content(msg.content)
                     if content_text:
                         text_chunks.append(content_text)
                     tool_calls = getattr(msg, "tool_calls", None) or []
@@ -580,6 +587,26 @@ def _append_dataset_uploads_to_context(
     return ctx
 
 
+def _extract_text_from_content(content: Any) -> str:
+    """Extract text from content, handling Claude's list-of-blocks format."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        # Claude returns content as list of blocks: [{"type": "text", "text": "..."}]
+        text_parts = []
+        for block in content:
+            if isinstance(block, dict):
+                if block.get("type") == "text" and "text" in block:
+                    text_parts.append(str(block["text"]))
+                elif "text" in block:
+                    text_parts.append(str(block["text"]))
+            elif isinstance(block, str):
+                text_parts.append(block)
+        return "".join(text_parts)
+    # Fallback to string conversion
+    return str(content) if content else ""
+
+
 def _normalize_task_id(value: Any) -> str:
     if value is None or (isinstance(value, float) and math.isnan(value)):
         return ""
@@ -611,7 +638,11 @@ def _normalize_task_id(value: Any) -> str:
 
 
 def run_once(
-    context_text: str, user_prompt: str, mode: str, server_url: str
+    context_text: str,
+    user_prompt: str,
+    mode: str,
+    server_url: str,
+    llm_provider: str = None,
 ) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "output_text": None,
@@ -627,7 +658,7 @@ def run_once(
 
     print(f"Loaded {len(tools) if tools else 0} tools from {server_url}")
     try:
-        model = _build_model()
+        model = _build_model(llm_provider)
         agent = create_react_agent(
             model,
             tools=tools,
@@ -650,7 +681,13 @@ def run_once(
         output_text, tool_calls, tool_events = asyncio.run(
             _astream_updates(agent, inputs)
         )
-        result["output_text"] = output_text
+
+        # Ensure output_text is a clean string (already handled in _astream_updates,
+        # but double-check for Claude's response structure)
+        if output_text and not isinstance(output_text, str):
+            output_text = _extract_text_from_content(output_text)
+
+        result["output_text"] = output_text or ""
         result["tool_calls"] = tool_calls
         result["tool_events"] = tool_events
     except Exception as e:
@@ -723,11 +760,33 @@ def main():
         default=None,
         help="Comma-separated list of task IDs to run",
     )
+    parser.add_argument(
+        "--llm-provider",
+        choices=["openai", "claude", "portkey"],
+        default=None,
+        help=(
+            "LLM provider to use: 'openai', 'claude', or 'portkey'. "
+            "Defaults to LLM_PROVIDER env var, or 'openai' if not set."
+        ),
+    )
     args = parser.parse_args()
 
-    if not OPENAI_API_KEY and os.getenv("LLM_PROVIDER") != "portkey":
-        print("ERROR: OPENAI_API_KEY missing in environment", file=sys.stderr)
-        sys.exit(2)
+    # Determine provider and validate API keys
+    llm_provider = args.llm_provider or os.getenv("LLM_PROVIDER", "openai")
+    llm_provider = llm_provider.lower()
+
+    if llm_provider == "portkey":
+        if not os.getenv("PORTKEY_API_KEY"):
+            print("ERROR: PORTKEY_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
+    elif llm_provider == "claude":
+        if not os.getenv("CLAUDE_API_KEY"):
+            print("ERROR: CLAUDE_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
+    else:  # openai
+        if not OPENAI_API_KEY:
+            print("ERROR: OPENAI_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
 
     in_path = args.input
     out_path = args.output or os.path.join(os.getcwd(), "outputs")
@@ -821,8 +880,12 @@ def main():
 
         print("Appending dataset uploads to context...")
         augmented_context = _append_dataset_uploads_to_context(context_text, ds_records)
-        print(f"Running agent under mode {args.mode}...")
-        res = run_once(augmented_context, user_prompt, args.mode, server_url)
+        print(
+            f"Running agent under mode {args.mode} with LLM provider {llm_provider}..."
+        )
+        res = run_once(
+            augmented_context, user_prompt, args.mode, server_url, llm_provider
+        )
         print("Agent finished.")
         num_calls = len(res.get("tool_calls") or [])
         num_events = len(res.get("tool_events") or [])

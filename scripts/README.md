@@ -17,7 +17,8 @@ python scripts/batch_runner_keypoints.py \
   --input "Benchmark - verified - Breakdowns.csv" \
   --mode Discovera \
   --datasets-dir datasets \
-  --task-ids 3.2
+  --task-ids 3.2 \
+  --llm-provider openai
 ```
 
 **Default Column Names:**
@@ -42,7 +43,8 @@ python scripts/batch_runner_single.py \
   --input "Benchmark - verified - Benchmark.csv" \
   --mode Discovera \
   --datasets-dir datasets \
-  --task-ids 3.2
+  --task-ids 3.2 \
+  --llm-provider openai
 ```
 
 **Default Column Names:**
@@ -62,6 +64,7 @@ Both scripts support the following arguments:
 - `--mode`: Agent mode - `Discovera` or `Baseline` (default: `Discovera`)
 - `--task-ids`: Comma-separated list of task IDs to run (optional, processes all if omitted)
 - `--server-url`: Override MCP server URL (defaults to env or mode-specific default)
+- `--llm-provider`: LLM provider - `openai`, `claude`, or `portkey` (defaults to `LLM_PROVIDER` env var, or `openai`)
 
 ### Dataset Organization
 
