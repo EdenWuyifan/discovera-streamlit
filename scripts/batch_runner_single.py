@@ -4,12 +4,15 @@ import json
 import math
 import os
 import sys
-from datetime import timedelta
-from typing import Any, Dict, List, Tuple, Union
-
 import boto3
 import numpy as np
 import pandas as pd
+import datetime 
+import time
+    
+
+from datetime import timedelta
+from typing import Any, Dict, List, Tuple, Union
 from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
@@ -22,11 +25,9 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from portkey_ai import createHeaders
 
-load_dotenv()
 
+load_dotenv()
 # Defaults via env
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "o4-mini")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
@@ -43,7 +44,6 @@ S3_PRESIGN_TTL = int(os.getenv("S3_PRESIGN_TTL_SECONDS", "604800"))  # 7 days
 LANGGRAPH_CONFIG = RunnableConfig(
     {"configurable": {"thread_id": "discovera_batch"}, "recursion_limit": 100}
 )
-
 
 # Copied instruction blocks from app, kept in-sync intentionally
 SERVER_INSTRUCTIONS = """
@@ -317,9 +317,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 # CRITICAL GUARDRAILS
 - Use exactly one tool per assistant turn.
 - If input URLs are provided, call csv_record and copy the URL exactly as given.
-
 """
-
 
 def _ensure_trailing_slash(url: str) -> str:
     return url if url.endswith("/") else url + "/"
@@ -385,19 +383,18 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
     elif provider == "claude":
         print("Using Claude...")
         return ChatAnthropic(
-            model="claude-3-5-haiku-latest",
+            model= os.getenv("CLAUDE_MODEL"),
             temperature=0,
             api_key=os.getenv("CLAUDE_API_KEY"),
         )
     else:
         print("Using OpenAI...")
         return ChatOpenAI(
-            model=OPENAI_MODEL,
+            model=os.getenv("OPENAI_MODEL"),
             reasoning_effort="high",
             max_tokens=100000,
-            api_key=OPENAI_API_KEY,
+            api_key=os.getenv("OPENAI_API_KEY"),
         )
-
 
 async def _astream_updates(
     agent, inputs
@@ -551,6 +548,8 @@ def _dataset_records_for_task(datasets_dir: str, task_id: str) -> List[Dict[str,
         return []
     # Resolve datasets/{task_id} relative to repo root
     ds_dir = os.path.join(datasets_dir, str(task_id))
+    #ds_dir = os.path.join(datasets_dir, "tasks", str(task_id))
+
     if not os.path.isdir(ds_dir):
         print(f"No dataset directory for task {task_id} at {ds_dir}")
         return []
@@ -642,7 +641,7 @@ def run_once(
     user_prompt: str,
     mode: str,
     server_url: str,
-    llm_provider: str = None,
+    model: str = None,
 ) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "output_text": None,
@@ -658,7 +657,6 @@ def run_once(
 
     print(f"Loaded {len(tools) if tools else 0} tools from {server_url}")
     try:
-        model = _build_model(llm_provider)
         agent = create_react_agent(
             model,
             tools=tools,
@@ -768,11 +766,13 @@ def main():
             print("ERROR: PORTKEY_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     elif llm_provider == "claude":
+        model_text = os.getenv("CLAUDE_MODEL")
         if not os.getenv("CLAUDE_API_KEY"):
             print("ERROR: CLAUDE_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     else:  # openai
-        if not OPENAI_API_KEY:
+        model_text = os.getenv("OPENAI_MODEL")
+        if not os.getenv("OPENAI_API_KEY"):
             print("ERROR: OPENAI_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
 
@@ -786,6 +786,7 @@ def main():
     print(f"MCP server: {server_url}")
     print(f"Output dir: {os.path.join(out_path, args.mode)}")
     print(f"Datasets dir: {datasets_dir}")
+
 
     # Load dataframe
     ext = os.path.splitext(in_path)[1].lower()
@@ -831,7 +832,7 @@ def main():
         print(f"ERROR: Missing required columns: {missing}", file=sys.stderr)
         sys.exit(4)
 
-    for idx, row in df.iterrows():
+    for _, row in df.iterrows():
         context_text = str(row.get(args.context_col, "") or "")
         user_prompt = str(row.get(args.prompt_col, "") or "")
         task_id = str(row.get(args.task_id_col, "") or "")
@@ -849,9 +850,21 @@ def main():
         print(
             f"Running agent under mode {args.mode} with LLM provider {llm_provider}..."
         )
+        
+        # Capture start time
+        start_time = time.time()
+        run_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        model = _build_model(llm_provider)
+        
         res = run_once(
-            augmented_context, user_prompt, args.mode, server_url, llm_provider
+            augmented_context, user_prompt, args.mode, server_url, model
         )
+        
+        # Capture end time
+        end_time = time.time()
+        elapsed = end_time - start_time
+
         print("Agent finished.")
         num_calls = len(res.get("tool_calls") or [])
         num_events = len(res.get("tool_events") or [])
@@ -873,18 +886,22 @@ def main():
             args.task_id_col: task_id,
             args.context_col: context_text,
             args.prompt_col: user_prompt,
+            "mode": args.mode,                     # mode: discovera/baseline
+            "llm_provider": llm_provider,          # provider
+            "llm_model": model_text,
+            "run_date": run_date,                  # timestamp
+            "elapsed_seconds": round(elapsed, 2),  # duration
             "status": "ok" if not res.get("error") else "error",
             "error": res.get("error"),
             "output_text": res.get("output_text"),
             "tool_calls_json": res.get("tool_calls") or [],
             "tool_events_json": res.get("tool_events") or [],
             "uploaded_files": ds_records,
-        }
 
+        }
         output_json_path = os.path.join(out_path, f"{args.mode}/task_{task_id}.json")
         with open(output_json_path, "w") as f:
             json.dump(output_json, f, indent=2, ensure_ascii=False)
-
 
 if __name__ == "__main__":
     main()
