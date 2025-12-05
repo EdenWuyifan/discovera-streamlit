@@ -14,11 +14,10 @@ from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
 
-# from langchain_community.tools import DuckDuckGoSearchRun
+from web_search import web_search
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 
-# from langchain_core.tools import tool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
@@ -30,7 +29,7 @@ load_dotenv()
 
 # --- Config ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "o4-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-nano")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
@@ -241,11 +240,15 @@ VERIFICATION GATE (BEFORE FINAL OUTPUT)
 - Self‑check all numeric/specific claims. For each, identify its source (context text, CSV column, or tool step).
   Remove or rephrase any claim lacking a clear source to “not specified”.
 
-IMPORTANT GUARDRAIL
-- Only output references that are directly obtained via Step 5 (Leading edge and mechanism)
-  or Step 6 (Literature and prioritization) tool calls.
-- If no such references exist, output no references. Never fabricate or carry over citations
-  from other steps.
+CRITICAL: TOOL USAGE IS MANDATORY
+- You MUST call tools at every opportunity. Do NOT skip steps or assume you can answer without tools.
+- You MUST run enrichment tools (gsea_pipe, ora_pipe, run_deseq2_gsea_pipe, run_deseq2_ora_pipe)
+  - do not skip enrichment.
+- You MUST call gene_info, sets_info_rumm, query_string_rumma, query_table_rumma,
+  and prioritize_genes for deep analysis.
+- Use MULTIPLE tools in sequence - do not stop after one or two tool calls.
+- Web search is encouraged to be used for following up on literature and background information.
+
 
 # PIPELINED CALLS (one tool per turn; skip unnecessary steps)
 
@@ -328,6 +331,10 @@ IMPORTANT GUARDRAIL
 - Frame queries around observed biology (e.g., stress response, cell cycle, metabolism) 
   using the keywords and candidate genes from Step 0 to guide Steps 4–6.
 
+7) Web search
+- Use `web_search(query, num_results)` to find related literature and background information.
+- Can be used for following up on literature and background information.
+
 
 # REQUIRED OUTPUT
 - Introduction/Context: mutation/treatment; tissue/cell line; assay(s)/contrast; dataset/paper
@@ -375,6 +382,17 @@ IMPORTANT GUARDRAIL
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
 - References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
   the References section entirely if none are validated.
+
+### CRITICAL: Citation Verification Protocol
+**NEVER fabricate or hallucinate citations.** Follow this chain-of-thought verification:           
+1. **Before finalizing any report**, perform a mental citation audit:
+- List each citation you're about to include
+- For each one, identify which tool call returned it
+- If you cannot trace a citation to a tool result, **remove it**
+           
+2. **Format for verified citations**:
+- Always indicate the source: "According to INDRA (PMID: X)..." or "Literature search returned..."
+- Include database attribution: "Retrieved from PubMed via literature_trends tool"
 """
 
 
@@ -869,8 +887,7 @@ def stream_langgraph(prompt: str):
 
     # Build tools and agent
     try:
-        # tools = _load_mcp_tools(server_url) + [duckduckgo_search]
-        tools = _load_mcp_tools(server_url)
+        tools = _load_mcp_tools(server_url) + [web_search]
     except Exception as e:
         yield ("error", f"[MCP tools error] {e}")
         return
@@ -885,7 +902,8 @@ def stream_langgraph(prompt: str):
             )
             model = ChatOpenAI(
                 model="gemini-2.5-pro",
-                temperature=0,
+                max_tokens=65536,
+                reasoning_effort="high",
                 base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
                 default_headers=portkey_headers,
             )
