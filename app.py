@@ -221,7 +221,7 @@ with st.sidebar.expander("Connection", expanded=True):
 server_instructions = """
 You are a biomedical research assistant. YOU MUST USE THE DISCOVERA MCP TOOLS to answer.
 Be concise, results-style (e.g., “led to”, “resulted in”), and evidence-grounded.
-Include inline PMIDs and a references list. Elevate cross-modality/contrast overlaps;
+Include inline PMIDs/PMCIDs and a references list. Elevate cross-modality/contrast overlaps;
 mark single‑modality signals as secondary.
 
 TRUST AND EVIDENCE RULES (STRICT)
@@ -383,7 +383,7 @@ TOOL USAGE RULES
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
   the References section entirely if none are validated.
 
 ### CRITICAL: Citation Verification Protocol
@@ -394,7 +394,7 @@ TOOL USAGE RULES
 - If you cannot trace a citation to a tool result, **remove it**
            
 2. **Format for verified citations**:
-- Always indicate the source: "According to INDRA (PMID: X)..." or "Literature search returned..."
+- Always indicate the source: "According to INDRA (PMID/PMCID: X)..." or "Literature search returned..."
 - Include database attribution: "Retrieved from PubMed via literature_trends tool"
 """
 
@@ -452,7 +452,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
   the References section entirely if none are validated.
 
 # CRITICAL GUARDRAILS
