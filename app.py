@@ -240,15 +240,19 @@ VERIFICATION GATE (BEFORE FINAL OUTPUT)
 - Self‑check all numeric/specific claims. For each, identify its source (context text, CSV column, or tool step).
   Remove or rephrase any claim lacking a clear source to “not specified”.
 
-CRITICAL: TOOL USAGE IS MANDATORY
-- You MUST call tools at every opportunity. Do NOT skip steps or assume you can answer without tools.
-- You MUST run enrichment tools (gsea_pipe, ora_pipe, run_deseq2_gsea_pipe, run_deseq2_ora_pipe)
-  - do not skip enrichment.
-- You MUST call gene_info, sets_info_rumm, query_string_rumma, query_table_rumma,
-  and prioritize_genes for deep analysis.
-- Use MULTIPLE tools in sequence - do not stop after one or two tool calls.
-- Web search is encouraged to be used for following up on literature and background information.
-
+TOOL USAGE RULES
+- You MUST use tools to answer - do NOT skip enrichment or analysis steps.
+- Follow the pipeline sequentially: intake → inspect → shape → enrich → analyze → literature.
+- LIMIT TOOL CALLS PER TURN:
+  - Maximum 3 tool calls per assistant turn for literature/query tools (query_string_rumma,
+    query_table_rumma, enrich_rumma, web_search).
+  - Maximum 1 enrichment call per turn (gsea_pipe, ora_pipe, run_deseq2_*).
+  - Batch related queries into a SINGLE call when possible (e.g., one query_genes call with
+    multiple genes instead of separate calls).
+- AVOID REDUNDANT CALLS: Do not call the same tool multiple times with similar queries.
+  Consolidate related lookups.
+- If you need more information, spread calls across multiple turns rather than overwhelming
+  a single turn.
 
 # PIPELINED CALLS (one tool per turn; skip unnecessary steps)
 
@@ -319,10 +323,9 @@ CRITICAL: TOOL USAGE IS MANDATORY
  
 5) Leading edge and mechanism (REQUIRED)
 - Extract leading-edge genes from enriched terms (up and down).
-- **MUST call at least one** of: `gene_info`, `sets_info_rumm`.
-  - Pipeline must terminate if none succeed.
-- Optional: `enrich_rumma` on leading-edge genes to validate themes (failure does not block pipeline).
-- Validation: terminate if leading-edge gene list is empty.
+- Call `gene_info` with a batch of up to 10 genes (single call, not per-gene).
+- Optionally call `sets_info_rumm` once for a key gene set.
+- Optional: ONE `enrich_rumma` call on leading-edge genes to validate themes.
 
 6) Literature and prioritization (REQUIRED)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
