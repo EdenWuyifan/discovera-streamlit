@@ -1,9 +1,11 @@
 import argparse
 import asyncio
 import json
+import datetime
 import math
 import os
 import sys
+import time
 from datetime import timedelta
 from typing import Any, Dict, List, Tuple, Union
 
@@ -18,6 +20,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from portkey_ai import createHeaders
@@ -25,8 +28,6 @@ from portkey_ai import createHeaders
 load_dotenv()
 
 # Defaults via env
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "o4-mini")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
@@ -64,7 +65,7 @@ CRITICAL: TOOL USAGE IS MANDATORY
   to shape and combine data before enrichment.
 
 Be concise, results-style (e.g., "led to", "resulted in"), and evidence-grounded.
-Include inline PMIDs and a references list. Elevate cross-modality/contrast overlaps;
+Include inline PMIDs/PMCIDs and a references list. Elevate cross-modality/contrast overlaps;
 mark single‑modality signals as secondary.
 
 TRUST AND EVIDENCE RULES (STRICT)
@@ -239,7 +240,7 @@ IMPORTANT GUARDRAIL
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
   the References section entirely if none are validated.
 
 # EXPECTED TOOL USAGE SUMMARY
@@ -311,7 +312,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
   the References section entirely if none are validated.
 
 # CRITICAL GUARDRAILS
@@ -371,11 +372,10 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
         print("Using Portkey...")
         headers = createHeaders(
             api_key=os.getenv("PORTKEY_API_KEY"),
-            virtual_key=os.getenv("PROVIDER_API_KEY"),
-            metadata={"_user": "yfw215"},
+            metadata={"_user": os.getenv("USER") or "batch_runner"},
         )
         return ChatOpenAI(
-            model="gemini-2.5-pro",
+            model="@vertexai/gemini-2.5-pro",
             temperature=0,
             base_url=os.getenv(
                 "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
@@ -385,17 +385,25 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
     elif provider == "claude":
         print("Using Claude...")
         return ChatAnthropic(
-            model="claude-3-5-haiku-latest",
+            model=os.getenv("CLAUDE_MODEL"),
             temperature=0,
             api_key=os.getenv("CLAUDE_API_KEY"),
+        )
+    elif provider == "deepseek":
+        print("Using DeepSeek...")
+        return ChatDeepSeek(
+            model=os.getenv("DEEPSEEK_MODEL", "deepseek-reasoner"),
+            temperature=0,
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
+            base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
     else:
         print("Using OpenAI...")
         return ChatOpenAI(
-            model=OPENAI_MODEL,
+            model=os.getenv("OPENAI_MODEL"),
             reasoning_effort="high",
             max_tokens=100000,
-            api_key=OPENAI_API_KEY,
+            api_key=os.getenv("OPENAI_API_KEY"),
         )
 
 
@@ -551,6 +559,7 @@ def _dataset_records_for_task(datasets_dir: str, task_id: str) -> List[Dict[str,
         return []
     # Resolve datasets/{task_id} relative to repo root
     ds_dir = os.path.join(datasets_dir, str(task_id))
+    # ds_dir = os.path.join(datasets_dir, "tasks", str(task_id))
     if not os.path.isdir(ds_dir):
         print(f"No dataset directory for task {task_id} at {ds_dir}")
         return []
@@ -691,7 +700,72 @@ def run_once(
         result["tool_calls"] = tool_calls
         result["tool_events"] = tool_events
     except Exception as e:
-        result["error"] = f"Run error: {e}"
+        # Tool errors should normally be handled as ToolMessages by LangGraph.
+        # If an exception escapes, it means the error occurred before tool execution
+        # (e.g., validation error). In this case, use ainvoke to get the final state
+        # which may include error ToolMessages that the agent can see and learn from.
+        error_msg = str(e)
+        print(f"Stream exception occurred: {error_msg}")
+        print(
+            "Attempting to recover final state with ainvoke to expose error to agent..."
+        )
+
+        try:
+            final_state = asyncio.run(agent.ainvoke(inputs, config=LANGGRAPH_CONFIG))
+
+            messages = (
+                final_state.get("messages", []) if isinstance(final_state, dict) else []
+            )
+            if hasattr(final_state, "messages"):
+                messages = final_state.messages
+
+            recovered_text_chunks = []
+            recovered_tool_calls = []
+            recovered_tool_events = []
+
+            for msg in messages:
+                if isinstance(msg, AIMessage):
+                    content_text = _extract_text_from_content(msg.content)
+                    if content_text:
+                        recovered_text_chunks.append(content_text)
+                    tool_calls = getattr(msg, "tool_calls", None) or []
+                    if tool_calls:
+                        for call in tool_calls:
+                            recovered_tool_calls.append(
+                                {"name": call.get("name"), "args": call.get("args")}
+                            )
+                elif isinstance(msg, ToolMessage):
+                    tool_name = getattr(msg, "name", "tool") or "tool"
+                    try:
+                        if isinstance(msg.content, (dict, list)):
+                            payload = msg.content
+                        else:
+                            text_stripped = (msg.content or "").strip()
+                            is_json_like = text_stripped.startswith(
+                                "{"
+                            ) or text_stripped.startswith("[")
+                            payload = (
+                                json.loads(text_stripped)
+                                if is_json_like
+                                else text_stripped
+                            )
+                    except Exception:
+                        payload = msg.content
+                    recovered_tool_events.append(
+                        {"tool": tool_name, "payload": payload}
+                    )
+
+            if recovered_text_chunks or recovered_tool_events:
+                result["output_text"] = "".join(recovered_text_chunks) or ""
+                result["tool_calls"] = recovered_tool_calls
+                result["tool_events"] = recovered_tool_events
+            else:
+                result["error"] = f"Run error: {error_msg}"
+        except Exception as recover_error:
+            print(f"Recovery attempt failed: {recover_error}")
+            result["error"] = (
+                f"Run error: {error_msg} (recovery failed: {recover_error})"
+            )
     return result
 
 
@@ -762,10 +836,10 @@ def main():
     )
     parser.add_argument(
         "--llm-provider",
-        choices=["openai", "claude", "portkey"],
+        choices=["openai", "claude", "portkey", "deepseek"],
         default=None,
         help=(
-            "LLM provider to use: 'openai', 'claude', or 'portkey'. "
+            "LLM provider to use: 'openai', 'claude', 'portkey', or 'deepseek'. "
             "Defaults to LLM_PROVIDER env var, or 'openai' if not set."
         ),
     )
@@ -774,17 +848,26 @@ def main():
     # Determine provider and validate API keys
     llm_provider = args.llm_provider or os.getenv("LLM_PROVIDER", "openai")
     llm_provider = llm_provider.lower()
+    model_text = None
 
     if llm_provider == "portkey":
+        model_text = os.getenv("PORTKEY_MODEL", "gemini-2.5-pro")
         if not os.getenv("PORTKEY_API_KEY"):
             print("ERROR: PORTKEY_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     elif llm_provider == "claude":
+        model_text = os.getenv("CLAUDE_MODEL")
         if not os.getenv("CLAUDE_API_KEY"):
             print("ERROR: CLAUDE_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
+    elif llm_provider == "deepseek":
+        model_text = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+        if not os.getenv("DEEPSEEK_API_KEY"):
+            print("ERROR: DEEPSEEK_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
     else:  # openai
-        if not OPENAI_API_KEY:
+        model_text = os.getenv("OPENAI_MODEL")
+        if not os.getenv("OPENAI_API_KEY"):
             print("ERROR: OPENAI_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
 
@@ -883,13 +966,47 @@ def main():
         print(
             f"Running agent under mode {args.mode} with LLM provider {llm_provider}..."
         )
-        res = run_once(
-            augmented_context, user_prompt, args.mode, server_url, llm_provider
-        )
+
+        start_time = time.time()
+        run_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        max_retries = 10  # Safety limit to avoid infinite loops
+        res = None
+        num_calls = 0
+        retry_count = 0
+
+        while num_calls <= 2 and retry_count < max_retries:
+            if retry_count > 0:
+                print(
+                    f"Retrying task {task_id} (attempt {retry_count + 1}) - previous run had {num_calls} tool calls"
+                )
+
+            res = run_once(
+                augmented_context, user_prompt, args.mode, server_url, llm_provider
+            )
+            num_calls = len(res.get("tool_calls") or [])
+
+            if num_calls <= 2:
+                retry_count += 1
+                if retry_count < max_retries:
+                    print(
+                        f"Task {task_id} had {num_calls} tool calls (need >= 2), retrying..."
+                    )
+                else:
+                    print(
+                        f"WARNING: Task {task_id} reached max retries ({max_retries}) with {num_calls} tool calls"
+                    )
+            else:
+                break
+
+        end_time = time.time()
+        elapsed = end_time - start_time
+
         print("Agent finished.")
-        num_calls = len(res.get("tool_calls") or [])
         num_events = len(res.get("tool_events") or [])
         print(f"Tool calls: {num_calls}; Tool events: {num_events}")
+        if retry_count > 0:
+            print(f"Completed after {retry_count + 1} attempt(s)")
         try:
             names = sorted(
                 {
@@ -907,6 +1024,11 @@ def main():
             args.task_id_col: task_id,
             args.context_col: context_text,
             args.prompt_col: user_prompt,
+            "mode": args.mode,
+            "llm_provider": llm_provider,
+            "llm_model": model_text,
+            "run_date": run_date,
+            "elapsed_seconds": round(elapsed, 2),
             "status": "ok" if not res.get("error") else "error",
             "error": res.get("error"),
             "output_text": res.get("output_text"),

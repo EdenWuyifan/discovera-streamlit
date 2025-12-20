@@ -14,11 +14,10 @@ from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
 
-# from langchain_community.tools import DuckDuckGoSearchRun
+from web_search import web_search
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 
-# from langchain_core.tools import tool
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
@@ -30,7 +29,7 @@ load_dotenv()
 
 # --- Config ---
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "o4-mini")
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-nano")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
@@ -222,7 +221,7 @@ with st.sidebar.expander("Connection", expanded=True):
 server_instructions = """
 You are a biomedical research assistant. YOU MUST USE THE DISCOVERA MCP TOOLS to answer.
 Be concise, results-style (e.g., “led to”, “resulted in”), and evidence-grounded.
-Include inline PMIDs and a references list. Elevate cross-modality/contrast overlaps;
+Include inline PMIDs/PMCIDs and a references list. Elevate cross-modality/contrast overlaps;
 mark single‑modality signals as secondary.
 
 TRUST AND EVIDENCE RULES (STRICT)
@@ -241,11 +240,19 @@ VERIFICATION GATE (BEFORE FINAL OUTPUT)
 - Self‑check all numeric/specific claims. For each, identify its source (context text, CSV column, or tool step).
   Remove or rephrase any claim lacking a clear source to “not specified”.
 
-IMPORTANT GUARDRAIL
-- Only output references that are directly obtained via Step 5 (Leading edge and mechanism)
-  or Step 6 (Literature and prioritization) tool calls.
-- If no such references exist, output no references. Never fabricate or carry over citations
-  from other steps.
+TOOL USAGE RULES
+- You MUST use tools to answer - do NOT skip enrichment or analysis steps.
+- Follow the pipeline sequentially: intake → inspect → shape → enrich → analyze → literature.
+- LIMIT TOOL CALLS PER TURN:
+  - Maximum 3 tool calls per assistant turn for literature/query tools (query_string_rumma,
+    query_table_rumma, enrich_rumma, web_search).
+  - Maximum 1 enrichment call per turn (gsea_pipe, ora_pipe, run_deseq2_*).
+  - Batch related queries into a SINGLE call when possible (e.g., one query_genes call with
+    multiple genes instead of separate calls).
+- AVOID REDUNDANT CALLS: Do not call the same tool multiple times with similar queries.
+  Consolidate related lookups.
+- If you need more information, spread calls across multiple turns rather than overwhelming
+  a single turn.
 
 # PIPELINED CALLS (one tool per turn; skip unnecessary steps)
 
@@ -316,10 +323,9 @@ IMPORTANT GUARDRAIL
  
 5) Leading edge and mechanism (REQUIRED)
 - Extract leading-edge genes from enriched terms (up and down).
-- **MUST call at least one** of: `gene_info`, `sets_info_rumm`.
-  - Pipeline must terminate if none succeed.
-- Optional: `enrich_rumma` on leading-edge genes to validate themes (failure does not block pipeline).
-- Validation: terminate if leading-edge gene list is empty.
+- Call `gene_info` with a batch of up to 10 genes (single call, not per-gene).
+- Optionally call `sets_info_rumm` once for a key gene set.
+- Optional: ONE `enrich_rumma` call on leading-edge genes to validate themes.
 
 6) Literature and prioritization (REQUIRED)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
@@ -327,6 +333,10 @@ IMPORTANT GUARDRAIL
 - Run prioritize_genes to rank candidate genes within the disease/phenotype context (PubMed-grounded).
 - Frame queries around observed biology (e.g., stress response, cell cycle, metabolism) 
   using the keywords and candidate genes from Step 0 to guide Steps 4–6.
+
+7) Web search
+- Use `web_search(query, num_results)` to find related literature and background information.
+- Can be used for following up on literature and background information.
 
 
 # REQUIRED OUTPUT
@@ -373,8 +383,19 @@ IMPORTANT GUARDRAIL
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
   the References section entirely if none are validated.
+
+### CRITICAL: Citation Verification Protocol
+**NEVER fabricate or hallucinate citations.** Follow this chain-of-thought verification:           
+1. **Before finalizing any report**, perform a mental citation audit:
+- List each citation you're about to include
+- For each one, identify which tool call returned it
+- If you cannot trace a citation to a tool result, **remove it**
+           
+2. **Format for verified citations**:
+- Always indicate the source: "According to INDRA (PMID/PMCID: X)..." or "Literature search returned..."
+- Include database attribution: "Retrieved from PubMed via literature_trends tool"
 """
 
 
@@ -431,7 +452,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
   the References section entirely if none are validated.
 
 # CRITICAL GUARDRAILS
@@ -869,8 +890,7 @@ def stream_langgraph(prompt: str):
 
     # Build tools and agent
     try:
-        # tools = _load_mcp_tools(server_url) + [duckduckgo_search]
-        tools = _load_mcp_tools(server_url)
+        tools = _load_mcp_tools(server_url) + [web_search]
     except Exception as e:
         yield ("error", f"[MCP tools error] {e}")
         return
@@ -880,12 +900,12 @@ def stream_langgraph(prompt: str):
         if os.getenv("LLM_PROVIDER") == "portkey":
             portkey_headers = createHeaders(
                 api_key=os.getenv("PORTKEY_API_KEY"),
-                virtual_key=os.getenv("PROVIDER_API_KEY"),
                 metadata={"_user": "yfw215"},
             )
             model = ChatOpenAI(
-                model="gemini-2.5-pro",
-                temperature=0,
+                model="@vertexai/gemini-2.5-pro",
+                max_tokens=65536,
+                reasoning_effort="high",
                 base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
                 default_headers=portkey_headers,
             )

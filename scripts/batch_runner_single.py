@@ -7,9 +7,9 @@ import sys
 import boto3
 import numpy as np
 import pandas as pd
-import datetime 
+import datetime
 import time
-    
+
 
 from datetime import timedelta
 from typing import Any, Dict, List, Tuple, Union
@@ -21,6 +21,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from portkey_ai import createHeaders
@@ -319,6 +320,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 - If input URLs are provided, call csv_record and copy the URL exactly as given.
 """
 
+
 def _ensure_trailing_slash(url: str) -> str:
     return url if url.endswith("/") else url + "/"
 
@@ -369,11 +371,10 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
         print("Using Portkey...")
         headers = createHeaders(
             api_key=os.getenv("PORTKEY_API_KEY"),
-            virtual_key=os.getenv("PROVIDER_API_KEY"),
             metadata={"_user": os.getenv("USER") or "batch_runner"},
         )
         return ChatOpenAI(
-            model="gemini-2.5-pro",
+            model="@vertexai/gemini-2.5-pro",
             temperature=0,
             base_url=os.getenv(
                 "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
@@ -383,9 +384,17 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
     elif provider == "claude":
         print("Using Claude...")
         return ChatAnthropic(
-            model= os.getenv("CLAUDE_MODEL"),
+            model=os.getenv("CLAUDE_MODEL"),
             temperature=0,
             api_key=os.getenv("CLAUDE_API_KEY"),
+        )
+    elif provider == "deepseek":
+        print("Using DeepSeek...")
+        return ChatDeepSeek(
+            model=os.getenv("DEEPSEEK_MODEL", "deepseek-reasoner"),
+            temperature=0,
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
+            base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
     else:
         print("Using OpenAI...")
@@ -395,6 +404,7 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
             max_tokens=100000,
             api_key=os.getenv("OPENAI_API_KEY"),
         )
+
 
 async def _astream_updates(
     agent, inputs
@@ -548,7 +558,7 @@ def _dataset_records_for_task(datasets_dir: str, task_id: str) -> List[Dict[str,
         return []
     # Resolve datasets/{task_id} relative to repo root
     ds_dir = os.path.join(datasets_dir, str(task_id))
-    #ds_dir = os.path.join(datasets_dir, "tasks", str(task_id))
+    # ds_dir = os.path.join(datasets_dir, "tasks", str(task_id))
 
     if not os.path.isdir(ds_dir):
         print(f"No dataset directory for task {task_id} at {ds_dir}")
@@ -689,7 +699,80 @@ def run_once(
         result["tool_calls"] = tool_calls
         result["tool_events"] = tool_events
     except Exception as e:
-        result["error"] = f"Run error: {e}"
+        # Tool errors should normally be handled as ToolMessages by LangGraph.
+        # If an exception escapes, it means the error occurred before tool execution
+        # (e.g., validation error). In this case, use ainvoke to get the final state
+        # which may include error ToolMessages that the agent can see and learn from.
+        error_msg = str(e)
+        print(f"Stream exception occurred: {error_msg}")
+        print(
+            "Attempting to recover final state with ainvoke to expose error to agent..."
+        )
+
+        try:
+            # Use ainvoke to get final state - this may contain ToolMessages with errors
+            # that the agent can see and learn from
+            final_state = asyncio.run(agent.ainvoke(inputs, config=LANGGRAPH_CONFIG))
+
+            # Extract messages from final state
+            messages = (
+                final_state.get("messages", []) if isinstance(final_state, dict) else []
+            )
+            if hasattr(final_state, "messages"):
+                messages = final_state.messages
+
+            # Extract text and tool information from final messages
+            recovered_text_chunks = []
+            recovered_tool_calls = []
+            recovered_tool_events = []
+
+            for msg in messages:
+                if isinstance(msg, AIMessage):
+                    content_text = _extract_text_from_content(msg.content)
+                    if content_text:
+                        recovered_text_chunks.append(content_text)
+                    tool_calls = getattr(msg, "tool_calls", None) or []
+                    if tool_calls:
+                        for call in tool_calls:
+                            recovered_tool_calls.append(
+                                {"name": call.get("name"), "args": call.get("args")}
+                            )
+                elif isinstance(msg, ToolMessage):
+                    tool_name = getattr(msg, "name", "tool") or "tool"
+                    try:
+                        if isinstance(msg.content, (dict, list)):
+                            payload = msg.content
+                        else:
+                            text_stripped = (msg.content or "").strip()
+                            is_json_like = text_stripped.startswith(
+                                "{"
+                            ) or text_stripped.startswith("[")
+                            payload = (
+                                json.loads(text_stripped)
+                                if is_json_like
+                                else text_stripped
+                            )
+                    except Exception:
+                        payload = msg.content
+                    recovered_tool_events.append(
+                        {"tool": tool_name, "payload": payload}
+                    )
+
+            # Use recovered data if we got messages; otherwise fall back to error
+            if recovered_text_chunks or recovered_tool_events:
+                result["output_text"] = "".join(recovered_text_chunks) or ""
+                result["tool_calls"] = recovered_tool_calls
+                result["tool_events"] = recovered_tool_events
+                # Don't set error if we recovered state - the agent can see the tool errors
+            else:
+                result["error"] = f"Run error: {error_msg}"
+        except Exception as recover_error:
+            # If recovery also fails, store the original error
+            print(f"Recovery attempt failed: {recover_error}")
+            result["error"] = (
+                f"Run error: {error_msg} (recovery failed: {recover_error})"
+            )
+
     return result
 
 
@@ -748,10 +831,10 @@ def main():
     )
     parser.add_argument(
         "--llm-provider",
-        choices=["openai", "claude", "portkey"],
+        choices=["openai", "claude", "portkey", "deepseek"],
         default=None,
         help=(
-            "LLM provider to use: 'openai', 'claude', or 'portkey'. "
+            "LLM provider to use: 'openai', 'claude', 'portkey', or 'deepseek'. "
             "Defaults to LLM_PROVIDER env var, or 'openai' if not set."
         ),
     )
@@ -762,6 +845,7 @@ def main():
     llm_provider = llm_provider.lower()
 
     if llm_provider == "portkey":
+        model_text = os.getenv("PORTKEY_MODEL", "gemini-2.5-pro")
         if not os.getenv("PORTKEY_API_KEY"):
             print("ERROR: PORTKEY_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
@@ -769,6 +853,11 @@ def main():
         model_text = os.getenv("CLAUDE_MODEL")
         if not os.getenv("CLAUDE_API_KEY"):
             print("ERROR: CLAUDE_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
+    elif llm_provider == "deepseek":
+        model_text = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+        if not os.getenv("DEEPSEEK_API_KEY"):
+            print("ERROR: DEEPSEEK_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     else:  # openai
         model_text = os.getenv("OPENAI_MODEL")
@@ -786,7 +875,6 @@ def main():
     print(f"MCP server: {server_url}")
     print(f"Output dir: {os.path.join(out_path, args.mode)}")
     print(f"Datasets dir: {datasets_dir}")
-
 
     # Load dataframe
     ext = os.path.splitext(in_path)[1].lower()
@@ -850,25 +938,50 @@ def main():
         print(
             f"Running agent under mode {args.mode} with LLM provider {llm_provider}..."
         )
-        
+
         # Capture start time
         start_time = time.time()
         run_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
+
         model = _build_model(llm_provider)
-        
-        res = run_once(
-            augmented_context, user_prompt, args.mode, server_url, model
-        )
-        
+
+        # Retry loop: rerun if toolcalls < 2
+        max_retries = 10  # Safety limit to avoid infinite loops
+        res = None
+        num_calls = 0
+        retry_count = 0
+
+        while num_calls <= 2 and retry_count < max_retries:
+            if retry_count > 0:
+                print(
+                    f"Retrying task {task_id} (attempt {retry_count + 1}) - previous run had {num_calls} tool calls"
+                )
+
+            res = run_once(augmented_context, user_prompt, args.mode, server_url, model)
+            num_calls = len(res.get("tool_calls") or [])
+
+            if num_calls <= 2:
+                retry_count += 1
+                if retry_count < max_retries:
+                    print(
+                        f"Task {task_id} had {num_calls} tool calls (need >= 2), retrying..."
+                    )
+                else:
+                    print(
+                        f"WARNING: Task {task_id} reached max retries ({max_retries}) with {num_calls} tool calls"
+                    )
+            else:
+                break
+
         # Capture end time
         end_time = time.time()
         elapsed = end_time - start_time
 
         print("Agent finished.")
-        num_calls = len(res.get("tool_calls") or [])
         num_events = len(res.get("tool_events") or [])
         print(f"Tool calls: {num_calls}; Tool events: {num_events}")
+        if retry_count > 0:
+            print(f"Completed after {retry_count + 1} attempt(s)")
         try:
             names = sorted(
                 {
@@ -886,10 +999,10 @@ def main():
             args.task_id_col: task_id,
             args.context_col: context_text,
             args.prompt_col: user_prompt,
-            "mode": args.mode,                     # mode: discovera/baseline
-            "llm_provider": llm_provider,          # provider
+            "mode": args.mode,  # mode: discovera/baseline
+            "llm_provider": llm_provider,  # provider
             "llm_model": model_text,
-            "run_date": run_date,                  # timestamp
+            "run_date": run_date,  # timestamp
             "elapsed_seconds": round(elapsed, 2),  # duration
             "status": "ok" if not res.get("error") else "error",
             "error": res.get("error"),
@@ -897,11 +1010,11 @@ def main():
             "tool_calls_json": res.get("tool_calls") or [],
             "tool_events_json": res.get("tool_events") or [],
             "uploaded_files": ds_records,
-
         }
         output_json_path = os.path.join(out_path, f"{args.mode}/task_{task_id}.json")
         with open(output_json_path, "w") as f:
             json.dump(output_json, f, indent=2, ensure_ascii=False)
+
 
 if __name__ == "__main__":
     main()
