@@ -20,6 +20,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
 from portkey_ai import createHeaders
@@ -371,11 +372,10 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
         print("Using Portkey...")
         headers = createHeaders(
             api_key=os.getenv("PORTKEY_API_KEY"),
-            virtual_key=os.getenv("PROVIDER_API_KEY"),
             metadata={"_user": os.getenv("USER") or "batch_runner"},
         )
         return ChatOpenAI(
-            model="gemini-2.5-pro",
+            model="@vertexai/gemini-2.5-pro",
             temperature=0,
             base_url=os.getenv(
                 "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
@@ -388,6 +388,14 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
             model=os.getenv("CLAUDE_MODEL"),
             temperature=0,
             api_key=os.getenv("CLAUDE_API_KEY"),
+        )
+    elif provider == "deepseek":
+        print("Using DeepSeek...")
+        return ChatDeepSeek(
+            model=os.getenv("DEEPSEEK_MODEL", "deepseek-reasoner"),
+            temperature=0,
+            api_key=os.getenv("DEEPSEEK_API_KEY"),
+            base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
     else:
         print("Using OpenAI...")
@@ -828,10 +836,10 @@ def main():
     )
     parser.add_argument(
         "--llm-provider",
-        choices=["openai", "claude", "portkey"],
+        choices=["openai", "claude", "portkey", "deepseek"],
         default=None,
         help=(
-            "LLM provider to use: 'openai', 'claude', or 'portkey'. "
+            "LLM provider to use: 'openai', 'claude', 'portkey', or 'deepseek'. "
             "Defaults to LLM_PROVIDER env var, or 'openai' if not set."
         ),
     )
@@ -843,7 +851,7 @@ def main():
     model_text = None
 
     if llm_provider == "portkey":
-        model_text = "gemini-2.5-pro"
+        model_text = os.getenv("PORTKEY_MODEL", "gemini-2.5-pro")
         if not os.getenv("PORTKEY_API_KEY"):
             print("ERROR: PORTKEY_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
@@ -851,6 +859,11 @@ def main():
         model_text = os.getenv("CLAUDE_MODEL")
         if not os.getenv("CLAUDE_API_KEY"):
             print("ERROR: CLAUDE_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
+    elif llm_provider == "deepseek":
+        model_text = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
+        if not os.getenv("DEEPSEEK_API_KEY"):
+            print("ERROR: DEEPSEEK_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     else:  # openai
         model_text = os.getenv("OPENAI_MODEL")

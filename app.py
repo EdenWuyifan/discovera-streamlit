@@ -900,11 +900,10 @@ def stream_langgraph(prompt: str):
         if os.getenv("LLM_PROVIDER") == "portkey":
             portkey_headers = createHeaders(
                 api_key=os.getenv("PORTKEY_API_KEY"),
-                virtual_key=os.getenv("PROVIDER_API_KEY"),
                 metadata={"_user": "yfw215"},
             )
             model = ChatOpenAI(
-                model="gemini-2.5-pro",
+                model="@vertexai/gemini-2.5-pro",
                 max_tokens=65536,
                 reasoning_effort="high",
                 base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
