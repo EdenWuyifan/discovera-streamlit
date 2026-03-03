@@ -374,7 +374,7 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
             metadata={"_user": os.getenv("USER") or "batch_runner"},
         )
         return ChatOpenAI(
-            model="@vertexai/gemini-2.5-pro",
+            model=os.getenv("PORTKEY_MODEL", "@vertexai/gemini-2.5-pro"),
             temperature=0,
             base_url=os.getenv(
                 "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
@@ -396,6 +396,20 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
             api_key=os.getenv("DEEPSEEK_API_KEY"),
             base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
+    elif provider == "nvidia":
+        print("Using NVIDIA...")
+        model_name = os.getenv("NVIDIA_MODEL", "qwen/qwen3-235b-a22b")
+        base_url = os.getenv(
+            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
+        )
+        kwargs: Dict[str, Any] = dict(
+            model=model_name,
+            max_tokens=100000,
+            api_key=os.getenv("NVIDIA_API_KEY"),
+            base_url=base_url,
+            extra_body={"chat_template_kwargs": {"thinking": True}},
+        )
+        return ChatOpenAI(**kwargs)
     else:
         print("Using OpenAI...")
         return ChatOpenAI(
@@ -831,10 +845,10 @@ def main():
     )
     parser.add_argument(
         "--llm-provider",
-        choices=["openai", "claude", "portkey", "deepseek"],
+        choices=["openai", "claude", "portkey", "deepseek", "nvidia"],
         default=None,
         help=(
-            "LLM provider to use: 'openai', 'claude', 'portkey', or 'deepseek'. "
+            "LLM provider to use: 'openai', 'claude', 'portkey', 'deepseek', or 'nvidia'. "
             "Defaults to LLM_PROVIDER env var, or 'openai' if not set."
         ),
     )
@@ -845,7 +859,7 @@ def main():
     llm_provider = llm_provider.lower()
 
     if llm_provider == "portkey":
-        model_text = os.getenv("PORTKEY_MODEL", "gemini-2.5-pro")
+        model_text = os.getenv("PORTKEY_MODEL", "@vertexai/gemini-2.5-pro")
         if not os.getenv("PORTKEY_API_KEY"):
             print("ERROR: PORTKEY_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
@@ -858,6 +872,11 @@ def main():
         model_text = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
         if not os.getenv("DEEPSEEK_API_KEY"):
             print("ERROR: DEEPSEEK_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
+    elif llm_provider == "nvidia":
+        model_text = os.getenv("NVIDIA_MODEL", "qwen/qwen3-235b-a22b")
+        if not os.getenv("NVIDIA_API_KEY"):
+            print("ERROR: NVIDIA_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     else:  # openai
         model_text = os.getenv("OPENAI_MODEL")
@@ -950,8 +969,9 @@ def main():
         res = None
         num_calls = 0
         retry_count = 0
+        max_num_calls = 0 if args.mode == "Baseline" else 1
 
-        while num_calls <= 2 and retry_count < max_retries:
+        while num_calls <= max_num_calls and retry_count < max_retries:
             if retry_count > 0:
                 print(
                     f"Retrying task {task_id} (attempt {retry_count + 1}) - previous run had {num_calls} tool calls"
@@ -960,11 +980,11 @@ def main():
             res = run_once(augmented_context, user_prompt, args.mode, server_url, model)
             num_calls = len(res.get("tool_calls") or [])
 
-            if num_calls <= 2:
+            if num_calls <= max_num_calls:
                 retry_count += 1
                 if retry_count < max_retries:
                     print(
-                        f"Task {task_id} had {num_calls} tool calls (need >= 2), retrying..."
+                        f"Task {task_id} had {num_calls} tool calls (need > {max_num_calls}), retrying..."
                     )
                 else:
                     print(

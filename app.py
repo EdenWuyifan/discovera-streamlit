@@ -19,6 +19,7 @@ from web_search import web_search
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -28,8 +29,21 @@ from portkey_ai import createHeaders
 load_dotenv()
 
 # --- Config ---
+LLM_PROVIDER = (os.getenv("LLM_PROVIDER") or "openai").strip().lower()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-nano")
+CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL")
+PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY")
+PORTKEY_MODEL = os.getenv("PORTKEY_MODEL", "@gpt-5-mini/gpt-5-mini")
+PORTKEY_BASE_URL = os.getenv(
+    "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
+)
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "qwen/qwen3-235b-a22b")
+NVIDIA_BASE_URL = os.getenv(
+    "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
+)
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
@@ -44,8 +58,27 @@ LANGGRAPH_CONFIG = RunnableConfig(
 )
 # duckduckgo = DuckDuckGoSearchRun()
 
-if not OPENAI_API_KEY:
-    st.error("OPENAI_API_KEY missing in environment")
+if LLM_PROVIDER == "openai":
+    if not OPENAI_API_KEY:
+        st.error("OPENAI_API_KEY missing in environment for LLM_PROVIDER=openai")
+        st.stop()
+elif LLM_PROVIDER == "claude":
+    if not CLAUDE_API_KEY:
+        st.error("CLAUDE_API_KEY missing in environment for LLM_PROVIDER=claude")
+        st.stop()
+    if not CLAUDE_MODEL:
+        st.error("CLAUDE_MODEL missing in environment for LLM_PROVIDER=claude")
+        st.stop()
+elif LLM_PROVIDER == "portkey":
+    if not PORTKEY_API_KEY:
+        st.error("PORTKEY_API_KEY missing in environment for LLM_PROVIDER=portkey")
+        st.stop()
+elif LLM_PROVIDER == "nvidia":
+    if not NVIDIA_API_KEY:
+        st.error("NVIDIA_API_KEY missing in environment for LLM_PROVIDER=nvidia")
+        st.stop()
+else:
+    st.error(f"Unsupported LLM_PROVIDER: {LLM_PROVIDER}")
     st.stop()
 
 st.set_page_config(page_title="Discovera Chat", page_icon="🧬", layout="centered")
@@ -326,6 +359,7 @@ TOOL USAGE RULES
 - Call `gene_info` with a batch of up to 10 genes (single call, not per-gene).
 - Optionally call `sets_info_rumm` once for a key gene set.
 - Optional: ONE `enrich_rumma` call on leading-edge genes to validate themes.
+- Optional: Call `query_genes` to query the INDRA database for relationships among a list of genes.
 
 6) Literature and prioritization (REQUIRED)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
@@ -812,6 +846,40 @@ def _load_mcp_tools(server_url: str):
     return asyncio.run(client.get_tools())
 
 
+def _build_model():
+    if LLM_PROVIDER == "portkey":
+        portkey_headers = createHeaders(
+            api_key=PORTKEY_API_KEY,
+            metadata={"_user": "yfw215"},
+        )
+        return ChatOpenAI(
+            model=PORTKEY_MODEL,
+            max_tokens=65536,
+            base_url=PORTKEY_BASE_URL,
+            default_headers=portkey_headers,
+        )
+    if LLM_PROVIDER == "claude":
+        return ChatAnthropic(
+            model=CLAUDE_MODEL,
+            temperature=0,
+            api_key=CLAUDE_API_KEY,
+        )
+    if LLM_PROVIDER == "nvidia":
+        return ChatOpenAI(
+            model=NVIDIA_MODEL,
+            max_tokens=100000,
+            api_key=NVIDIA_API_KEY,
+            base_url=NVIDIA_BASE_URL,
+            extra_body={"chat_template_kwargs": {"thinking": True}},
+        )
+    return ChatOpenAI(
+        model=OPENAI_MODEL,
+        reasoning_effort="high",
+        max_tokens=100000,
+        api_key=OPENAI_API_KEY,
+    )
+
+
 def _system_message() -> SystemMessage:
     mode = st.session_state.get("mode", "Discovera")
     content = (
@@ -896,27 +964,7 @@ def stream_langgraph(prompt: str):
         return
 
     try:
-        # model = f"openai:{OPENAI_MODEL}"
-        if os.getenv("LLM_PROVIDER") == "portkey":
-            portkey_headers = createHeaders(
-                api_key=os.getenv("PORTKEY_API_KEY"),
-                metadata={"_user": "yfw215"},
-            )
-            model = ChatOpenAI(
-                model="@vertexai/gemini-2.5-pro",
-                max_tokens=65536,
-                reasoning_effort="high",
-                base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
-                default_headers=portkey_headers,
-            )
-        else:
-            model = ChatOpenAI(
-                model=OPENAI_MODEL,
-                reasoning_effort="high",
-                max_tokens=100000,
-                api_key=OPENAI_API_KEY,
-            )
-            print(model)
+        model = _build_model()
         agent = create_react_agent(
             model,
             tools=tools,

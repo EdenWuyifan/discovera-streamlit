@@ -126,7 +126,7 @@ python scripts/batch_runner_keypoints.py \
   --input "Benchmark - verified - Breakdowns.csv" \
   --mode Discovera \
   --datasets-dir datasets \
-  --task-ids 3.2 \
+  --task-ids 1,2.1,2.3,3.1,3.2,4,5.1,5.2,6,7.1,7.2,8,9.1,9.2,9.3,9.4,9.5,10,11.1,11.2,11.3,12,13,14.1,14.2,14.3,15 \
   --llm-provider openai
 ```
 
@@ -153,7 +153,7 @@ python scripts/batch_runner_single.py \
   --mode Discovera \
   --datasets-dir datasets \
   --task-ids 3.2 \
-  --llm-provider openai
+  --llm-provider nvidia --output ./output_qwen3_235b_0120
 ```
 
 **Default Column Names:**

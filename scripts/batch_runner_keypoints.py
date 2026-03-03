@@ -65,7 +65,7 @@ CRITICAL: TOOL USAGE IS MANDATORY
   to shape and combine data before enrichment.
 
 Be concise, results-style (e.g., "led to", "resulted in"), and evidence-grounded.
-Include inline PMIDs/PMCIDs and a references list. Elevate cross-modality/contrast overlaps;
+Include inline PMIDs and a references list. Elevate cross-modality/contrast overlaps;
 mark single‑modality signals as secondary.
 
 TRUST AND EVIDENCE RULES (STRICT)
@@ -240,7 +240,7 @@ IMPORTANT GUARDRAIL
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
   the References section entirely if none are validated.
 
 # EXPECTED TOOL USAGE SUMMARY
@@ -312,7 +312,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 - Next Steps & Clarification: 2–4 concrete follow‑ups.
  - Explicit targeted check: state presence/absence (with rationale) of the key biological themes implied by
    the question and assay (e.g., replication/cell-cycle, stress responses, metabolism/mitochondria).
-- References (only if validated in Steps 5-6): include only PMIDs/PMCIDs returned by those steps; omit
+- References (only if validated in Steps 5-6): include only PMIDs returned by those steps; omit
   the References section entirely if none are validated.
 
 # CRITICAL GUARDRAILS
@@ -375,7 +375,7 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
             metadata={"_user": os.getenv("USER") or "batch_runner"},
         )
         return ChatOpenAI(
-            model="@vertexai/gemini-2.5-pro",
+            model=os.getenv("PORTKEY_MODEL", "@vertexai/gemini-2.5-pro"),
             temperature=0,
             base_url=os.getenv(
                 "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
@@ -397,6 +397,20 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
             api_key=os.getenv("DEEPSEEK_API_KEY"),
             base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
         )
+    elif provider == "nvidia":
+        print("Using NVIDIA...")
+        model_name = os.getenv("NVIDIA_MODEL", "qwen/qwen3-235b-a22b")
+        base_url = os.getenv(
+            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
+        )
+        kwargs: Dict[str, Any] = dict(
+            model=model_name,
+            max_tokens=100000,
+            api_key=os.getenv("NVIDIA_API_KEY"),
+            base_url=base_url,
+            extra_body={"chat_template_kwargs": {"thinking": True}},
+        )
+        return ChatOpenAI(**kwargs)
     else:
         print("Using OpenAI...")
         return ChatOpenAI(
@@ -651,7 +665,7 @@ def run_once(
     user_prompt: str,
     mode: str,
     server_url: str,
-    llm_provider: str = None,
+    model: str = None,
 ) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "output_text": None,
@@ -667,7 +681,6 @@ def run_once(
 
     print(f"Loaded {len(tools) if tools else 0} tools from {server_url}")
     try:
-        model = _build_model(llm_provider)
         agent = create_react_agent(
             model,
             tools=tools,
@@ -836,10 +849,10 @@ def main():
     )
     parser.add_argument(
         "--llm-provider",
-        choices=["openai", "claude", "portkey", "deepseek"],
+        choices=["openai", "claude", "portkey", "deepseek", "nvidia"],
         default=None,
         help=(
-            "LLM provider to use: 'openai', 'claude', 'portkey', or 'deepseek'. "
+            "LLM provider to use: 'openai', 'claude', 'portkey', 'deepseek', or 'nvidia'. "
             "Defaults to LLM_PROVIDER env var, or 'openai' if not set."
         ),
     )
@@ -851,7 +864,7 @@ def main():
     model_text = None
 
     if llm_provider == "portkey":
-        model_text = os.getenv("PORTKEY_MODEL", "gemini-2.5-pro")
+        model_text = os.getenv("PORTKEY_MODEL", "@vertexai/gemini-2.5-pro")
         if not os.getenv("PORTKEY_API_KEY"):
             print("ERROR: PORTKEY_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
@@ -864,6 +877,11 @@ def main():
         model_text = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
         if not os.getenv("DEEPSEEK_API_KEY"):
             print("ERROR: DEEPSEEK_API_KEY missing in environment", file=sys.stderr)
+            sys.exit(2)
+    elif llm_provider == "nvidia":
+        model_text = os.getenv("NVIDIA_MODEL", "qwen/qwen3-235b-a22b")
+        if not os.getenv("NVIDIA_API_KEY"):
+            print("ERROR: NVIDIA_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     else:  # openai
         model_text = os.getenv("OPENAI_MODEL")
@@ -969,28 +987,28 @@ def main():
 
         start_time = time.time()
         run_date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        model = _build_model(llm_provider)
 
         max_retries = 10  # Safety limit to avoid infinite loops
         res = None
         num_calls = 0
         retry_count = 0
+        max_num_calls = 0 if args.mode == "Baseline" else 1
 
-        while num_calls <= 2 and retry_count < max_retries:
+        while num_calls <= max_num_calls and retry_count < max_retries:
             if retry_count > 0:
                 print(
                     f"Retrying task {task_id} (attempt {retry_count + 1}) - previous run had {num_calls} tool calls"
                 )
 
-            res = run_once(
-                augmented_context, user_prompt, args.mode, server_url, llm_provider
-            )
+            res = run_once(augmented_context, user_prompt, args.mode, server_url, model)
             num_calls = len(res.get("tool_calls") or [])
 
-            if num_calls <= 2:
+            if num_calls <= max_num_calls:
                 retry_count += 1
                 if retry_count < max_retries:
                     print(
-                        f"Task {task_id} had {num_calls} tool calls (need >= 2), retrying..."
+                        f"Task {task_id} had {num_calls} tool calls (need > {max_num_calls}), retrying..."
                     )
                 else:
                     print(
