@@ -68,7 +68,8 @@ Both scripts support the following arguments:
 
 ### Dataset Organization
 
-The batch runners look for datasets in `{datasets-dir}/{task_id}/` directories. CSV files found in these directories are automatically uploaded to S3 and included in the context.
+The batch runners look for datasets in `{datasets-dir}/{task_id}/` directories. CSV files found in these directories are automatically uploaded to the file server and included in the context.
+Uploaded CSVs are also registered via `csv_record` by default, and resulting `csv_id` values are included in context and output JSON.
 
 **Example directory structure:**
 ```
@@ -88,4 +89,3 @@ Each task produces a JSON file containing:
 - Tool calls and events
 - Uploaded file records
 - Status and error information (if any)
-

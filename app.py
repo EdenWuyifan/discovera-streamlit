@@ -8,11 +8,8 @@ import textwrap
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
-import boto3
 import httpx
 import streamlit as st
-from botocore.config import Config
-from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
 
 from web_search import web_search
@@ -42,18 +39,16 @@ PORTKEY_BASE_URL = os.getenv(
 )
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
 NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "deepseek-ai/deepseek-v3.2")
-NVIDIA_BASE_URL = os.getenv(
-    "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
-)
+NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
 )
 MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "3000000"))
-S3_BUCKET = os.getenv("UPLOADS_S3_BUCKET")
-S3_PREFIX = os.getenv("UPLOADS_S3_PREFIX", "uploads")
-S3_REGION = os.getenv("AWS_REGION", "us-east-2")
-S3_PRESIGN_TTL = int(os.getenv("S3_PRESIGN_TTL_SECONDS", "604800"))  # 7 days
+FILE_SERVER_BASE_URL = os.getenv(
+    "FILE_SERVER_BASE_URL", "http://127.0.0.1:8001"
+).rstrip("/")
+FILE_SERVER_TIMEOUT_SECONDS = int(os.getenv("FILE_SERVER_TIMEOUT_SECONDS", "30"))
 LANGGRAPH_CONFIG = RunnableConfig(
     {"configurable": {"thread_id": "discovera_streamlit"}, "recursion_limit": 100}
 )
@@ -271,12 +266,13 @@ def _context_for_export() -> str:
     if uploads:
         if ctx and not ctx.endswith("\n"):
             ctx += "\n"
-        ctx += "Uploaded files (stored in S3):\n"
+        ctx += "Uploaded files (stored in local file server):\n"
         for rec in uploads:
             ctx += f"""Name: {rec.get('name', '')}
   Preview:
     {rec.get('preview', '')}
   Download URL: <url>{rec.get('url', '')}</url>
+  CSV ID: {rec.get('csv_id') or 'not available'}
   Type: {rec.get('type', '')}
 """
     return ctx
@@ -366,9 +362,9 @@ def _build_pdf_chat_blocks(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
         elif is_foldable:
             # Keep only explicit tool-call intent blocks from the transcript.
             # Skip tool result/event blocks to avoid duplicating turn_runs logs.
-            is_tool_call_block = title.lower().startswith("tool calls") or content_text.lower().startswith(
-                "tool calls:"
-            )
+            is_tool_call_block = title.lower().startswith(
+                "tool calls"
+            ) or content_text.lower().startswith("tool calls:")
             if not is_tool_call_block:
                 continue
             kind = "tool"
@@ -389,7 +385,13 @@ def _build_pdf_chat_blocks(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
 def _build_chatbox_pdf(payload: Dict[str, Any]) -> bytes:
     blocks = _build_pdf_chat_blocks(payload)
     if not blocks:
-        blocks = [{"kind": "meta", "label": "Discovera Session Export", "text": "(No content)"}]
+        blocks = [
+            {
+                "kind": "meta",
+                "label": "Discovera Session Export",
+                "text": "(No content)",
+            }
+        ]
 
     page_width = 612.0
     page_height = 792.0
@@ -423,7 +425,9 @@ def _build_chatbox_pdf(payload: Dict[str, Any]) -> bytes:
         style = _style(kind)
 
         bubble_width = content_width * (0.78 if style["align_right"] else 0.9)
-        bubble_x = margin + (content_width - bubble_width if style["align_right"] else 0.0)
+        bubble_x = margin + (
+            content_width - bubble_width if style["align_right"] else 0.0
+        )
         text_width = bubble_width - (2 * pad_x)
 
         max_chars = _pdf_max_chars_for_width(text_width, body_font)
@@ -462,12 +466,7 @@ def _build_chatbox_pdf(payload: Dict[str, Any]) -> bytes:
         text_x = bubble_x + pad_x
         title_start_y = y_top - pad_top - title_font + 1.0
         body_start_y = (
-            y_top
-            - pad_top
-            - (len(title_lines) * title_leading)
-            - 3.0
-            - body_font
-            + 1.0
+            y_top - pad_top - (len(title_lines) * title_leading) - 3.0 - body_font + 1.0
         )
 
         cmds.extend(
@@ -526,7 +525,9 @@ def _build_chatbox_pdf(payload: Dict[str, Any]) -> bytes:
     _append_object(3, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n")
     _append_object(4, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\n")
 
-    for page_obj_id, content_obj_id, commands in zip(page_obj_ids, content_obj_ids, pages):
+    for page_obj_id, content_obj_id, commands in zip(
+        page_obj_ids, content_obj_ids, pages
+    ):
         stream = "\n".join(commands).encode("latin-1", "replace")
         content_body = (
             f"<< /Length {len(stream)} >>\nstream\n".encode("latin-1")
@@ -562,7 +563,9 @@ def _build_pdf_export_bytes() -> bytes:
 
 
 def _build_json_export_text() -> str:
-    return json.dumps(_build_export_payload(), indent=2, ensure_ascii=False, default=str)
+    return json.dumps(
+        _build_export_payload(), indent=2, ensure_ascii=False, default=str
+    )
 
 
 def _export_file_stub() -> str:
@@ -590,9 +593,13 @@ def _ensure_session_defaults():
     if "prev_mode" not in st.session_state:
         st.session_state["prev_mode"] = st.session_state["mode"]
     if "mcp_server" not in st.session_state:
-        st.session_state["mcp_server"] = _default_addr_for_mode(st.session_state["mode"])
+        st.session_state["mcp_server"] = _default_addr_for_mode(
+            st.session_state["mode"]
+        )
     if "session_id" not in st.session_state:
-        st.session_state["session_id"] = datetime.now().strftime("streamlit_%Y%m%d_%H%M%S")
+        st.session_state["session_id"] = datetime.now().strftime(
+            "streamlit_%Y%m%d_%H%M%S"
+        )
     if "session_started_at" not in st.session_state:
         st.session_state["session_started_at"] = datetime.now().isoformat()
     if "checkpointer" not in st.session_state:
@@ -631,6 +638,7 @@ def _ensure_session_defaults():
 
 _ensure_session_defaults()
 
+
 def _check_mcp_connection(addr: str, toast: bool = True) -> bool:
     url = httpx.URL(addr)
     ok = False
@@ -644,7 +652,9 @@ def _check_mcp_connection(addr: str, toast: bool = True) -> bool:
                     "Connection": "keep-alive",
                 }
                 with http.stream("GET", str(url), headers=sse_headers) as r:
-                    notes.append(f"STREAM GET {url.raw_path.decode()} -> {r.status_code}")
+                    notes.append(
+                        f"STREAM GET {url.raw_path.decode()} -> {r.status_code}"
+                    )
                     if r.status_code == 200:
                         ok = True
             except Exception as e:
@@ -806,7 +816,7 @@ TOOL USAGE RULES
   and focused subsetting of shaped tables. Use these findings to inform shaping thresholds and subsequent enrichment.
 
 1) Intake
-- If a CSV/URL is provided: call `csv_record` (copy URLs exactly) → file_id.
+- If a CSV/URL is provided and no `csv_id` is already in context: call `csv_record` (copy URLs exactly) → file_id.
 - Prefer raw counts over normalized matrices or precomputed DE. Treat filenames like
   `raw_counts`/`counts` or matrices with many sample-like columns as raw counts.
 
@@ -993,7 +1003,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 
 # CRITICAL GUARDRAILS
 - Use exactly one tool per assistant turn.
-- If input URLs are provided, call csv_record and copy the URL exactly as given.
+- If input URLs are provided and no `csv_id` is already in context, call csv_record and copy the URL exactly as given.
 
 """
 
@@ -1015,37 +1025,78 @@ with st.sidebar.expander("Context", expanded=True):
         type=["csv"],
         accept_multiple_files=True,
         key="context_upload_files",
-        help="Files are uploaded to S3 and summarized into the context.",
+        help="Files are uploaded to the local file server and summarized into the context.",
     )
 
-    _s3_client = None
+    def _parse_tool_output(raw: Any) -> Dict[str, Any]:
+        if isinstance(raw, dict):
+            return raw
+        if isinstance(raw, list):
+            if len(raw) == 1 and isinstance(raw[0], str):
+                raw = raw[0]
+            else:
+                return {"raw": raw}
+        if isinstance(raw, str):
+            txt = raw.strip()
+            if txt.startswith("{") or txt.startswith("["):
+                try:
+                    parsed = json.loads(txt)
+                    return parsed if isinstance(parsed, dict) else {"raw": parsed}
+                except Exception:
+                    return {"raw": raw}
+            return {"raw": raw}
+        return {"raw": str(raw)}
 
-    def _get_s3():
-        global _s3_client
-        if _s3_client is not None:
-            return _s3_client
-        if not S3_BUCKET:
-            return None
+    def _auto_csv_record(
+        csv_url: str,
+        logical_name: str,
+        csv_text: str | None = None,
+    ) -> tuple[str | None, str | None]:
+        mode = st.session_state.get("mode", "Discovera")
+        server_url = st.session_state.get("mcp_server") or _default_addr_for_mode(mode)
         try:
-            _s3_client_local = boto3.client(
-                "s3",
-                region_name=S3_REGION,
-                aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
-                aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-                config=Config(
-                    signature_version="s3v4",
-                    s3={
-                        "addressing_style": "virtual",
-                    },
-                ),
+            tools = _load_mcp_tools(server_url)
+            tool = next(
+                (t for t in tools if getattr(t, "name", "") == "csv_record"), None
             )
-            # Light touch to validate creds lazily; skip actual call to avoid latency
-            _s3_client = _s3_client_local
-            return _s3_client
-        except Exception:
-            return None
+            if tool is None:
+                return None, f"csv_record tool not found on MCP server: {server_url}"
 
-    # Local filesystem helpers removed; uploads go directly to S3
+            def _invoke(payload: Dict[str, Any]) -> tuple[str | None, str | None]:
+                raw_result = asyncio.run(tool.ainvoke(payload))
+                parsed = _parse_tool_output(raw_result)
+                csv_id = parsed.get("id")
+                if csv_id:
+                    return str(csv_id), None
+                err = parsed.get("error")
+                if isinstance(err, dict):
+                    return None, str(
+                        err.get("message") or _stringify(err, max_chars=500)
+                    )
+                if err:
+                    return None, str(err)
+                return (
+                    None,
+                    f"Unexpected csv_record response: {_stringify(parsed, max_chars=500)}",
+                )
+
+            csv_id, err = _invoke({"name": logical_name, "csv_url": csv_url})
+            if csv_id:
+                return csv_id, None
+
+            if csv_text:
+                csv_id_text, err_text = _invoke(
+                    {"name": logical_name, "csv_text": csv_text}
+                )
+                if csv_id_text:
+                    return csv_id_text, None
+                if err and err_text:
+                    return None, f"{err}; fallback via csv_text failed: {err_text}"
+                if err_text:
+                    return None, err_text
+            return None, err
+        except Exception as exc:
+            return None, str(exc)
 
     def _save_uploaded_file(file_obj) -> Dict[str, Any] | None:
         try:
@@ -1065,7 +1116,8 @@ with st.sidebar.expander("Context", expanded=True):
             "".join(ch for ch in safe_name if ch.isalnum() or ch in ("_", "-"))
             or "upload"
         )
-        # No local write; upload directly to S3
+        upload_stem = f"{sha[:12]}_{safe_name}"
+        upload_filename = f"{upload_stem}{ext}"
 
         # Build a short preview
         preview = ""
@@ -1085,41 +1137,45 @@ with st.sidebar.expander("Context", expanded=True):
         except Exception:
             preview = ""
 
-        # Attempt S3 upload with presigned URL generation
+        # Upload to local file server and derive a download URL.
         remote_url: str | None = None
         try:
-            s3 = _get_s3()
-            if s3 and S3_BUCKET:
-                # Choose content type
-                if ext == ".csv":
-                    content_type = "text/csv"
-                elif ext == ".txt":
-                    content_type = "text/plain"
-                else:
-                    content_type = "application/octet-stream"
-
-                s3_key = f"{S3_PREFIX}/{datetime.now().strftime('%Y-%m-%d')}/{sha[:12]}_{safe_name}{ext}"
-                put_kwargs = {
-                    "Bucket": S3_BUCKET,
-                    "Key": s3_key,
-                    "Body": raw,
-                    "ContentType": content_type,
-                }
-                s3.put_object(**put_kwargs)
-                remote_url = s3.generate_presigned_url(
-                    "get_object",
-                    Params={
-                        "Bucket": S3_BUCKET,
-                        "Key": s3_key,
-                        "ResponseContentDisposition": "inline",
-                    },
-                    ExpiresIn=S3_PRESIGN_TTL,
+            files = {
+                "file": (
+                    upload_filename,
+                    raw,
+                    "text/csv" if ext == ".csv" else "application/octet-stream",
                 )
-        except (BotoCoreError, NoCredentialsError, ClientError, Exception):
+            }
+            with httpx.Client(timeout=FILE_SERVER_TIMEOUT_SECONDS) as client:
+                resp = client.post(f"{FILE_SERVER_BASE_URL}/upload", files=files)
+                resp.raise_for_status()
+                payload = resp.json() if resp.content else {}
+            saved_name = (payload or {}).get("filename") or upload_filename
+            remote_url = str(
+                httpx.URL(f"{FILE_SERVER_BASE_URL}/download").copy_add_param(
+                    "filename", saved_name
+                )
+            )
+        except Exception:
             remote_url = None
 
         if not remote_url:
             return None
+
+        csv_id = None
+        csv_record_error = None
+        if ext == ".csv":
+            text_for_record = None
+            try:
+                text_for_record = raw.decode("utf-8-sig", errors="ignore")
+            except Exception:
+                text_for_record = None
+            csv_id, csv_record_error = _auto_csv_record(
+                csv_url=remote_url,
+                logical_name=upload_stem,
+                csv_text=text_for_record,
+            )
 
         rec = {
             "hash": sha,
@@ -1127,7 +1183,10 @@ with st.sidebar.expander("Context", expanded=True):
             "type": (ext[1:] if ext.startswith(".") else ext).lower(),
             "preview": preview,
             "url": remote_url,
+            "csv_id": csv_id,
         }
+        if csv_record_error:
+            rec["csv_record_error"] = csv_record_error
         st.session_state["context_upload_hashes"].add(sha)
         st.session_state["context_uploads"].append(rec)
         return rec
@@ -1183,7 +1242,17 @@ with st.sidebar.expander("Context", expanded=True):
         if new_records:
             st.write("Uploaded files:")
             for rec in new_records:
-                st.markdown(f"- `{rec['name']}` → [download link]({rec['url']})")
+                csv_id = rec.get("csv_id")
+                if csv_id:
+                    st.markdown(
+                        f"- `{rec['name']}` → [download link]({rec['url']}) · `csv_id: {csv_id}`"
+                    )
+                else:
+                    st.markdown(
+                        f"- `{rec['name']}` → [download link]({rec['url']}) · `csv_id: not available`"
+                    )
+                    if rec.get("csv_record_error"):
+                        st.caption(f"csv_record failed: {rec['csv_record_error']}")
 
 # Create a placeholder so we can live-update Outputs during streaming
 outputs_placeholder = st.sidebar.empty()
@@ -1195,8 +1264,8 @@ def render_outputs():
             _outputs = st.session_state.get("output_files") or []
             if _outputs:
                 for _rec in _outputs:
-                    _name = _rec.get("name") or _rec.get("s3_key") or "download"
-                    _url = _rec.get("url") or _rec.get("s3_presigned_url") or ""
+                    _name = _rec.get("name") or "download"
+                    _url = _rec.get("url") or _rec.get("file_server_url") or ""
                     if _url:
                         st.markdown(f"- [{_name}]({_url})")
             else:
@@ -1349,7 +1418,9 @@ def _build_model():
             default_headers=portkey_headers,
         )
     if provider == "claude":
-        model_name = (st.session_state.get("claude_model") or CLAUDE_MODEL or "").strip()
+        model_name = (
+            st.session_state.get("claude_model") or CLAUDE_MODEL or ""
+        ).strip()
         if not model_name:
             raise ValueError("Claude model is required in sidebar LLM settings.")
         return ChatAnthropic(
@@ -1385,13 +1456,14 @@ def _context() -> str:
     ctx = st.session_state.get("context") or ""
     uploads = st.session_state.get("context_uploads") or []
     if uploads:
-        ctx += "Uploaded files (stored in S3):\n"
+        ctx += "Uploaded files (stored in local file server):\n"
         for rec in uploads:
             ctx += f"""
 Name: {rec['name']}
   Preview:
     {rec['preview']}
   Download URL: <url>{rec['url']}</url>
+  CSV ID: {rec.get('csv_id') or 'not available'}
   Type: {rec['type']}
 """
     return ctx
@@ -1423,18 +1495,18 @@ def _collect_outputs(obj):
     if isinstance(obj, dict):
         for k, v in obj.items():
             if k.endswith("_metadata") and isinstance(v, dict):
-                url = v.get("s3_presigned_url")
+                url = v.get("file_server_url")
                 if url:
                     seen = st.session_state.get("output_file_urls") or set()
                     if url not in seen:
                         rec = {
-                            "name": v.get("name") or v.get("s3_key") or "download",
+                            "name": v.get("name") or "download",
                             "url": url,
                             "size_bytes": v.get("size_bytes"),
                             "created_at": v.get("created_at"),
                             "category": v.get("category"),
                             "origin_tool": v.get("origin_tool"),
-                            "s3_key": v.get("s3_key"),
+                            "file_server_url": v.get("file_server_url"),
                         }
                         out_list = st.session_state.get("output_files") or []
                         out_list.append(rec)
@@ -1457,7 +1529,9 @@ def stream_langgraph(prompt: str):
     def _run_summary(status: str, error: str | None = None) -> Dict[str, Any]:
         return {
             "run_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "elapsed_seconds": round((datetime.now() - run_started_at).total_seconds(), 2),
+            "elapsed_seconds": round(
+                (datetime.now() - run_started_at).total_seconds(), 2
+            ),
             "status": status,
             "error": error,
             "output_text": "".join(run_text_chunks),

@@ -9,8 +9,6 @@ langchain-anthropic
 langchain-google-genai
 langgraph==0.6.6
 langchain-mcp-adapters==0.1.14
-boto3==1.40.15
-botocore==1.40.15
 portkey_ai==1.15.1
 langchain-community
 ddgs==9.6.0

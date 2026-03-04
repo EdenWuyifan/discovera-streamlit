@@ -1,20 +1,19 @@
 import argparse
 import asyncio
+import datetime
+import hashlib
 import json
 import math
 import os
 import sys
-import boto3
-import numpy as np
-import pandas as pd
-import datetime
 import time
 
+import httpx
+import numpy as np
+import pandas as pd
 
 from datetime import timedelta
 from typing import Any, Dict, List, Tuple, Union
-from botocore.config import Config
-from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
 from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
@@ -34,12 +33,10 @@ BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
 )
 MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "3000000"))
-
-# S3 config (mirror app.py)
-S3_BUCKET = os.getenv("UPLOADS_S3_BUCKET")
-S3_PREFIX = os.getenv("UPLOADS_S3_PREFIX", "uploads")
-S3_REGION = os.getenv("AWS_REGION", "us-east-2")
-S3_PRESIGN_TTL = int(os.getenv("S3_PRESIGN_TTL_SECONDS", "604800"))  # 7 days
+FILE_SERVER_BASE_URL = os.getenv(
+    "FILE_SERVER_BASE_URL", "http://127.0.0.1:8001"
+).rstrip("/")
+FILE_SERVER_TIMEOUT_SECONDS = int(os.getenv("FILE_SERVER_TIMEOUT_SECONDS", "30"))
 
 # Keep consistent config with app
 LANGGRAPH_CONFIG = RunnableConfig(
@@ -52,8 +49,8 @@ You are a biomedical research assistant. YOU MUST USE THE DISCOVERA MCP TOOLS EX
 
 CRITICAL: TOOL USAGE IS MANDATORY
 - You MUST call tools at every opportunity. Do NOT skip steps or assume you can answer without tools.
-- If datasets are provided, you MUST call csv_record for each dataset URL,
-  then csv_read to inspect structure.
+- If datasets are provided, use the pre-registered `csv_id` values included in the human prompt,
+  then use csv_read to inspect structure.
 - You MUST run enrichment tools (gsea_pipe, ora_pipe, run_deseq2_gsea_pipe, run_deseq2_ora_pipe)
   - do not skip enrichment.
 - You MUST call gene_info, sets_info_rumm, query_string_rumma, query_table_rumma,
@@ -115,11 +112,10 @@ IMPORTANT GUARDRAIL
 - Do NOT skip this step - use at least 2-3 csv tools here to explore the data.
 
 1) Intake (MANDATORY - CALL TOOLS)
-- **MUST call csv_record for EVERY CSV/URL provided** - do not skip any datasets.
-- Copy URLs exactly as given.
+- Use the provided `csv_id` values for uploaded datasets (already registered before the run).
+- Do not re-register those same datasets with `csv_record`.
 - Prefer raw counts over normalized matrices or precomputed DE. Treat filenames like
   `raw_counts`/`counts` or matrices with many sample-like columns as raw counts.
-- If multiple datasets are provided, call csv_record for each one separately.
 
 2) Inspect (MANDATORY - CALL TOOLS)
 - **MUST call csv_read(file_id, n_rows=20-50) for EVERY dataset** to preview structure.
@@ -245,7 +241,7 @@ IMPORTANT GUARDRAIL
 
 # EXPECTED TOOL USAGE SUMMARY
 - A thorough analysis should involve 15-30+ tool calls minimum.
-- Steps 0-1: 2-4 calls (csv_record for each dataset, csv_read for inspection)
+- Steps 0-1: 1-3 calls (csv_read for inspection and early profiling)
 - Step 2: 1-2 calls (csv_read for each dataset)
 - Step 3: 2-4 calls (csv_select, csv_filter, csv_join, csv_aggregate)
 - Step 4: 2-4 calls (gsea_pipe, ora_pipe, run_deseq2_gsea_pipe, run_deseq2_ora_pipe - aim for multiple)
@@ -317,7 +313,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 
 # CRITICAL GUARDRAILS
 - Use exactly one tool per assistant turn.
-- If input URLs are provided, call csv_record and copy the URL exactly as given.
+- Use `csv_id` values provided in the human prompt for uploaded datasets.
 """
 
 
@@ -351,11 +347,30 @@ def _system_message_for_mode(mode: str) -> SystemMessage:
     return SystemMessage(content=content)
 
 
-def _human_message(context_text: str, user_prompt: str) -> HumanMessage:
+def _human_message(
+    context_text: str,
+    user_prompt: str,
+    uploaded_records: List[Dict[str, Any]] | None = None,
+) -> HumanMessage:
+    csv_lines: List[str] = []
+    for rec in uploaded_records or []:
+        csv_id = rec.get("csv_id")
+        if not csv_id:
+            continue
+        csv_name = rec.get("name") or rec.get("stored_filename") or "dataset"
+        csv_lines.append(f"- {csv_name}: `{csv_id}`")
+
+    csv_id_block = ""
+    if csv_lines:
+        csv_id_block = (
+            "\n\n**Pre-registered CSV IDs (already uploaded):**\n"
+            + "\n".join(csv_lines)
+        )
+
     return HumanMessage(
         content=f"""
     **Context:**
-    {context_text or ""}
+    {context_text or ""}{csv_id_block}
 
     **User Prompt:**
     {user_prompt or ""}
@@ -375,7 +390,6 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
         )
         return ChatOpenAI(
             model=os.getenv("PORTKEY_MODEL", "@vertexai/gemini-2.5-pro"),
-            temperature=0,
             base_url=os.getenv(
                 "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
             ),
@@ -399,9 +413,7 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
     elif provider == "nvidia":
         print("Using NVIDIA...")
         model_name = os.getenv("NVIDIA_MODEL", "qwen/qwen3-235b-a22b")
-        base_url = os.getenv(
-            "NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"
-        )
+        base_url = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
         kwargs: Dict[str, Any] = dict(
             model=model_name,
             max_tokens=100000,
@@ -482,28 +494,7 @@ async def _astream_updates(
     return ("".join(text_chunks), tool_calls_accum, tool_events_accum)
 
 
-def _get_s3_client():
-    if not S3_BUCKET:
-        print("S3 disabled: UPLOADS_S3_BUCKET not set")
-        return None
-    try:
-        client = boto3.client(
-            "s3",
-            region_name=S3_REGION,
-            aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
-            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-            config=Config(
-                signature_version="s3v4",
-                s3={"addressing_style": "virtual"},
-            ),
-        )
-        return client
-    except Exception as e:
-        print(f"S3 client init failed: {e}")
-        return None
-
-
-def _upload_csv_to_s3(file_path: str) -> Dict[str, Any] | None:
+def _upload_csv_to_file_server(file_path: str) -> Dict[str, Any] | None:
     if not os.path.isfile(file_path):
         return None
     try:
@@ -530,40 +521,38 @@ def _upload_csv_to_s3(file_path: str) -> Dict[str, Any] | None:
     except Exception:
         preview = ""
 
-    try:
-        s3 = _get_s3_client()
-        if not s3 or not S3_BUCKET:
-            return None
-        content_type = "text/csv"
-        # Use simple key scheme: uploads/YYYY-MM-DD/<filename>, but keep uniqueness with task folder if needed
-        date_prefix = __import__("datetime").datetime.now().strftime("%Y-%m-%d")
-        safe_name = (
-            "".join(
-                ch
-                for ch in os.path.splitext(name)[0]
-                if ch.isalnum() or ch in ("_", "-")
-            )
-            or "dataset"
+    sha = hashlib.sha256(raw).hexdigest()
+    safe_name = (
+        "".join(
+            ch for ch in os.path.splitext(name)[0] if ch.isalnum() or ch in ("_", "-")
         )
-        s3_key = f"{S3_PREFIX}/{date_prefix}/{safe_name}.csv"
-        s3.put_object(Bucket=S3_BUCKET, Key=s3_key, Body=raw, ContentType=content_type)
-        presigned = s3.generate_presigned_url(
-            "get_object",
-            Params={
-                "Bucket": S3_BUCKET,
-                "Key": s3_key,
-                "ResponseContentDisposition": "inline",
-            },
-            ExpiresIn=S3_PRESIGN_TTL,
+        or "dataset"
+    )
+    upload_filename = f"{sha[:12]}_{safe_name}.csv"
+
+    try:
+        files = {"file": (upload_filename, raw, "text/csv")}
+        with httpx.Client(timeout=FILE_SERVER_TIMEOUT_SECONDS) as client:
+            resp = client.post(f"{FILE_SERVER_BASE_URL}/upload", files=files)
+            resp.raise_for_status()
+            payload = resp.json() if resp.content else {}
+        saved_name = (payload or {}).get("filename") or upload_filename
+        download_url = str(
+            httpx.URL(f"{FILE_SERVER_BASE_URL}/download").copy_add_param(
+                "filename", saved_name
+            )
         )
         return {
             "name": name,
             "type": "csv",
             "preview": preview,
-            "url": presigned,
-            "s3_key": s3_key,
+            "url": download_url,
+            "file_server_url": download_url,
+            "stored_filename": saved_name,
+            "content_hash": sha,
         }
-    except (BotoCoreError, NoCredentialsError, ClientError, Exception):
+    except Exception as e:
+        print(f"File server upload failed for {file_path}: {e}")
         return None
 
 
@@ -582,8 +571,9 @@ def _dataset_records_for_task(datasets_dir: str, task_id: str) -> List[Dict[str,
     for root, _, files in os.walk(ds_dir):
         for fname in files:
             if fname.lower().endswith(".csv"):
-                print(f"Uploading {os.path.join(root, fname)} to S3...")
-                rec = _upload_csv_to_s3(os.path.join(root, fname))
+                file_path = os.path.join(root, fname)
+                print(f"Uploading {file_path} to file server...")
+                rec = _upload_csv_to_file_server(file_path)
                 if rec:
                     records.append(rec)
     if not records:
@@ -599,12 +589,13 @@ def _append_dataset_uploads_to_context(
     ctx = context_text or ""
     if ctx and not ctx.endswith("\n"):
         ctx += "\n"
-    ctx += "Uploaded files (stored in S3):\n"
+    ctx += "Uploaded files (stored in file server):\n"
     for rec in records:
         ctx += f"""Name: {rec.get('name', '')}
   Preview:
     {rec.get('preview', '')}
   Download URL: <url>{rec.get('url', '')}</url>
+  CSV ID: {rec.get('csv_id') or 'not available'}
   Type: {rec.get('type', '')}
 """
     return ctx
@@ -628,6 +619,102 @@ def _extract_text_from_content(content: Any) -> str:
         return "".join(text_parts)
     # Fallback to string conversion
     return str(content) if content else ""
+
+
+def _parse_tool_output(raw: Any) -> Dict[str, Any]:
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, list):
+        if len(raw) == 1 and isinstance(raw[0], str):
+            raw = raw[0]
+        else:
+            return {"raw": raw}
+    if isinstance(raw, str):
+        txt = raw.strip()
+        if txt.startswith("{") or txt.startswith("["):
+            try:
+                parsed = json.loads(txt)
+                return parsed if isinstance(parsed, dict) else {"raw": parsed}
+            except Exception:
+                return {"raw": raw}
+        return {"raw": raw}
+    return {"raw": str(raw)}
+
+
+def _auto_csv_record_uploads(records: List[Dict[str, Any]], server_url: str) -> None:
+    if not records:
+        return
+    try:
+        tools = _load_mcp_tools(server_url)
+    except Exception as exc:
+        err = f"Failed to load MCP tools for csv_record: {exc}"
+        print(err)
+        for rec in records:
+            rec.setdefault("csv_record_error", err)
+        return
+
+    csv_record_tool = next(
+        (t for t in (tools or []) if getattr(t, "name", "") == "csv_record"), None
+    )
+    if csv_record_tool is None:
+        err = f"csv_record tool not found on MCP server: {server_url}"
+        print(err)
+        for rec in records:
+            rec.setdefault("csv_record_error", err)
+        return
+
+    async def _record_all():
+        for idx, rec in enumerate(records, start=1):
+            csv_url = rec.get("url") or rec.get("file_server_url")
+            if not csv_url:
+                rec["csv_record_error"] = "Missing uploaded file URL for csv_record"
+                continue
+            logical_name = (
+                rec.get("stored_filename") or rec.get("name") or f"dataset_{idx}.csv"
+            )
+            logical_name = (
+                os.path.splitext(os.path.basename(str(logical_name)))[0]
+                or f"dataset_{idx}"
+            )
+            try:
+                raw_result = await csv_record_tool.ainvoke(
+                    {"name": logical_name, "csv_url": str(csv_url)}
+                )
+                parsed = _parse_tool_output(raw_result)
+                csv_id = parsed.get("id")
+                if csv_id:
+                    rec["csv_id"] = str(csv_id)
+                    rec.pop("csv_record_error", None)
+                    print(
+                        f"csv_record ok: {rec.get('name') or logical_name} -> {csv_id}"
+                    )
+                    continue
+
+                err_obj = parsed.get("error")
+                if isinstance(err_obj, dict):
+                    err_msg = str(err_obj.get("message") or err_obj)
+                elif err_obj:
+                    err_msg = str(err_obj)
+                else:
+                    err_msg = f"Unexpected csv_record response: {str(parsed)[:300]}"
+                rec["csv_record_error"] = err_msg
+                print(
+                    f"csv_record failed: {rec.get('name') or logical_name} -> {err_msg}"
+                )
+            except Exception as exc:
+                rec["csv_record_error"] = str(exc)
+                print(
+                    f"csv_record exception: {rec.get('name') or logical_name} -> {exc}"
+                )
+
+    try:
+        asyncio.run(_record_all())
+    except Exception as exc:
+        err = f"csv_record batch invoke failed: {exc}"
+        print(err)
+        for rec in records:
+            if "csv_id" not in rec and "csv_record_error" not in rec:
+                rec["csv_record_error"] = err
 
 
 def _normalize_task_id(value: Any) -> str:
@@ -666,6 +753,7 @@ def run_once(
     mode: str,
     server_url: str,
     model: str = None,
+    uploaded_records: List[Dict[str, Any]] | None = None,
 ) -> Dict[str, Any]:
     result: Dict[str, Any] = {
         "output_text": None,
@@ -695,7 +783,7 @@ def run_once(
     inputs = {
         "messages": [
             _system_message_for_mode(mode),
-            _human_message(context_text, user_prompt),
+            _human_message(context_text, user_prompt, uploaded_records),
         ]
     }
 
@@ -945,12 +1033,14 @@ def main():
         task_id = str(row.get(args.task_id_col, "") or "")
 
         print(f"Processing task {task_id}...")
-        # Upload datasets/{task_id} CSVs to S3 and append links to context
+        # Upload datasets/{task_id} CSVs to file server and append links to context
         ds_records = _dataset_records_for_task(datasets_dir, task_id)
         if not ds_records:
             print(f"No datasets uploaded for task {task_id}.")
         else:
             print(f"Uploaded {len(ds_records)} dataset CSV(s) for task {task_id}.")
+            print("Running csv_record for uploaded dataset URLs...")
+            _auto_csv_record_uploads(ds_records, server_url)
 
         print("Appending dataset uploads to context...")
         augmented_context = _append_dataset_uploads_to_context(context_text, ds_records)
@@ -977,7 +1067,14 @@ def main():
                     f"Retrying task {task_id} (attempt {retry_count + 1}) - previous run had {num_calls} tool calls"
                 )
 
-            res = run_once(augmented_context, user_prompt, args.mode, server_url, model)
+            res = run_once(
+                augmented_context,
+                user_prompt,
+                args.mode,
+                server_url,
+                model,
+                ds_records,
+            )
             num_calls = len(res.get("tool_calls") or [])
 
             if num_calls <= max_num_calls:
