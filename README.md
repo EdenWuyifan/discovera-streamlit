@@ -6,7 +6,7 @@ A lightweight Streamlit chat client for Discovera’s FastMCP agent. It lets you
 ### Key Features
 
 - **MCP connection panel**: Enter the SSE endpoint and verify connectivity.
-- **Context composer**: Add free-form study context; optionally upload CSV/TXT files stored in S3 with presigned download links.
+- **Context composer**: Add free-form study context; optionally upload CSV/TXT files to a file server with download links.
 - **Streaming responses**: Agent thoughts and tool events render in real time.
 - **Tool event panels**: Foldable sections show tool call intents and results.
 - **Copy view**: Toggle assistant messages between rich text and a copy-friendly view.
@@ -17,7 +17,7 @@ A lightweight Streamlit chat client for Discovera’s FastMCP agent. It lets you
 - Python 3.8+
 - An OpenAI API key
 - A reachable MCP server SSE endpoint (e.g., FastMCP)
-- AWS S3 bucket credentials (required only for file uploads)
+- A reachable file server endpoint (required only for file uploads)
 
 
 ## Installation
@@ -54,19 +54,13 @@ MCP_SERVER_ADDRESS=https://discovera-fastmcp.users.hsrn.nyu.edu/sse
 # Timeouts (optional)
 MCP_TIMEOUT_MS=3500
 
-# AWS S3 (required for file uploads via the sidebar)
-AWS_REGION=us-east-2
-AWS_ACCESS_KEY=AKIA...
-AWS_SECRET_ACCESS_KEY=...
-UPLOADS_S3_BUCKET=discovera
-UPLOADS_S3_PREFIX=uploads
-# Presigned URL TTL in seconds (default 604800 = 7 days)
-S3_PRESIGN_TTL_SECONDS=604800
+# File server (required for file uploads via the sidebar and batch scripts)
+FILE_SERVER_BASE_URL=http://127.0.0.1:8001
+FILE_SERVER_TIMEOUT_SECONDS=30
 ```
 
 Notes:
-- The app uses `AWS_ACCESS_KEY` and `AWS_SECRET_ACCESS_KEY` variable names (intentionally different from the standard `_ID` naming). These are passed to `boto3` under the hood.
-- File uploads are optional. Without valid S3 credentials and bucket, the chat works but uploads are disabled.
+- File uploads are optional. Without a reachable `FILE_SERVER_BASE_URL`, the chat still works but uploads are disabled.
 
 
 ## Run
@@ -96,7 +90,7 @@ streamlit run app.py
 
 3. **(Optional) Upload CSV/TXT files**
    - Drop CSV/TXT files in the uploader to include them in context.
-   - Files are uploaded to S3 and shown with presigned download links; the agent receives those links in the prompt and can register/read them via csv tools.
+   - Files are uploaded to the file server and shown with download links; the agent receives those links in the prompt and can register/read them via csv tools.
 
 4. **Chat with the agent**
    - Use the chat input at the bottom. The agent streams intermediate thoughts, tool calls, and results.
@@ -126,7 +120,7 @@ python scripts/batch_runner_keypoints.py \
   --input "Benchmark - verified - Breakdowns.csv" \
   --mode Discovera \
   --datasets-dir datasets \
-  --task-ids 3.2 \
+  --task-ids 1,2.1,2.3,3.1,3.2,4,5.1,5.2,6,7.1,7.2,8,9.1,9.2,9.3,9.4,9.5,10,11.1,11.2,11.3,12,13,14.1,14.2,14.3,15 \
   --llm-provider openai
 ```
 
@@ -153,7 +147,7 @@ python scripts/batch_runner_single.py \
   --mode Discovera \
   --datasets-dir datasets \
   --task-ids 3.2 \
-  --llm-provider openai
+  --llm-provider nvidia --output ./output_qwen3_235b_0120
 ```
 
 **Default Column Names:**
@@ -177,7 +171,8 @@ Both scripts support the following arguments:
 
 ### Dataset Organization
 
-The batch runners look for datasets in `{datasets-dir}/{task_id}/` directories. CSV files found in these directories are automatically uploaded to S3 and included in the context.
+The batch runners look for datasets in `{datasets-dir}/{task_id}/` directories. CSV files found in these directories are automatically uploaded to the file server and included in the context.
+Uploaded CSVs are also registered via `csv_record` by default, and resulting `csv_id` values are included in context and output JSON.
 
 **Example directory structure:**
 ```
@@ -203,12 +198,11 @@ Each task produces a JSON file containing:
 
 - **OPENAI_API_KEY missing**: The app will show an error and stop. Set it in `.env` or your shell and restart.
 - **MCP connection fails**: Double-check the full SSE endpoint (often ends with `/sse`). Ensure the server is reachable and not blocked by firewalls.
-- **Uploads not working**: Verify `AWS_REGION`, `UPLOADS_S3_BUCKET`, and credentials. Your IAM principal needs `s3:PutObject` and `s3:GetObject` for the bucket/prefix.
-- **Large files**: Prefer CSV. The app creates short previews and presigned links; default expiry is 7 days, configurable via `S3_PRESIGN_TTL_SECONDS`.
+- **Uploads not working**: Verify `FILE_SERVER_BASE_URL` points to a running file server and that `/upload` and `/download` endpoints are reachable.
+- **Large files**: Prefer CSV. The app creates short previews and file-server download links.
 
 
 ## Advanced Configuration
 
 - The system instructions sent to the agent are defined in `server_instructions` within `app.py`.
 - The app uses LangGraph’s `create_react_agent` and an in-memory checkpointer. To change thread identifiers or agent behavior, edit `LANGGRAPH_CONFIG` and agent initialization in `app.py`.
-

@@ -4,21 +4,20 @@ import json
 import os
 import queue
 import threading
+import textwrap
 from datetime import datetime, timedelta
 from typing import Any, Dict, List
 
-import boto3
 import httpx
 import streamlit as st
-from botocore.config import Config
-from botocore.exceptions import BotoCoreError, ClientError, NoCredentialsError
 from dotenv import load_dotenv
 
 from web_search import web_search
+
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
-
 from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.prebuilt import create_react_agent
@@ -28,38 +27,118 @@ from portkey_ai import createHeaders
 load_dotenv()
 
 # --- Config ---
+LLM_PROVIDER = (os.getenv("LLM_PROVIDER") or "openai").strip().lower()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5-nano")
+CLAUDE_API_KEY = os.getenv("CLAUDE_API_KEY")
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL", "claude-haiku-3-5")
+PORTKEY_API_KEY = os.getenv("PORTKEY_API_KEY")
+PORTKEY_MODEL = os.getenv("PORTKEY_MODEL", "@gpt-5-mini/gpt-5-mini")
+PORTKEY_BASE_URL = os.getenv(
+    "PORTKEY_BASE_URL", "https://ai-gateway.apps.cloud.rt.nyu.edu/v1/"
+)
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "deepseek-ai/deepseek-v3.2")
+NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
 MCP_ADDRESS = os.getenv("MCP_SERVER_ADDRESS") or "http://127.0.0.1:8000/sse"
 BASELINE_MCP_ADDRESS = (
     os.getenv("BASELINE_MCP_SERVER_ADDRESS") or "http://127.0.0.1:8001/sse"
 )
 MCP_TIMEOUT_MS = int(os.getenv("MCP_TIMEOUT_MS", "3000000"))
-S3_BUCKET = os.getenv("UPLOADS_S3_BUCKET")
-S3_PREFIX = os.getenv("UPLOADS_S3_PREFIX", "uploads")
-S3_REGION = os.getenv("AWS_REGION", "us-east-2")
-S3_PRESIGN_TTL = int(os.getenv("S3_PRESIGN_TTL_SECONDS", "604800"))  # 7 days
+FILE_SERVER_BASE_URL = os.getenv(
+    "FILE_SERVER_BASE_URL", "http://127.0.0.1:8001"
+).rstrip("/")
+FILE_SERVER_TIMEOUT_SECONDS = int(os.getenv("FILE_SERVER_TIMEOUT_SECONDS", "30"))
 LANGGRAPH_CONFIG = RunnableConfig(
     {"configurable": {"thread_id": "discovera_streamlit"}, "recursion_limit": 100}
 )
 # duckduckgo = DuckDuckGoSearchRun()
 
-if not OPENAI_API_KEY:
-    st.error("OPENAI_API_KEY missing in environment")
-    st.stop()
+SUPPORTED_LLM_PROVIDERS = ("openai", "claude", "portkey", "nvidia")
+DEFAULT_LLM_PROVIDER = (
+    LLM_PROVIDER if LLM_PROVIDER in SUPPORTED_LLM_PROVIDERS else "openai"
+)
+MODEL_OTHER_OPTION = "Other (custom)"
+MODEL_PRESETS: Dict[str, List[str]] = {
+    "nvidia": [
+        "deepseek-ai/deepseek-v3.2",
+        "qwen/qwen3-235b-a22b",
+        "z-ai/glm5",
+    ],
+    "claude": ["claude-haiku-3-5"],
+    "portkey": ["@gpt-5-mini/gpt-5-mini"],
+    "openai": ["gpt-5-nano"],
+}
+MODEL_STATE_KEYS = {
+    "openai": "openai_model",
+    "claude": "claude_model",
+    "portkey": "portkey_model",
+    "nvidia": "nvidia_model",
+}
+API_STATE_KEYS = {
+    "openai": "openai_api_key",
+    "claude": "claude_api_key",
+    "portkey": "portkey_api_key",
+    "nvidia": "nvidia_api_key",
+}
 
-st.set_page_config(page_title="Discovera Chat", page_icon="🧬", layout="centered")
 
-# Widen the sidebar to make MCP/Context panels wider
+def _current_llm_provider() -> str:
+    provider = (
+        st.session_state.get("llm_provider_selected")
+        or DEFAULT_LLM_PROVIDER
+        or "openai"
+    )
+    provider = str(provider).strip().lower()
+    if provider not in SUPPORTED_LLM_PROVIDERS:
+        return "openai"
+    return provider
+
+
+def _model_state_key(provider: str) -> str:
+    return MODEL_STATE_KEYS.get(provider, "openai_model")
+
+
+def _api_key_state_key(provider: str) -> str:
+    return API_STATE_KEYS.get(provider, "openai_api_key")
+
+
+def _active_model_name() -> str:
+    provider = _current_llm_provider()
+    if provider == "portkey":
+        return st.session_state.get("portkey_model") or PORTKEY_MODEL
+    if provider == "claude":
+        return st.session_state.get("claude_model") or CLAUDE_MODEL or ""
+    if provider == "nvidia":
+        return st.session_state.get("nvidia_model") or NVIDIA_MODEL
+    return st.session_state.get("openai_model") or OPENAI_MODEL
+
+
+st.set_page_config(page_title="Discovera Chat", page_icon="🧬", layout="wide")
+
 st.markdown(
     """
     <style>
-    [data-testid="stSidebar"] {
-        width: 520px !important;
-        min-width: 520px !important;
+    .block-container {
+      max-width: 1180px;
+      padding-top: 1.1rem;
+      padding-bottom: 2rem;
     }
-    [data-testid="stSidebar"] > div:first-child {
-        width: 520px !important;
+    [data-testid="stSidebarResizer"],
+    [data-testid="stSidebarResizeHandle"] {
+      display: none !important;
+      width: 0 !important;
+    }
+    div[data-testid="stChatMessage"] {
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      margin-bottom: 0.55rem;
+    }
+    [data-testid="stExpander"] {
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
     }
     </style>
     """,
@@ -71,16 +150,16 @@ st.title("Discovera Chat 🧬")
 # --- Mode selection & reinit ---
 
 
-def _ensure_trailing_slash_local(url: str) -> str:
+def _ensure_trailing_slash(url: str) -> str:
     return url if url.endswith("/") else url + "/"
 
 
-def _load_mcp_tools_for_ui(server_url: str):
+def _load_mcp_tools(server_url: str):
     client = MultiServerMCPClient(
         {
             "discovera": {
                 "transport": "sse",
-                "url": _ensure_trailing_slash_local(server_url),
+                "url": _ensure_trailing_slash(server_url),
                 "session_kwargs": {
                     "read_timeout_seconds": timedelta(seconds=MCP_TIMEOUT_MS // 1000)
                 },
@@ -123,12 +202,384 @@ def _default_addr_for_mode(mode: str) -> str:
     return MCP_ADDRESS if mode == "Discovera" else BASELINE_MCP_ADDRESS
 
 
+def _reset_chat_state():
+    st.session_state["messages"] = []
+    st.session_state["checkpointer"] = InMemorySaver()
+    st.session_state["tool_calls_log"] = []
+    st.session_state["tool_events_log"] = []
+    st.session_state["turn_runs"] = []
+    st.session_state["last_error"] = None
+    st.session_state["last_status"] = "idle"
+    st.session_state["session_started_at"] = datetime.now().isoformat()
+    st.session_state["output_files"] = []
+    st.session_state["output_file_urls"] = set()
+
+
+def _latest_user_prompt() -> str:
+    messages = st.session_state.get("messages") or []
+    for msg in reversed(messages):
+        if msg.get("role") == "user":
+            return str(msg.get("content") or "")
+    return ""
+
+
+def _latest_output_text() -> str:
+    runs = st.session_state.get("turn_runs") or []
+    for run in reversed(runs):
+        txt = run.get("output_text")
+        if txt:
+            return str(txt)
+    messages = st.session_state.get("messages") or []
+    for msg in reversed(messages):
+        if msg.get("role") == "assistant" and not msg.get("foldable"):
+            return str(msg.get("content") or "")
+    return ""
+
+
+def _session_elapsed_seconds() -> float:
+    started = st.session_state.get("session_started_at")
+    if not started:
+        return 0.0
+    try:
+        start_dt = datetime.fromisoformat(str(started))
+    except Exception:
+        return 0.0
+    return max((datetime.now() - start_dt).total_seconds(), 0.0)
+
+
+def _stringify(obj: Any, max_chars: int | None = None) -> str:
+    if isinstance(obj, str):
+        text = obj
+    else:
+        try:
+            text = json.dumps(obj, indent=2, ensure_ascii=False, default=str)
+        except Exception:
+            text = str(obj)
+    if max_chars is not None and len(text) > max_chars:
+        return text[:max_chars] + "\n...[truncated]..."
+    return text
+
+
+def _context_for_export() -> str:
+    ctx = st.session_state.get("context") or ""
+    uploads = st.session_state.get("context_uploads") or []
+    if uploads:
+        if ctx and not ctx.endswith("\n"):
+            ctx += "\n"
+        ctx += "Uploaded files (stored in local file server):\n"
+        for rec in uploads:
+            ctx += f"""Name: {rec.get('name', '')}
+  Preview:
+    {rec.get('preview', '')}
+  Download URL: <url>{rec.get('url', '')}</url>
+  CSV ID: {rec.get('csv_id') or 'not available'}
+  Type: {rec.get('type', '')}
+"""
+    return ctx
+
+
+def _build_export_payload() -> Dict[str, Any]:
+    status = st.session_state.get("last_status") or "idle"
+    messages = st.session_state.get("messages") or []
+    if status == "idle" and messages:
+        status = "ok"
+    payload: Dict[str, Any] = {
+        "ID": st.session_state.get("session_id", "streamlit_session"),
+        "Context/Background": _context_for_export(),
+        "Prompt": _latest_user_prompt(),
+        "mode": st.session_state.get("mode", "Discovera"),
+        "llm_provider": _current_llm_provider(),
+        "llm_model": _active_model_name(),
+        "run_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "elapsed_seconds": round(_session_elapsed_seconds(), 2),
+        "status": status,
+        "error": st.session_state.get("last_error"),
+        "output_text": _latest_output_text(),
+        "tool_calls_json": st.session_state.get("tool_calls_log") or [],
+        "tool_events_json": st.session_state.get("tool_events_log") or [],
+        "uploaded_files": st.session_state.get("context_uploads") or [],
+        "chat_messages": messages,
+        "turn_runs": st.session_state.get("turn_runs") or [],
+    }
+    return payload
+
+
+def _pdf_escape(text: str) -> str:
+    safe = text.encode("latin-1", "replace").decode("latin-1")
+    return safe.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+
+def _wrap_lines(text: str, width: int = 106) -> List[str]:
+    out: List[str] = []
+    for raw_line in text.splitlines() or [""]:
+        if not raw_line:
+            out.append("")
+            continue
+        wrapped = textwrap.wrap(
+            raw_line,
+            width=width,
+            replace_whitespace=False,
+            drop_whitespace=False,
+            break_long_words=True,
+            break_on_hyphens=False,
+        )
+        out.extend(wrapped or [""])
+    return out
+
+
+def _pdf_max_chars_for_width(width_pts: float, font_size: float = 10.0) -> int:
+    avg_char_width = max(font_size * 0.52, 1.0)
+    return max(14, int(width_pts / avg_char_width))
+
+
+def _build_pdf_chat_blocks(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
+    blocks: List[Dict[str, Any]] = []
+    summary = (
+        f"Generated: {payload.get('run_date', '')}\n"
+        f"Mode: {payload.get('mode', '')}\n"
+        f"Provider/Model: {payload.get('llm_provider', '')} / {payload.get('llm_model', '')}\n"
+        f"Status: {payload.get('status', '')}"
+    )
+    if payload.get("error"):
+        summary += f"\nError: {_stringify(payload.get('error'), max_chars=500)}"
+    blocks.append(
+        {"kind": "meta", "label": "Discovera Session Export", "text": summary}
+    )
+
+    context_text = _stringify(payload.get("Context/Background", ""), max_chars=18000)
+    if context_text.strip():
+        blocks.append({"kind": "meta", "label": "Context", "text": context_text})
+
+    for msg in payload.get("chat_messages") or []:
+        role = str(msg.get("role") or "assistant").lower()
+        is_foldable = bool(msg.get("foldable"))
+        title = str(msg.get("title") or "")
+        content_text = _stringify(msg.get("content", ""), max_chars=20000)
+
+        if role == "user":
+            kind = "user"
+            label = "User"
+        elif is_foldable:
+            # Keep only explicit tool-call intent blocks from the transcript.
+            # Skip tool result/event blocks to avoid duplicating turn_runs logs.
+            is_tool_call_block = title.lower().startswith(
+                "tool calls"
+            ) or content_text.lower().startswith("tool calls:")
+            if not is_tool_call_block:
+                continue
+            kind = "tool"
+            label = title or "Tool calls"
+        else:
+            kind = "assistant"
+            label = "Assistant"
+        blocks.append(
+            {
+                "kind": kind,
+                "label": str(label),
+                "text": content_text,
+            }
+        )
+    return blocks
+
+
+def _build_chatbox_pdf(payload: Dict[str, Any]) -> bytes:
+    blocks = _build_pdf_chat_blocks(payload)
+    if not blocks:
+        blocks = [
+            {
+                "kind": "meta",
+                "label": "Discovera Session Export",
+                "text": "(No content)",
+            }
+        ]
+
+    page_width = 612.0
+    page_height = 792.0
+    margin = 34.0
+    block_gap = 10.0
+    pad_x = 10.0
+    pad_top = 11.0
+    pad_bottom = 10.0
+    title_font = 9.0
+    body_font = 9.5
+    title_leading = 12.0
+    body_leading = 12.0
+    content_width = page_width - (2 * margin)
+
+    def _style(kind: str) -> Dict[str, Any]:
+        if kind == "user":
+            return {"fill": (0.88, 0.94, 1.0), "align_right": True}
+        if kind == "assistant":
+            return {"fill": (0.95, 0.97, 0.99), "align_right": False}
+        if kind == "tool":
+            return {"fill": (0.93, 0.93, 0.93), "align_right": False}
+        return {"fill": (0.94, 0.97, 0.94), "align_right": False}
+
+    pages: List[List[str]] = [[]]
+    y_top = page_height - margin
+
+    for block in blocks:
+        kind = str(block.get("kind") or "assistant")
+        label = str(block.get("label") or "")
+        text = str(block.get("text") or "")
+        style = _style(kind)
+
+        bubble_width = content_width * (0.78 if style["align_right"] else 0.9)
+        bubble_x = margin + (
+            content_width - bubble_width if style["align_right"] else 0.0
+        )
+        text_width = bubble_width - (2 * pad_x)
+
+        max_chars = _pdf_max_chars_for_width(text_width, body_font)
+        title_lines = _wrap_lines(label, width=max_chars)
+        body_lines = _wrap_lines(text, width=max_chars)
+        if not title_lines:
+            title_lines = [""]
+        if not body_lines:
+            body_lines = [""]
+
+        bubble_height = (
+            pad_top
+            + (len(title_lines) * title_leading)
+            + 3.0
+            + (len(body_lines) * body_leading)
+            + pad_bottom
+        )
+
+        if y_top - bubble_height < margin:
+            pages.append([])
+            y_top = page_height - margin
+
+        y_bottom = y_top - bubble_height
+        r, g, b = style["fill"]
+        cmds = pages[-1]
+
+        cmds.extend(
+            [
+                "q",
+                f"{r:.3f} {g:.3f} {b:.3f} rg",
+                f"{bubble_x:.2f} {y_bottom:.2f} {bubble_width:.2f} {bubble_height:.2f} re f",
+                "Q",
+            ]
+        )
+
+        text_x = bubble_x + pad_x
+        title_start_y = y_top - pad_top - title_font + 1.0
+        body_start_y = (
+            y_top - pad_top - (len(title_lines) * title_leading) - 3.0 - body_font + 1.0
+        )
+
+        cmds.extend(
+            [
+                "BT",
+                f"/F2 {title_font:.2f} Tf",
+                f"{title_leading:.2f} TL",
+                f"1 0 0 1 {text_x:.2f} {title_start_y:.2f} Tm",
+            ]
+        )
+        for line in title_lines:
+            cmds.append(f"({_pdf_escape(line)}) Tj")
+            cmds.append("T*")
+        cmds.extend(
+            [
+                "ET",
+                "BT",
+                f"/F1 {body_font:.2f} Tf",
+                f"{body_leading:.2f} TL",
+                f"1 0 0 1 {text_x:.2f} {body_start_y:.2f} Tm",
+            ]
+        )
+        for line in body_lines:
+            cmds.append(f"({_pdf_escape(line)}) Tj")
+            cmds.append("T*")
+        cmds.append("ET")
+
+        y_top = y_bottom - block_gap
+
+    page_obj_ids: List[int] = []
+    content_obj_ids: List[int] = []
+    next_obj_id = 5
+    for _ in pages:
+        page_obj_ids.append(next_obj_id)
+        content_obj_ids.append(next_obj_id + 1)
+        next_obj_id += 2
+    total_objects = next_obj_id - 1
+
+    out = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
+    offsets: Dict[int, int] = {}
+
+    def _append_object(obj_id: int, body: bytes):
+        offsets[obj_id] = len(out)
+        out.extend(f"{obj_id} 0 obj\n".encode("latin-1"))
+        out.extend(body)
+        if not body.endswith(b"\n"):
+            out.extend(b"\n")
+        out.extend(b"endobj\n")
+
+    kids = " ".join(f"{pid} 0 R" for pid in page_obj_ids)
+    _append_object(1, b"<< /Type /Catalog /Pages 2 0 R >>\n")
+    _append_object(
+        2,
+        f"<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>\n".encode("latin-1"),
+    )
+    _append_object(3, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n")
+    _append_object(4, b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\n")
+
+    for page_obj_id, content_obj_id, commands in zip(
+        page_obj_ids, content_obj_ids, pages
+    ):
+        stream = "\n".join(commands).encode("latin-1", "replace")
+        content_body = (
+            f"<< /Length {len(stream)} >>\nstream\n".encode("latin-1")
+            + stream
+            + b"\nendstream\n"
+        )
+        _append_object(content_obj_id, content_body)
+        page_body = (
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {page_width:.0f} {page_height:.0f}] "
+            f"/Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> "
+            f"/Contents {content_obj_id} 0 R >>\n"
+        ).encode("latin-1")
+        _append_object(page_obj_id, page_body)
+
+    xref_start = len(out)
+    out.extend(f"xref\n0 {total_objects + 1}\n".encode("latin-1"))
+    out.extend(b"0000000000 65535 f \n")
+    for obj_id in range(1, total_objects + 1):
+        offset = offsets.get(obj_id, 0)
+        out.extend(f"{offset:010d} 00000 n \n".encode("latin-1"))
+    out.extend(
+        (
+            f"trailer\n<< /Size {total_objects + 1} /Root 1 0 R >>\n"
+            f"startxref\n{xref_start}\n%%EOF\n"
+        ).encode("latin-1")
+    )
+    return bytes(out)
+
+
+def _build_pdf_export_bytes() -> bytes:
+    payload = _build_export_payload()
+    return _build_chatbox_pdf(payload)
+
+
+def _build_json_export_text() -> str:
+    return json.dumps(
+        _build_export_payload(), indent=2, ensure_ascii=False, default=str
+    )
+
+
+def _export_file_stub() -> str:
+    raw = st.session_state.get("session_id", "streamlit_session")
+    safe = "".join(ch for ch in str(raw) if ch.isalnum() or ch in ("-", "_"))
+    return safe or "streamlit_session"
+
+
 def _reinit_session_for_mode(new_mode: str):
     # Reset all conversational/agent state and mode-dependent settings
-    st.session_state["messages"] = []
+    _reset_chat_state()
+    st.session_state["session_id"] = datetime.now().strftime("streamlit_%Y%m%d_%H%M%S")
     st.session_state["mcp_connected"] = False
-    st.session_state["checkpointer"] = InMemorySaver()
-    st.session_state["code_view_msgs"] = set()
+    st.session_state["mcp_auto_checked"] = False
     st.session_state["mcp_server"] = _default_addr_for_mode(new_mode)
     # Also reset context to avoid cross-mode leakage
     st.session_state["context"] = ""
@@ -136,14 +587,139 @@ def _reinit_session_for_mode(new_mode: str):
     st.session_state["context_upload_hashes"] = set()
 
 
-if "mode" not in st.session_state:
-    st.session_state["mode"] = "Discovera"
-if "prev_mode" not in st.session_state:
-    st.session_state["prev_mode"] = st.session_state["mode"]
-if "mcp_server" not in st.session_state:
-    st.session_state["mcp_server"] = _default_addr_for_mode(st.session_state["mode"])
+def _ensure_session_defaults():
+    if "mode" not in st.session_state:
+        st.session_state["mode"] = "Discovera"
+    if "prev_mode" not in st.session_state:
+        st.session_state["prev_mode"] = st.session_state["mode"]
+    if "mcp_server" not in st.session_state:
+        st.session_state["mcp_server"] = _default_addr_for_mode(
+            st.session_state["mode"]
+        )
+    if "session_id" not in st.session_state:
+        st.session_state["session_id"] = datetime.now().strftime(
+            "streamlit_%Y%m%d_%H%M%S"
+        )
+    if "session_started_at" not in st.session_state:
+        st.session_state["session_started_at"] = datetime.now().isoformat()
+    if "checkpointer" not in st.session_state:
+        st.session_state["checkpointer"] = InMemorySaver()
 
-with st.sidebar.expander("Mode", expanded=True):
+    defaults = {
+        "messages": [],
+        "tool_calls_log": [],
+        "tool_events_log": [],
+        "turn_runs": [],
+        "last_error": None,
+        "last_status": "idle",
+        "llm_provider_selected": DEFAULT_LLM_PROVIDER,
+        "openai_model": OPENAI_MODEL,
+        "openai_api_key": "",
+        "claude_model": CLAUDE_MODEL or "",
+        "claude_api_key": "",
+        "portkey_model": PORTKEY_MODEL,
+        "portkey_api_key": "",
+        "nvidia_model": NVIDIA_MODEL,
+        "nvidia_api_key": "",
+        "mcp_auto_checked": False,
+        "mcp_connected": False,
+        "context": "",
+        "context_uploads": [],
+        "context_upload_hashes": set(),
+        "output_files": [],
+        "output_file_urls": set(),
+        "mcp_tool_infos": [],
+        "mcp_tool_filter": "",
+    }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+_ensure_session_defaults()
+
+
+def _check_mcp_connection(addr: str, toast: bool = True) -> bool:
+    url = httpx.URL(addr)
+    ok = False
+    notes: List[str] = []
+    try:
+        with httpx.Client(timeout=200.0, follow_redirects=True) as http:
+            try:
+                sse_headers = {
+                    "Accept": "text/event-stream",
+                    "Cache-Control": "no-store",
+                    "Connection": "keep-alive",
+                }
+                with http.stream("GET", str(url), headers=sse_headers) as r:
+                    notes.append(
+                        f"STREAM GET {url.raw_path.decode()} -> {r.status_code}"
+                    )
+                    if r.status_code == 200:
+                        ok = True
+            except Exception as e:
+                notes.append(f"STREAM GET {url.raw_path.decode()} -> {e}")
+
+        st.session_state["mcp_connected"] = ok
+        if ok:
+            try:
+                tools_loaded = _load_mcp_tools(addr)
+                st.session_state["mcp_tool_infos"] = _serialize_tools(tools_loaded)
+                if toast:
+                    st.toast(f"Loaded {len(st.session_state['mcp_tool_infos'])} tools")
+            except Exception as tool_exc:
+                if toast:
+                    st.toast(f"Tool load failed: {tool_exc}")
+    except Exception as e:
+        st.session_state["mcp_connected"] = False
+        notes.append(str(e))
+
+    if toast:
+        status_msg = "ok" if ok else "failed"
+        detail = " | ".join(notes) if notes else ""
+        st.toast(f"MCP check {status_msg}. {detail}")
+    return ok
+
+
+with st.sidebar.expander("LLM Settings", expanded=False):
+    st.selectbox(
+        "Provider",
+        list(SUPPORTED_LLM_PROVIDERS),
+        key="llm_provider_selected",
+    )
+    selected_provider = _current_llm_provider()
+
+    model_key = _model_state_key(selected_provider)
+    api_key_key = _api_key_state_key(selected_provider)
+    model_choice_key = f"{selected_provider}_model_choice"
+    model_options = MODEL_PRESETS.get(selected_provider, [])
+    current_model = (st.session_state.get(model_key) or "").strip()
+    if not current_model:
+        current_model = _active_model_name()
+    default_choice = (
+        current_model if current_model in model_options else MODEL_OTHER_OPTION
+    )
+    if model_choice_key not in st.session_state:
+        st.session_state[model_choice_key] = default_choice
+    elif st.session_state.get(model_choice_key) not in (
+        model_options + [MODEL_OTHER_OPTION]
+    ):
+        st.session_state[model_choice_key] = MODEL_OTHER_OPTION
+
+    selected_model_choice = st.selectbox(
+        "Model",
+        model_options + [MODEL_OTHER_OPTION],
+        key=model_choice_key,
+    )
+    if selected_model_choice == MODEL_OTHER_OPTION:
+        st.text_input("Custom Model", key=model_key)
+    else:
+        st.session_state[model_key] = selected_model_choice
+        st.caption(f"Selected model: `{selected_model_choice}`")
+
+    st.text_input("API Key", key=api_key_key, type="password")
+
+with st.sidebar.expander("Mode", expanded=False):
     st.radio(
         "Run Mode",
         ["Discovera", "Baseline"],
@@ -156,7 +732,15 @@ with st.sidebar.expander("Mode", expanded=True):
 if st.session_state["mode"] != st.session_state["prev_mode"]:
     _reinit_session_for_mode(st.session_state["mode"])
     st.session_state["prev_mode"] = st.session_state["mode"]
-with st.sidebar.expander("Connection", expanded=True):
+
+if not st.session_state.get("mcp_auto_checked", False):
+    auto_addr = st.session_state.get("mcp_server") or _default_addr_for_mode(
+        st.session_state.get("mode", "Discovera")
+    )
+    _check_mcp_connection(auto_addr, toast=False)
+    st.session_state["mcp_auto_checked"] = True
+
+with st.sidebar.expander("Connection", expanded=False):
     default_addr = _default_addr_for_mode(st.session_state.get("mode", "Discovera"))
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -170,47 +754,8 @@ with st.sidebar.expander("Connection", expanded=True):
     with col2:
         if st.button("Check MCP", use_container_width=True):
             addr = st.session_state.get("mcp_server") or default_addr
-            url = httpx.URL(addr)
-            ok = False
-            notes: List[str] = []
-            try:
-                with httpx.Client(timeout=200.0, follow_redirects=True) as http:
-                    # 0) Open SSE request in streaming mode and close immediately after status
-                    try:
-                        sse_headers = {
-                            "Accept": "text/event-stream",
-                            "Cache-Control": "no-store",
-                            "Connection": "keep-alive",
-                        }
-                        with http.stream("GET", str(url), headers=sse_headers) as r:
-                            notes.append(
-                                f"STREAM GET {url.raw_path.decode()} -> {r.status_code}"
-                            )
-                            if r.status_code == 200:
-                                ok = True
-                    except Exception as e:
-                        notes.append(f"STREAM GET {url.raw_path.decode()} -> {e}")
-
-                st.session_state["mcp_connected"] = ok
-                status_msg = "ok" if ok else "failed"
-                # Show first few notes to avoid long toasts
-                detail = " | ".join(notes)
-                st.toast(f"MCP check {status_msg}. {detail}")
-                # On successful connection, try to load and cache tools for display
-                if ok:
-                    try:
-                        tools_loaded = _load_mcp_tools_for_ui(addr)
-                        st.session_state["mcp_tool_infos"] = _serialize_tools(
-                            tools_loaded
-                        )
-                        st.toast(
-                            f"Loaded {len(st.session_state['mcp_tool_infos'])} tools"
-                        )
-                    except Exception as tool_exc:
-                        st.toast(f"Tool load failed: {tool_exc}")
-            except Exception as e:
-                st.session_state["mcp_connected"] = False
-                st.toast(f"MCP check failed: {e}")
+            _check_mcp_connection(addr, toast=True)
+            st.session_state["mcp_auto_checked"] = True
 
     connected = bool(st.session_state.get("mcp_connected"))
     status_text = "🟢 connected" if connected else "🔴 disconnected"
@@ -271,7 +816,7 @@ TOOL USAGE RULES
   and focused subsetting of shaped tables. Use these findings to inform shaping thresholds and subsequent enrichment.
 
 1) Intake
-- If a CSV/URL is provided: call `csv_record` (copy URLs exactly) → file_id.
+- If a CSV/URL is provided and no `csv_id` is already in context: call `csv_record` (copy URLs exactly) → file_id.
 - Prefer raw counts over normalized matrices or precomputed DE. Treat filenames like
   `raw_counts`/`counts` or matrices with many sample-like columns as raw counts.
 
@@ -326,6 +871,7 @@ TOOL USAGE RULES
 - Call `gene_info` with a batch of up to 10 genes (single call, not per-gene).
 - Optionally call `sets_info_rumm` once for a key gene set.
 - Optional: ONE `enrich_rumma` call on leading-edge genes to validate themes.
+- Optional: Call `query_genes` to query the INDRA database for relationships among a list of genes.
 
 6) Literature and prioritization (REQUIRED)
 - Use `query_string_rumma` (free text) and/or `query_table_rumma` (table search) to tie terms to PMCs.
@@ -457,7 +1003,7 @@ Results section** — condensed, definitive, and directly grounded in the datase
 
 # CRITICAL GUARDRAILS
 - Use exactly one tool per assistant turn.
-- If input URLs are provided, call csv_record and copy the URL exactly as given.
+- If input URLs are provided and no `csv_id` is already in context, call csv_record and copy the URL exactly as given.
 
 """
 
@@ -479,45 +1025,78 @@ with st.sidebar.expander("Context", expanded=True):
         type=["csv"],
         accept_multiple_files=True,
         key="context_upload_files",
-        help="Files are uploaded to S3 and summarized into the context.",
+        help="Files are uploaded to the local file server and summarized into the context.",
     )
 
-    # Initialize session state trackers
-    if "context_uploads" not in st.session_state:
-        st.session_state["context_uploads"] = (
-            []
-        )  # list of {hash, name, type, preview, url}
-    if "context_upload_hashes" not in st.session_state:
-        st.session_state["context_upload_hashes"] = set()
+    def _parse_tool_output(raw: Any) -> Dict[str, Any]:
+        if isinstance(raw, dict):
+            return raw
+        if isinstance(raw, list):
+            if len(raw) == 1 and isinstance(raw[0], str):
+                raw = raw[0]
+            else:
+                return {"raw": raw}
+        if isinstance(raw, str):
+            txt = raw.strip()
+            if txt.startswith("{") or txt.startswith("["):
+                try:
+                    parsed = json.loads(txt)
+                    return parsed if isinstance(parsed, dict) else {"raw": parsed}
+                except Exception:
+                    return {"raw": raw}
+            return {"raw": raw}
+        return {"raw": str(raw)}
 
-    _s3_client = None
-
-    def _get_s3():
-        global _s3_client
-        if _s3_client is not None:
-            return _s3_client
-        if not S3_BUCKET:
-            return None
+    def _auto_csv_record(
+        csv_url: str,
+        logical_name: str,
+        csv_text: str | None = None,
+    ) -> tuple[str | None, str | None]:
+        mode = st.session_state.get("mode", "Discovera")
+        server_url = st.session_state.get("mcp_server") or _default_addr_for_mode(mode)
         try:
-            _s3_client_local = boto3.client(
-                "s3",
-                region_name=S3_REGION,
-                aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
-                aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-                config=Config(
-                    signature_version="s3v4",
-                    s3={
-                        "addressing_style": "virtual",
-                    },
-                ),
+            tools = _load_mcp_tools(server_url)
+            tool = next(
+                (t for t in tools if getattr(t, "name", "") == "csv_record"), None
             )
-            # Light touch to validate creds lazily; skip actual call to avoid latency
-            _s3_client = _s3_client_local
-            return _s3_client
-        except Exception:
-            return None
+            if tool is None:
+                return None, f"csv_record tool not found on MCP server: {server_url}"
 
-    # Local filesystem helpers removed; uploads go directly to S3
+            def _invoke(payload: Dict[str, Any]) -> tuple[str | None, str | None]:
+                raw_result = asyncio.run(tool.ainvoke(payload))
+                parsed = _parse_tool_output(raw_result)
+                csv_id = parsed.get("id")
+                if csv_id:
+                    return str(csv_id), None
+                err = parsed.get("error")
+                if isinstance(err, dict):
+                    return None, str(
+                        err.get("message") or _stringify(err, max_chars=500)
+                    )
+                if err:
+                    return None, str(err)
+                return (
+                    None,
+                    f"Unexpected csv_record response: {_stringify(parsed, max_chars=500)}",
+                )
+
+            csv_id, err = _invoke({"name": logical_name, "csv_url": csv_url})
+            if csv_id:
+                return csv_id, None
+
+            if csv_text:
+                csv_id_text, err_text = _invoke(
+                    {"name": logical_name, "csv_text": csv_text}
+                )
+                if csv_id_text:
+                    return csv_id_text, None
+                if err and err_text:
+                    return None, f"{err}; fallback via csv_text failed: {err_text}"
+                if err_text:
+                    return None, err_text
+            return None, err
+        except Exception as exc:
+            return None, str(exc)
 
     def _save_uploaded_file(file_obj) -> Dict[str, Any] | None:
         try:
@@ -537,7 +1116,8 @@ with st.sidebar.expander("Context", expanded=True):
             "".join(ch for ch in safe_name if ch.isalnum() or ch in ("_", "-"))
             or "upload"
         )
-        # No local write; upload directly to S3
+        upload_stem = f"{sha[:12]}_{safe_name}"
+        upload_filename = f"{upload_stem}{ext}"
 
         # Build a short preview
         preview = ""
@@ -557,41 +1137,45 @@ with st.sidebar.expander("Context", expanded=True):
         except Exception:
             preview = ""
 
-        # Attempt S3 upload with presigned URL generation
+        # Upload to local file server and derive a download URL.
         remote_url: str | None = None
         try:
-            s3 = _get_s3()
-            if s3 and S3_BUCKET:
-                # Choose content type
-                if ext == ".csv":
-                    content_type = "text/csv"
-                elif ext == ".txt":
-                    content_type = "text/plain"
-                else:
-                    content_type = "application/octet-stream"
-
-                s3_key = f"{S3_PREFIX}/{datetime.now().strftime('%Y-%m-%d')}/{sha[:12]}_{safe_name}{ext}"
-                put_kwargs = {
-                    "Bucket": S3_BUCKET,
-                    "Key": s3_key,
-                    "Body": raw,
-                    "ContentType": content_type,
-                }
-                s3.put_object(**put_kwargs)
-                remote_url = s3.generate_presigned_url(
-                    "get_object",
-                    Params={
-                        "Bucket": S3_BUCKET,
-                        "Key": s3_key,
-                        "ResponseContentDisposition": "inline",
-                    },
-                    ExpiresIn=S3_PRESIGN_TTL,
+            files = {
+                "file": (
+                    upload_filename,
+                    raw,
+                    "text/csv" if ext == ".csv" else "application/octet-stream",
                 )
-        except (BotoCoreError, NoCredentialsError, ClientError, Exception):
+            }
+            with httpx.Client(timeout=FILE_SERVER_TIMEOUT_SECONDS) as client:
+                resp = client.post(f"{FILE_SERVER_BASE_URL}/upload", files=files)
+                resp.raise_for_status()
+                payload = resp.json() if resp.content else {}
+            saved_name = (payload or {}).get("filename") or upload_filename
+            remote_url = str(
+                httpx.URL(f"{FILE_SERVER_BASE_URL}/download").copy_add_param(
+                    "filename", saved_name
+                )
+            )
+        except Exception:
             remote_url = None
 
         if not remote_url:
             return None
+
+        csv_id = None
+        csv_record_error = None
+        if ext == ".csv":
+            text_for_record = None
+            try:
+                text_for_record = raw.decode("utf-8-sig", errors="ignore")
+            except Exception:
+                text_for_record = None
+            csv_id, csv_record_error = _auto_csv_record(
+                csv_url=remote_url,
+                logical_name=upload_stem,
+                csv_text=text_for_record,
+            )
 
         rec = {
             "hash": sha,
@@ -599,7 +1183,10 @@ with st.sidebar.expander("Context", expanded=True):
             "type": (ext[1:] if ext.startswith(".") else ext).lower(),
             "preview": preview,
             "url": remote_url,
+            "csv_id": csv_id,
         }
+        if csv_record_error:
+            rec["csv_record_error"] = csv_record_error
         st.session_state["context_upload_hashes"].add(sha)
         st.session_state["context_uploads"].append(rec)
         return rec
@@ -655,19 +1242,17 @@ with st.sidebar.expander("Context", expanded=True):
         if new_records:
             st.write("Uploaded files:")
             for rec in new_records:
-                st.markdown(f"- `{rec['name']}` → [download link]({rec['url']})")
-
-# Initialize output files tracker (for tool-returned metadata with s3_presigned_url)
-if "output_files" not in st.session_state:
-    st.session_state["output_files"] = (
-        []
-    )  # list of {name, url, size_bytes, created_at, category, origin_tool}
-if "output_file_urls" not in st.session_state:
-    st.session_state["output_file_urls"] = set()
-if "mcp_tool_infos" not in st.session_state:
-    st.session_state["mcp_tool_infos"] = []  # list of {name, description, schema_json}
-if "mcp_tool_filter" not in st.session_state:
-    st.session_state["mcp_tool_filter"] = ""
+                csv_id = rec.get("csv_id")
+                if csv_id:
+                    st.markdown(
+                        f"- `{rec['name']}` → [download link]({rec['url']}) · `csv_id: {csv_id}`"
+                    )
+                else:
+                    st.markdown(
+                        f"- `{rec['name']}` → [download link]({rec['url']}) · `csv_id: not available`"
+                    )
+                    if rec.get("csv_record_error"):
+                        st.caption(f"csv_record failed: {rec['csv_record_error']}")
 
 # Create a placeholder so we can live-update Outputs during streaming
 outputs_placeholder = st.sidebar.empty()
@@ -679,8 +1264,8 @@ def render_outputs():
             _outputs = st.session_state.get("output_files") or []
             if _outputs:
                 for _rec in _outputs:
-                    _name = _rec.get("name") or _rec.get("s3_key") or "download"
-                    _url = _rec.get("url") or _rec.get("s3_presigned_url") or ""
+                    _name = _rec.get("name") or "download"
+                    _url = _rec.get("url") or _rec.get("file_server_url") or ""
                     if _url:
                         st.markdown(f"- [{_name}]({_url})")
             else:
@@ -701,7 +1286,7 @@ with st.sidebar.expander("MCP Tools", expanded=True):
     with cols[1]:
         if st.button("Refresh", use_container_width=True, key="btn_refresh_tools"):
             try:
-                tools_loaded = _load_mcp_tools_for_ui(addr_text)
+                tools_loaded = _load_mcp_tools(addr_text)
                 st.session_state["mcp_tool_infos"] = _serialize_tools(tools_loaded)
                 st.toast(f"Loaded {len(st.session_state['mcp_tool_infos'])} tools")
             except Exception as tool_exc:
@@ -740,18 +1325,49 @@ with st.sidebar.expander("MCP Tools", expanded=True):
                 with st.expander("Input schema", expanded=False):
                     st.code(schema_json, language="json")
 
+status_cols = st.columns(3)
+with status_cols[0]:
+    if st.button("Clear Chat", use_container_width=True):
+        _reset_chat_state()
+        st.session_state["session_id"] = datetime.now().strftime(
+            "streamlit_%Y%m%d_%H%M%S"
+        )
+        st.rerun()
+
+has_export_content = bool(
+    (st.session_state.get("messages") or [])
+    or (st.session_state.get("tool_calls_log") or [])
+    or (st.session_state.get("tool_events_log") or [])
+)
+json_export_text = _build_json_export_text() if has_export_content else "{}"
+pdf_export_bytes = _build_pdf_export_bytes() if has_export_content else b""
+file_stub = _export_file_stub()
+
+with status_cols[1]:
+    st.download_button(
+        "Export JSON",
+        data=json_export_text,
+        file_name=f"{file_stub}.json",
+        mime="application/json",
+        use_container_width=True,
+        disabled=not has_export_content,
+        key="btn_export_json",
+    )
+
+with status_cols[2]:
+    st.download_button(
+        "Export PDF",
+        data=pdf_export_bytes,
+        file_name=f"{file_stub}.pdf",
+        mime="application/pdf",
+        use_container_width=True,
+        disabled=not has_export_content,
+        key="btn_export_pdf",
+    )
+
 st.divider()
 
 # --- Chat state ---
-if "messages" not in st.session_state:
-    st.session_state["messages"] = []  # UI transcript: {role, content}
-if "checkpointer" not in st.session_state:
-    print("Creating checkpointer...")
-    st.session_state["checkpointer"] = InMemorySaver()
-
-# Show transcript (supports foldable tool entries)
-
-
 for idx, m in enumerate(st.session_state["messages"]):
     role = m.get("role", "assistant")
     content = m.get("content", "")
@@ -765,51 +1381,67 @@ for idx, m in enumerate(st.session_state["messages"]):
                 else:
                     st.markdown(content)
         else:
-            if role == "assistant":
-                if "code_view_msgs" not in st.session_state:
-                    st.session_state["code_view_msgs"] = set()
-                code_view = st.session_state.get("code_view_msgs") or set()
-                showing_code = idx in code_view
-                if showing_code:
-                    st.code(str(content), language="text")
-                    if st.button("Back to text", key=f"btn_to_text_{idx}"):
-                        code_view.discard(idx)
-                        st.session_state["code_view_msgs"] = code_view
-                else:
-                    st.markdown(content)
-                    if st.button("Copy view", key=f"btn_to_code_{idx}"):
-                        code_view.add(idx)
-                        st.session_state["code_view_msgs"] = code_view
-            else:
-                st.markdown(content)
+            st.markdown(content)
 
 # Compose
 prompt = st.chat_input("Ask anything…")
 
 
-# Helper to stream Responses API events
-def as_msg(role: str, text: str) -> Dict[str, Any]:
-    part_type = "input_text" if role == "user" else "output_text"
-    return {"role": role, "content": [{"type": part_type, "text": text}]}
+def _resolved_api_key(provider: str) -> str:
+    session_key_name = _api_key_state_key(provider)
+    env_fallback = {
+        "openai": OPENAI_API_KEY,
+        "claude": CLAUDE_API_KEY,
+        "portkey": PORTKEY_API_KEY,
+        "nvidia": NVIDIA_API_KEY,
+    }.get(provider)
+    return (st.session_state.get(session_key_name) or env_fallback or "").strip()
 
 
-def _ensure_trailing_slash(url: str) -> str:
-    return url if url.endswith("/") else url + "/"
+def _build_model():
+    provider = _current_llm_provider()
+    api_key = _resolved_api_key(provider)
+    if not api_key:
+        raise ValueError(
+            f"{provider.capitalize()} API key is required in sidebar LLM settings."
+        )
 
-
-def _load_mcp_tools(server_url: str):
-    client = MultiServerMCPClient(
-        {
-            "discovera": {
-                "transport": "sse",
-                "url": _ensure_trailing_slash(server_url),
-                "session_kwargs": {
-                    "read_timeout_seconds": timedelta(seconds=MCP_TIMEOUT_MS // 1000)
-                },
-            }
-        }
+    if provider == "portkey":
+        portkey_headers = createHeaders(
+            api_key=api_key,
+            metadata={"_user": "yfw215"},
+        )
+        return ChatOpenAI(
+            model=(st.session_state.get("portkey_model") or PORTKEY_MODEL),
+            max_tokens=65536,
+            base_url=PORTKEY_BASE_URL,
+            default_headers=portkey_headers,
+        )
+    if provider == "claude":
+        model_name = (
+            st.session_state.get("claude_model") or CLAUDE_MODEL or ""
+        ).strip()
+        if not model_name:
+            raise ValueError("Claude model is required in sidebar LLM settings.")
+        return ChatAnthropic(
+            model=model_name,
+            temperature=0,
+            api_key=api_key,
+        )
+    if provider == "nvidia":
+        return ChatOpenAI(
+            model=(st.session_state.get("nvidia_model") or NVIDIA_MODEL),
+            max_tokens=100000,
+            api_key=api_key,
+            base_url=NVIDIA_BASE_URL,
+            extra_body={"chat_template_kwargs": {"thinking": True}},
+        )
+    return ChatOpenAI(
+        model=(st.session_state.get("openai_model") or OPENAI_MODEL),
+        reasoning_effort="high",
+        max_tokens=100000,
+        api_key=api_key,
     )
-    return asyncio.run(client.get_tools())
 
 
 def _system_message() -> SystemMessage:
@@ -824,13 +1456,14 @@ def _context() -> str:
     ctx = st.session_state.get("context") or ""
     uploads = st.session_state.get("context_uploads") or []
     if uploads:
-        ctx += "Uploaded files (stored in S3):\n"
+        ctx += "Uploaded files (stored in local file server):\n"
         for rec in uploads:
             ctx += f"""
 Name: {rec['name']}
   Preview:
     {rec['preview']}
   Download URL: <url>{rec['url']}</url>
+  CSV ID: {rec.get('csv_id') or 'not available'}
   Type: {rec['type']}
 """
     return ctx
@@ -862,18 +1495,18 @@ def _collect_outputs(obj):
     if isinstance(obj, dict):
         for k, v in obj.items():
             if k.endswith("_metadata") and isinstance(v, dict):
-                url = v.get("s3_presigned_url")
+                url = v.get("file_server_url")
                 if url:
                     seen = st.session_state.get("output_file_urls") or set()
                     if url not in seen:
                         rec = {
-                            "name": v.get("name") or v.get("s3_key") or "download",
+                            "name": v.get("name") or "download",
                             "url": url,
                             "size_bytes": v.get("size_bytes"),
                             "created_at": v.get("created_at"),
                             "category": v.get("category"),
                             "origin_tool": v.get("origin_tool"),
-                            "s3_key": v.get("s3_key"),
+                            "file_server_url": v.get("file_server_url"),
                         }
                         out_list = st.session_state.get("output_files") or []
                         out_list.append(rec)
@@ -884,39 +1517,39 @@ def _collect_outputs(obj):
 
 
 def stream_langgraph(prompt: str):
+    run_started_at = datetime.now()
+    run_tool_calls: List[Dict[str, Any]] = []
+    run_tool_events: List[Dict[str, Any]] = []
+    run_text_chunks: List[str] = []
+
     mode = st.session_state.get("mode", "Discovera")
     default_addr = _default_addr_for_mode(mode)
     server_url = st.session_state.get("mcp_server") or default_addr
+
+    def _run_summary(status: str, error: str | None = None) -> Dict[str, Any]:
+        return {
+            "run_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "elapsed_seconds": round(
+                (datetime.now() - run_started_at).total_seconds(), 2
+            ),
+            "status": status,
+            "error": error,
+            "output_text": "".join(run_text_chunks),
+            "tool_calls": run_tool_calls,
+            "tool_events": run_tool_events,
+        }
 
     # Build tools and agent
     try:
         tools = _load_mcp_tools(server_url) + [web_search]
     except Exception as e:
-        yield ("error", f"[MCP tools error] {e}")
+        error_text = f"[MCP tools error] {e}"
+        yield ("error", error_text)
+        yield ("run_summary", _run_summary(status="error", error=error_text))
         return
 
     try:
-        # model = f"openai:{OPENAI_MODEL}"
-        if os.getenv("LLM_PROVIDER") == "portkey":
-            portkey_headers = createHeaders(
-                api_key=os.getenv("PORTKEY_API_KEY"),
-                metadata={"_user": "yfw215"},
-            )
-            model = ChatOpenAI(
-                model="@vertexai/gemini-2.5-pro",
-                max_tokens=65536,
-                reasoning_effort="high",
-                base_url="https://ai-gateway.apps.cloud.rt.nyu.edu/v1/",
-                default_headers=portkey_headers,
-            )
-        else:
-            model = ChatOpenAI(
-                model=OPENAI_MODEL,
-                reasoning_effort="high",
-                max_tokens=100000,
-                api_key=OPENAI_API_KEY,
-            )
-            print(model)
+        model = _build_model()
         agent = create_react_agent(
             model,
             tools=tools,
@@ -925,7 +1558,9 @@ def stream_langgraph(prompt: str):
             checkpointer=st.session_state["checkpointer"],
         )
     except Exception as e:
-        yield ("error", f"[Agent init error] {e}")
+        error_text = f"[Agent init error] {e}"
+        yield ("error", error_text)
+        yield ("run_summary", _run_summary(status="error", error=error_text))
         return
 
     inputs = {"messages": [_system_message(), _human_message(prompt)]}
@@ -963,7 +1598,7 @@ def stream_langgraph(prompt: str):
         for update in _stream_agent_updates():
             if not isinstance(update, dict):
                 continue
-            for node_name, node_update in update.items():
+            for _, node_update in update.items():
                 messages_update = (
                     node_update.get("messages")
                     if isinstance(node_update, dict)
@@ -980,6 +1615,7 @@ def stream_langgraph(prompt: str):
                             else str(msg.content)
                         )
                         if content_text:
+                            run_text_chunks.append(content_text)
                             yield ("delta", content_text)
                         # Surface tool call intents
                         tool_calls = getattr(msg, "tool_calls", None) or []
@@ -988,6 +1624,7 @@ def stream_langgraph(prompt: str):
                             for call in tool_calls:
                                 name = call.get("name")
                                 args = call.get("args")
+                                run_tool_calls.append({"name": name, "args": args})
                                 calls_render.append({"name": name, "args": args})
                             tool_calls_json = json.dumps(
                                 calls_render, default=str, indent=2
@@ -1062,6 +1699,16 @@ def stream_langgraph(prompt: str):
                                 if is_error or len(tool_text) <= 1000
                                 else (tool_text[:1000] + "…")
                             )
+                        tool_payload = (
+                            parsed_json if parsed_json is not None else tool_text
+                        )
+                        run_tool_events.append(
+                            {
+                                "tool": tool_name,
+                                "payload": tool_payload,
+                                "is_error": is_error,
+                            }
+                        )
                         title_prefix = (
                             f"{tool_name} error" if is_error else f"{tool_name} result"
                         )
@@ -1077,11 +1724,17 @@ def stream_langgraph(prompt: str):
                             )
         # Signal completion
         yield ("done", None)
+        yield ("run_summary", _run_summary(status="ok"))
     except Exception as e:
-        yield ("error", f"[Run error] {e}")
+        error_text = f"[Run error] {e}"
+        yield ("error", error_text)
+        yield ("run_summary", _run_summary(status="error", error=error_text))
 
 
 if prompt:
+    st.session_state["last_status"] = "running"
+    st.session_state["last_error"] = None
+
     # 1) append user to UI transcript and show it
     st.session_state["messages"].append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -1089,6 +1742,7 @@ if prompt:
 
     # 2) stream from LangGraph agent
     # 2) stream from LangGraph agent, rendering events in time order (no placeholder)
+    summary_seen = False
     for kind, payload in stream_langgraph(prompt):
         if kind == "delta" and payload:
             with st.chat_message("assistant"):
@@ -1119,3 +1773,31 @@ if prompt:
             st.session_state["messages"].append(
                 {"role": "assistant", "content": str(payload)}
             )
+        elif kind == "run_summary" and isinstance(payload, dict):
+            summary_seen = True
+            run_record = dict(payload)
+            run_record["prompt"] = prompt
+            run_record["mode"] = st.session_state.get("mode", "Discovera")
+            run_record["llm_provider"] = _current_llm_provider()
+            run_record["llm_model"] = _active_model_name()
+            runs = st.session_state.get("turn_runs") or []
+            runs.append(run_record)
+            st.session_state["turn_runs"] = runs
+
+            calls = payload.get("tool_calls") or []
+            events = payload.get("tool_events") or []
+            st.session_state["tool_calls_log"] = (
+                st.session_state.get("tool_calls_log") or []
+            ) + calls
+            st.session_state["tool_events_log"] = (
+                st.session_state.get("tool_events_log") or []
+            ) + events
+            st.session_state["last_status"] = payload.get("status") or "ok"
+            st.session_state["last_error"] = payload.get("error")
+
+    if not summary_seen and st.session_state.get("last_status") == "running":
+        st.session_state["last_status"] = "ok"
+
+    # Refresh the top controls so export buttons are enabled immediately
+    # after a completed run (same interaction cycle).
+    st.rerun()
