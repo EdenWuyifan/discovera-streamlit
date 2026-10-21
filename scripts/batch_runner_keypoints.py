@@ -377,6 +377,62 @@ def _human_message(
     )
 
 
+def _is_openai_reasoning_model(model_name: str) -> bool:
+    """True for OpenAI models that accept the `reasoning` parameter (o-series, gpt-5)."""
+    name = (model_name or "").lower()
+    return name.startswith(("o1", "o3", "o4", "gpt-5"))
+
+
+def _extract_reasoning_from_message(msg: AIMessage) -> List[str]:
+    """Collect reasoning summary texts from an AIMessage.
+
+    Handles:
+      * Responses API with output_version="responses/v1": content blocks of
+        type "reasoning" with a "summary" list of {"type": "summary_text", "text": ...}.
+      * Responses API default output: additional_kwargs["reasoning"]["summary"].
+      * Anthropic extended thinking: content blocks of type "thinking".
+      * DeepSeek / OpenAI-compatible: additional_kwargs["reasoning_content"].
+    """
+    texts: List[str] = []
+
+    def _from_summary(summary: Any) -> None:
+        if isinstance(summary, str):
+            if summary.strip():
+                texts.append(summary)
+            return
+        if isinstance(summary, list):
+            for block in summary:
+                if isinstance(block, dict):
+                    if block.get("type") == "refusal" and block.get("refusal"):
+                        texts.append(f"REFUSAL: {block['refusal']}")
+                    elif block.get("text"):
+                        texts.append(str(block["text"]))
+                elif isinstance(block, str) and block.strip():
+                    texts.append(block)
+
+    content = getattr(msg, "content", None)
+    if isinstance(content, list):
+        for block in content:
+            if not isinstance(block, dict):
+                continue
+            btype = block.get("type")
+            if btype == "reasoning":
+                _from_summary(block.get("summary"))
+            elif btype == "thinking" and block.get("thinking"):
+                texts.append(str(block["thinking"]))
+
+    extra = getattr(msg, "additional_kwargs", None) or {}
+    reasoning = extra.get("reasoning")
+    if isinstance(reasoning, dict):
+        _from_summary(reasoning.get("summary"))
+    elif isinstance(reasoning, (str, list)):
+        _from_summary(reasoning)
+    if extra.get("reasoning_content"):
+        texts.append(str(extra["reasoning_content"]))
+
+    return [t for t in texts if t and t.strip()]
+
+
 def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
     provider = llm_provider or os.getenv("LLM_PROVIDER", "openai")
     provider = provider.lower()
@@ -423,20 +479,34 @@ def _build_model(llm_provider: str = None) -> Union[ChatOpenAI, ChatAnthropic]:
         return ChatOpenAI(**kwargs)
     else:
         print("Using OpenAI...")
-        return ChatOpenAI(
-            model=os.getenv("OPENAI_MODEL"),
-            reasoning_effort="high",
+        model_name = os.getenv("OPENAI_MODEL") or "o4-mini"
+        kwargs: Dict[str, Any] = dict(
+            model=model_name,
             max_tokens=100000,
             api_key=os.getenv("OPENAI_API_KEY"),
         )
+        if _is_openai_reasoning_model(model_name):
+            # Use the Responses API so reasoning summaries come back as
+            # {"type": "reasoning", "summary": [{"type": "summary_text", "text": ...}]}
+            # blocks inside AIMessage.content (output_version="responses/v1").
+            kwargs.update(
+                use_responses_api=True,
+                output_version="responses/v1",
+                reasoning={
+                    "effort": os.getenv("OPENAI_REASONING_EFFORT", "high"),
+                    "summary": os.getenv("OPENAI_REASONING_SUMMARY", "detailed"),
+                },
+            )
+        return ChatOpenAI(**kwargs)
 
 
 async def _astream_updates(
     agent, inputs
-) -> Tuple[str, List[Dict[str, Any]], List[Dict[str, Any]]]:
+) -> Tuple[str, List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]:
     text_chunks: List[str] = []
     tool_calls_accum: List[Dict[str, Any]] = []
     tool_events_accum: List[Dict[str, Any]] = []
+    trace_accum: List[Dict[str, Any]] = []
 
     async for update in agent.astream(
         inputs, config=LANGGRAPH_CONFIG, stream_mode="updates"
@@ -454,7 +524,24 @@ async def _astream_updates(
                     content_text = _extract_text_from_content(msg.content)
                     if content_text:
                         text_chunks.append(content_text)
+                    reasoning_texts = _extract_reasoning_from_message(msg)
+                    for rt in reasoning_texts:
+                        preview = rt if len(rt) <= 300 else rt[:300] + "…"
+                        print(f"Reasoning → {preview}")
                     tool_calls = getattr(msg, "tool_calls", None) or []
+                    trace_accum.append(
+                        {
+                            "step": len(trace_accum) + 1,
+                            "type": "assistant",
+                            "reasoning": reasoning_texts,
+                            "text": content_text or "",
+                            "tool_calls": [
+                                {"name": c.get("name"), "args": c.get("args")}
+                                for c in tool_calls
+                            ],
+                            "usage": getattr(msg, "usage_metadata", None),
+                        }
+                    )
                     if tool_calls:
                         for call in tool_calls:
                             # Log tool call intent (name + truncated args)
@@ -489,8 +576,16 @@ async def _astream_updates(
                     except Exception:
                         payload = msg.content
                     tool_events_accum.append({"tool": tool_name, "payload": payload})
+                    trace_accum.append(
+                        {
+                            "step": len(trace_accum) + 1,
+                            "type": "tool_result",
+                            "tool": tool_name,
+                            "payload": payload,
+                        }
+                    )
 
-    return ("".join(text_chunks), tool_calls_accum, tool_events_accum)
+    return ("".join(text_chunks), tool_calls_accum, tool_events_accum, trace_accum)
 
 
 def _upload_csv_to_file_server(file_path: str) -> Dict[str, Any] | None:
@@ -757,6 +852,8 @@ def run_once(
         "output_text": None,
         "tool_calls": [],
         "tool_events": [],
+        "reasoning": [],
+        "trace": [],
         "error": None,
     }
     try:
@@ -786,7 +883,7 @@ def run_once(
     }
 
     try:
-        output_text, tool_calls, tool_events = asyncio.run(
+        output_text, tool_calls, tool_events, trace = asyncio.run(
             _astream_updates(agent, inputs)
         )
 
@@ -798,6 +895,12 @@ def run_once(
         result["output_text"] = output_text or ""
         result["tool_calls"] = tool_calls
         result["tool_events"] = tool_events
+        result["trace"] = trace
+        result["reasoning"] = [
+            {"step": s["step"], "reasoning": s["reasoning"]}
+            for s in trace
+            if s.get("type") == "assistant" and s.get("reasoning")
+        ]
     except Exception as e:
         # Tool errors should normally be handled as ToolMessages by LangGraph.
         # If an exception escapes, it means the error occurred before tool execution
@@ -821,6 +924,7 @@ def run_once(
             recovered_text_chunks = []
             recovered_tool_calls = []
             recovered_tool_events = []
+            recovered_trace: List[Dict[str, Any]] = []
 
             for msg in messages:
                 if isinstance(msg, AIMessage):
@@ -828,6 +932,19 @@ def run_once(
                     if content_text:
                         recovered_text_chunks.append(content_text)
                     tool_calls = getattr(msg, "tool_calls", None) or []
+                    recovered_trace.append(
+                        {
+                            "step": len(recovered_trace) + 1,
+                            "type": "assistant",
+                            "reasoning": _extract_reasoning_from_message(msg),
+                            "text": content_text or "",
+                            "tool_calls": [
+                                {"name": c.get("name"), "args": c.get("args")}
+                                for c in tool_calls
+                            ],
+                            "usage": getattr(msg, "usage_metadata", None),
+                        }
+                    )
                     if tool_calls:
                         for call in tool_calls:
                             recovered_tool_calls.append(
@@ -853,11 +970,25 @@ def run_once(
                     recovered_tool_events.append(
                         {"tool": tool_name, "payload": payload}
                     )
+                    recovered_trace.append(
+                        {
+                            "step": len(recovered_trace) + 1,
+                            "type": "tool_result",
+                            "tool": tool_name,
+                            "payload": payload,
+                        }
+                    )
 
             if recovered_text_chunks or recovered_tool_events:
                 result["output_text"] = "".join(recovered_text_chunks) or ""
                 result["tool_calls"] = recovered_tool_calls
                 result["tool_events"] = recovered_tool_events
+                result["trace"] = recovered_trace
+                result["reasoning"] = [
+                    {"step": s["step"], "reasoning": s["reasoning"]}
+                    for s in recovered_trace
+                    if s.get("type") == "assistant" and s.get("reasoning")
+                ]
             else:
                 result["error"] = f"Run error: {error_msg}"
         except Exception as recover_error:
@@ -970,7 +1101,7 @@ def main():
             print("ERROR: NVIDIA_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
     else:  # openai
-        model_text = os.getenv("OPENAI_MODEL")
+        model_text = os.getenv("OPENAI_MODEL") or "o4-mini"
         if not os.getenv("OPENAI_API_KEY"):
             print("ERROR: OPENAI_API_KEY missing in environment", file=sys.stderr)
             sys.exit(2)
@@ -1147,6 +1278,8 @@ def main():
             "output_text": res.get("output_text"),
             "tool_calls_json": res.get("tool_calls") or [],
             "tool_events_json": res.get("tool_events") or [],
+            "reasoning_json": res.get("reasoning") or [],
+            "trace_json": res.get("trace") or [],
             "uploaded_files": ds_records,
         }
         if args.keypoints_col and args.keypoints_col in df.columns:
